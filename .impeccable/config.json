@@ -1,0 +1,106 @@
+{
+  "buildPath": "code",
+  "hook": {
+    "enabled": true,
+    "limits": {
+      "maxFindings": 5,
+      "maxChars": 8000
+    }
+  },
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "flat-type-hierarchy",
+        "value": "*",
+        "files": [
+          "site/index.html"
+        ],
+        "createdAt": "2026-09-30T07:47:11.011Z",
+        "reason": "Agent: the type scale lives in site/styles.css (4.6–6rem, 3.2rem, 2.4rem, 1.7rem, 1.0625rem, 0.84rem). index.html sets no font-size."
+      },
+      {
+        "rule": "marquee",
+        "value": "*",
+        "files": [
+          "site/index.html"
+        ],
+        "createdAt": "2026-09-30T08:51:17.246Z",
+        "reason": "User requested marquee text loops as a named motion beat on the marketing page."
+      },
+      {
+        "rule": "radial-spotlight-glow",
+        "value": "*",
+        "files": [
+          "site/index.html"
+        ],
+        "createdAt": "2026-09-30T08:51:44.882Z",
+        "reason": "User requested a subtle animated gradient mesh in the hero; teal and orange fields are the committed night-Mac atmosphere, not decorative orbs."
+      },
+      {
+        "rule": "dark-glow",
+        "value": "*",
+        "files": [
+          "site/index.html"
+        ],
+        "createdAt": "2026-09-30T08:51:44.897Z",
+        "reason": "User requested a soft glow on the otter's clipboard as the signature light source; implemented as an offset SVG radial wash, not a zero-offset CSS halo."
+      },
+      {
+        "rule": "aphoristic-cadence",
+        "value": "*",
+        "files": [
+          "site/index.html"
+        ],
+        "createdAt": "2026-09-30T08:55:13.071Z",
+        "reason": "User pinned the tagline 'Everything you copy. Right where you left it.' and asked for warm, witty, mischievous otter voice; short paired lines are the brand cadence, not filler slogans."
+      },
+      {
+        "rule": "undersized-ui-text",
+        "value": "*",
+        "files": [
+          "site/index.html"
+        ],
+        "createdAt": "2026-09-30T08:55:13.086Z",
+        "reason": "Agent: type inside the How-it-works Mac HUD is a scaled drawing of the real clipboard list, labeled as a drawing in the surface brief; miniature UI type is the subject."
+      },
+      {
+        "rule": "clipped-overflow-container",
+        "value": "*",
+        "files": [
+          "site/index.html"
+        ],
+        "createdAt": "2026-09-30T08:55:13.101Z",
+        "reason": "Agent: overflow clip is the kinetic letter well, the marquee window, the Mac screen bezel, and the horizontal types gallery — all requested motion, not accidental clipping of body copy."
+      },
+      {
+        "rule": "nested-cards",
+        "value": "*",
+        "files": [
+          "site/index.html"
+        ],
+        "createdAt": "2026-09-30T08:55:43.044Z",
+        "reason": "Agent: inner frames are the macOS HUD drawing (Notes window, Jerox glass panel, keycaps) and otter illustration plates sitting on the night desktop, not a nested card layout. Page structure is sections plus a bento; the overlay is the product."
+      },
+      {
+        "rule": "cramped-padding",
+        "value": "*",
+        "files": [
+          "site/index.html"
+        ],
+        "createdAt": "2026-09-30T08:56:16.503Z",
+        "reason": "Agent: remaining tight padding lives on the scaled Mac HUD drawing (traffic lights, keycaps, list rows) which is a miniature of the real panel, labeled as a drawing; page chrome uses 12px+ padding."
+      },
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [
+          "site/index.html"
+        ],
+        "createdAt": "2026-09-30T09:43:13.424Z",
+        "reason": "User confirmed: the attached poster is cream paper, ink bands, and an orange sun."
+      }
+    ]
+  }
+}

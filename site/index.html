@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Jerox. Everything you copy, right where you left it.</title>
+<meta name="description" content="Jerox is a native macOS menu-bar clipboard manager. History opens at the cursor, pins stay on top, and Rephrase pastes back. Requires macOS 15.1 or later.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Jerox. Everything you copy, right where you left it.">
+<meta property="og:description" content="A native macOS clipboard manager. It opens at the cursor, keeps history on your disk, and rewrites text only when you ask.">
+<meta property="og:site_name" content="Jerox">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Jerox. Everything you copy, right where you left it.">
+<meta name="twitter:description" content="A native macOS menu-bar clipboard. History at the cursor. Requires macOS 15.1 or later.">
+<meta name="theme-color" content="#f4ead7">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23161513'/%3E%3Cpath d='M20.8 7.2v12.4c0 3.3-2.3 5.6-5.6 5.6s-5.6-2.3-5.6-5.6' fill='none' stroke='%23f3f1ec' stroke-width='2.4' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..72,500;6..72,600&family=JetBrains+Mono:wght@500&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet">
+<script>
+  document.documentElement.classList.add('js');
+  try {
+    var saved = localStorage.getItem('jerox-theme');
+    if (saved === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+    document.querySelector('meta[name="theme-color"]').content = saved === 'dark' ? '#14160f' : '#f4ead7';
+  } catch (e) {}
+</script>
+<style>
+:root {
+  --bg: #f4ead7;
+  --bg-2: #e7d7b8;
+  --panel: #fbf3e4;
+  --ink: #1a1612;
+  --ink-2: #3a2a22;
+  --muted: #5c5348;
+  --line: #ddcfb4;
+  --line-2: #b7a88e;
+  --sel: #f0e2c8;
+  --accent: #9a3412;
+  --hot: #e45712;
+  --sun: #f0b45a;
+  --shadow: 0 12px 28px rgba(26, 22, 18, .08);
+  --display: "Bodoni Moda", "Iowan Old Style", Palatino, "Palatino Linotype", serif;
+  --sans: "Source Sans 3", "Avenir Next", "Segoe UI", sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --s1: 8px; --s2: 16px; --s3: 24px; --s4: 32px; --s5: 40px;
+  --s6: 48px; --s7: 64px; --s8: 80px; --s9: 96px; --s10: 128px;
+  --ease: cubic-bezier(.22, 1, .36, 1);
+  --measure: 68ch;
+  color-scheme: light;
+  background: var(--bg);
+  color: var(--ink);
+}
+:root[data-theme="dark"] {
+  --bg: #14160f; --bg-2: #1c1f16; --panel: #22261c;
+  --ink: #f4ead7; --ink-2: #fff6e8; --muted: #d5cbb8;
+  --line: #3d4034; --line-2: #5c5748; --sel: #2c3124;
+  --accent: #f0b45a;
+  --shadow: 0 12px 28px rgba(0, 0, 0, .35);
+  color-scheme: dark;
+}
+:root[data-theme="light"] { color-scheme: light; }
+
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 400 1.0625rem/1.6 var(--sans);
+  text-rendering: optimizeLegibility;
+  font-feature-settings: "kern" 1, "liga" 1;
+}
+img, svg { display: block; }
+button, input { font: inherit; color: inherit; }
+a { color: var(--accent); }
+:focus { outline: none; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+::selection { background: var(--accent); color: var(--bg); }
+html { scrollbar-color: var(--line-2) transparent; }
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+.skip {
+  position: absolute; left: var(--s2); top: 0; z-index: 20;
+  transform: translateY(-120%);
+  background: var(--ink); color: var(--bg);
+  padding: var(--s1) var(--s2); border-radius: 8px;
+}
+.skip:focus { transform: none; }
+
+.wrap { width: min(1120px, calc(100% - 48px)); margin-inline: auto; }
+.grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: var(--s3); }
+.s12 { grid-column: span 12; }
+.s8 { grid-column: span 8; }
+.s7 { grid-column: span 7; }
+.s6 { grid-column: span 6; }
+.s5 { grid-column: span 5; }
+.s4 { grid-column: span 4; }
+section { padding-top: var(--s9); scroll-margin-top: 72px; }
+h1, h2, h3 { font-family: var(--display); font-weight: 600; letter-spacing: -.03em; line-height: 1.05; margin: 0; text-wrap: balance; }
+h1 { font-size: clamp(2.6rem, 7vw, 6rem); letter-spacing: -.04em; line-height: .92; text-transform: uppercase; max-width: 12ch; }
+h2 { font-size: clamp(2rem, 4vw, 3.25rem); margin-bottom: var(--s6); }
+h3 { font-size: 1.5rem; letter-spacing: -.02em; }
+p { margin: 0; text-wrap: pretty; }
+.lead { max-width: var(--measure); color: var(--muted); font-size: 1.25rem; line-height: 1.5; }
+.prose { max-width: var(--measure); color: var(--muted); }
+.prose + .prose { margin-top: var(--s2); }
+em { font-style: normal; color: var(--accent); }
+
+.draw { position: relative; text-decoration: none; }
+.draw::after {
+  content: ""; position: absolute; left: 0; bottom: -1px; width: 100%; height: 1px;
+  background: currentColor; transform: scaleX(0); transform-origin: left;
+  transition: transform .35s var(--ease);
+}
+.draw:hover::after { transform: scaleX(1); }
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  height: 48px; padding: 0 22px; border: 0; border-radius: 999px;
+  background: #e07a22; color: #1a1612; text-decoration: none;
+  font-family: var(--sans); font-weight: 600; font-size: .82rem; letter-spacing: .12em; text-transform: uppercase;
+  transition: transform .25s var(--ease), background .25s var(--ease);
+}
+.btn:hover { transform: translateY(-2px); background: #ee8c2a; color: #1a1612; }
+.btn:active { transform: translateY(0); }
+.btn-sm { height: 36px; padding: 0 14px; font-size: .95rem; }
+.note { color: var(--muted); font-size: .9375rem; }
+
+kbd {
+  font-family: var(--mono); font-weight: 500; font-size: .75rem; line-height: 1;
+  min-width: 1.5rem; height: 1.5rem; padding: 0 6px;
+  display: inline-grid; place-items: center;
+  border: 1px solid var(--line); border-radius: 4px;
+  background: var(--panel); color: var(--ink);
+  transition: transform .15s var(--ease), border-color .15s var(--ease);
+}
+.keys { display: inline-flex; gap: 4px; vertical-align: middle; }
+.keys:hover kbd { transform: translateY(1px); border-color: var(--muted); }
+
+.nav {
+  position: sticky; top: 0; z-index: 10;
+  display: grid; grid-template-columns: 1fr auto; grid-template-areas: "mark end" "links links";
+  gap: var(--s1) var(--s2); align-items: center;
+  width: min(1120px, calc(100% - 48px)); margin-inline: auto;
+  padding-block: var(--s2);
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  border-bottom: 1px solid transparent;
+}
+.nav.is-scrolled { border-bottom-color: var(--line); background: var(--bg); }
+.wordmark {
+  grid-area: mark; color: var(--ink); text-decoration: none;
+  font-family: var(--sans); font-weight: 600; font-size: .78rem; letter-spacing: .16em; text-transform: uppercase;
+}
+.nav-links { grid-area: links; display: flex; flex-wrap: wrap; gap: var(--s1) var(--s3); }
+.nav-links a { color: var(--muted); text-decoration: none; font-size: .78rem; letter-spacing: .14em; text-transform: uppercase; font-weight: 600; }
+.nav-links a:hover { color: var(--ink); }
+.nav-end { grid-area: end; display: flex; align-items: center; gap: var(--s1); }
+.theme {
+  width: 36px; height: 36px; display: grid; place-items: center;
+  border: 1px solid var(--line); border-radius: 8px; background: transparent; cursor: pointer;
+  transition: transform .25s var(--ease), border-color .25s var(--ease);
+}
+.theme:hover { transform: translateY(-2px); border-color: var(--muted); }
+.theme svg { width: 16px; height: 16px; }
+.icon-sun { display: none; }
+:root[data-theme="dark"] .icon-moon { display: none; }
+:root[data-theme="dark"] .icon-sun { display: block; }
+:root[data-theme="light"] .icon-sun { display: none; }
+:root[data-theme="light"] .icon-moon { display: block; }
+
+.hero { position: relative; padding: 8vh 0 var(--s8); overflow: hidden; }
+.sky { position: absolute; inset: 0; pointer-events: none; }
+.sun {
+  position: absolute; right: max(4vw, 16px); top: 6vh;
+  width: min(42vw, 460px); aspect-ratio: 1; border-radius: 50%; background: var(--sun);
+}
+.sun::before { content: ""; position: absolute; inset: 16%; border-radius: 50%; background: #f7e2a8; }
+.hero .wrap { position: relative; }
+.hero h1 { margin-bottom: var(--s3); }
+.hero .lead { margin-bottom: var(--s4); }
+.hero-actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s2) var(--s3); }
+.hero figure { margin: var(--s7) 0 0; max-width: 480px; }
+
+.line { display: block; }
+.line, .hero .lead, .hero-actions { animation: rise .7s var(--ease) both; }
+.line:nth-child(2) { animation-delay: .12s; }
+.hero .lead { animation-delay: .24s; }
+.hero-actions { animation-delay: .36s; }
+@keyframes rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+
+.desk { border: 1px solid var(--line); border-radius: 8px; background: var(--bg-2); box-shadow: var(--shadow); }
+.menubar {
+  height: 40px; display: flex; align-items: center; gap: var(--s2);
+  padding: 0 var(--s2); border-bottom: 1px solid var(--line);
+  font-size: .875rem; color: var(--muted);
+}
+.menubar b { color: var(--ink); font-weight: 600; }
+.menubar .sp { flex: 1; }
+.menubar svg { width: 15px; height: 15px; color: var(--ink); }
+.stage { padding: var(--s4); display: flex; flex-direction: column; align-items: center; }
+.doc { display: grid; gap: 10px; min-height: 72px; position: relative; margin-bottom: var(--s3); width: min(100%, 440px); }
+.bar { height: 8px; border-radius: 2px; background: var(--line); display: block; }
+.bar.w1 { width: 72%; } .bar.w2 { width: 54%; } .bar.w3 { width: 33%; }
+.pointer { position: absolute; left: 54%; top: 14px; width: 14px; height: 14px; color: var(--ink); }
+.landed {
+  position: absolute; inset: 0 auto auto 0; margin: 0;
+  font-size: 1rem; color: var(--ink); opacity: 0;
+}
+.panel { width: min(100%, 440px); background: var(--panel); border: 1px solid var(--line); border-radius: 8px; }
+.search {
+  height: 40px; display: flex; align-items: center; gap: var(--s1);
+  padding: 0 12px; border-bottom: 1px solid var(--line); color: var(--muted); font-size: .9375rem;
+}
+.search svg { width: 14px; height: 14px; flex: none; }
+.q { position: relative; flex: 1; height: 1.2em; }
+.ph, .typed { position: absolute; left: 0; top: 0; }
+.typed { color: var(--ink); }
+.count { margin-left: auto; font-family: var(--mono); font-size: .6875rem; letter-spacing: .02em; opacity: 0; }
+.caret { width: 1px; height: 14px; background: var(--accent); opacity: 0; flex: none; }
+.rows { list-style: none; margin: 0; padding: 4px 0; }
+.row {
+  min-height: 44px; display: grid; grid-template-columns: 16px 1fr auto; gap: 10px; align-items: center;
+  padding: 6px 12px; font-size: .9375rem;
+}
+.row > span { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.row.sel { background: var(--sel); }
+.pin { width: 14px; height: 14px; color: var(--accent); opacity: 0; }
+.row.top .pin { opacity: 1; }
+.swatch { width: 14px; height: 14px; border-radius: 3px; background: var(--accent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ink) 18%, transparent); flex: none; }
+.kind { font-family: var(--mono); font-size: .6875rem; color: var(--muted); }
+code, pre { font-family: var(--mono); font-size: .8125rem; }
+pre { margin: 0; line-height: 1.45; color: var(--muted); white-space: pre; }
+.k, .kw { color: var(--accent); }
+figcaption { margin-top: 12px; color: var(--muted); font-size: .9375rem; }
+
+.js .hero-mock .panel { opacity: 0; transform: translateY(8px); }
+.js .hero-mock.is-open .panel { opacity: 1; transform: none; transition: opacity .6s var(--ease), transform .6s var(--ease); }
+.js .hero-mock .row { opacity: 0; transform: translateY(8px); }
+.js .hero-mock .row.in { opacity: 1; transform: none; transition: opacity .5s var(--ease), transform .5s var(--ease); }
+.hero-mock.is-typing .ph, .is-search .ph { opacity: 0; }
+.how-mock .typed { opacity: 0; }
+.how-mock.is-search .typed { opacity: 1; }
+.is-search .count, .is-typing .caret, .is-search .caret { opacity: 1; }
+.is-search .row:not(.match) { opacity: 0; }
+.is-paste .bar { opacity: .2; }
+.is-paste .landed { opacity: 1; }
+.is-paste .row.sel, .is-search .row.sel, .is-pin .row.sel { background: transparent; }
+.is-paste .row.match, .is-search .row.match, .is-pin .row.match { background: var(--sel); }
+.is-pin .row.match .pin { opacity: 1; }
+.how-mock .row { transition: transform .45s var(--ease), background-color .4s var(--ease), opacity .4s var(--ease); }
+.how-mock.is-pin .row.match { transform: translateY(-44px); }
+.how-mock.is-pin .row.top { transform: translateY(44px); }
+.caret.on { animation: blink 1.1s steps(1) infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+
+.principles { padding-top: var(--s10); }
+.principles h2 { margin-bottom: var(--s2); }
+.principles h3::before {
+  content: ""; display: block; width: 92px; height: 92px; margin-bottom: var(--s2);
+  border-radius: 50%; background: var(--sun);
+}
+.principles .s4 { padding-top: var(--s4); border-top: 1px solid var(--line); }
+.principles p { margin-top: var(--s2); color: var(--muted); max-width: 36ch; }
+
+.how-grid { display: grid; gap: var(--s6); align-items: start; }
+.steps { list-style: none; margin: 0; padding: 0; }
+.step h3 { color: var(--muted); transition: color .4s var(--ease); }
+.step p { margin-top: var(--s2); color: var(--muted); max-width: 42ch; }
+.step.is-active h3 { color: var(--ink); }
+.step .keys { margin-top: var(--s2); }
+
+.sheet { width: 100%; border-collapse: collapse; }
+.sheet th, .sheet td {
+  text-align: left; vertical-align: baseline; padding: 20px 16px 20px 0;
+  border-bottom: 1px solid var(--line); font-weight: 400;
+}
+.sheet th {
+  width: 22%; font-family: var(--display); font-weight: 600; letter-spacing: -.02em;
+  font-size: 1.125rem; color: var(--ink);
+}
+.sheet td { color: var(--muted); }
+.sheet td:last-child { padding-right: 0; }
+
+.re-demo { border: 1px solid var(--line); border-radius: 8px; padding: var(--s3); }
+.re-label {
+  font-family: var(--mono); font-size: .75rem; letter-spacing: .04em;
+  color: var(--muted); margin-bottom: var(--s1);
+}
+.before, .out {
+  padding-bottom: var(--s3); margin-bottom: var(--s3); border-bottom: 1px solid var(--line);
+}
+.before p, .out p { max-width: 58ch; }
+.tones { display: flex; flex-wrap: wrap; gap: var(--s1) var(--s3); margin-bottom: var(--s3); }
+.tones button {
+  padding: 0 0 4px; border: 0; background: none; cursor: pointer;
+  color: var(--muted); position: relative;
+}
+.tones button[aria-selected="true"] { color: var(--ink); }
+.tones button::after {
+  content: ""; position: absolute; left: 0; bottom: 0; width: 100%; height: 1px;
+  background: currentColor; transform: scaleX(0); transform-origin: left;
+  transition: transform .35s var(--ease);
+}
+.tones button[aria-selected="true"]::after, .tones button:hover::after { transform: scaleX(1); }
+.outs { display: grid; }
+.out { grid-area: 1 / 1; opacity: 0; border-bottom: 0; margin: 0; padding: 0; }
+.out.is-on { opacity: 1; transition: opacity .45s var(--ease); }
+.re-note { margin-top: var(--s3); color: var(--muted); max-width: var(--measure); }
+
+.focused .miss { list-style: none; margin: var(--s4) 0 0; padding: 0; max-width: var(--measure); }
+.focused li { padding: 16px 0; border-top: 1px solid var(--line); color: var(--ink); }
+.focused li:last-child { border-bottom: 1px solid var(--line); }
+
+.faq-item { border-top: 1px solid var(--line); }
+.faq-item:last-child { border-bottom: 1px solid var(--line); }
+.faq-item button {
+  width: 100%; display: flex; justify-content: space-between; align-items: center; gap: var(--s3);
+  padding: 20px 0; border: 0; background: none; cursor: pointer; text-align: left;
+  font-family: var(--display); font-weight: 600; font-size: 1.25rem; letter-spacing: -.02em;
+}
+.plus { width: 12px; height: 12px; position: relative; flex: none; }
+.plus::before, .plus::after {
+  content: ""; position: absolute; left: 0; top: 5px; width: 12px; height: 1px; background: currentColor;
+}
+.plus::after { transform: rotate(90deg); transition: transform .35s var(--ease); }
+.faq-item.is-open .plus::after { transform: rotate(0deg); }
+.faq-a { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .45s var(--ease); }
+.faq-item.is-open .faq-a { grid-template-rows: 1fr; }
+.faq-a > div { overflow: hidden; }
+.faq-a p { padding-bottom: 20px; max-width: var(--measure); color: var(--muted); }
+
+.cta { padding-bottom: var(--s10); }
+.cta h2 { font-size: clamp(2.5rem, 5vw, 4.5rem); max-width: 14ch; margin-bottom: var(--s4); }
+.cta .hero-actions { animation: none; }
+
+.band {
+  background: #14160f; color: #f4ead7;
+  --bg: #14160f; --bg-2: #1c1f16; --panel: #22261c;
+  --ink: #f4ead7; --ink-2: #fff6e8; --muted: #d5cbb8;
+  --line: #3d4034; --line-2: #5c5748; --sel: #2c3124; --accent: #f0b45a;
+}
+.how.wrap, .focused.wrap, .cta.wrap {
+  width: 100%; max-width: none;
+  padding-inline: max(24px, calc((100% - 1120px) / 2));
+  padding-bottom: var(--s10);
+}
+.footer { border-top: 0; padding-block: var(--s4); background: #14160f; }
+.footer .wrap, .footer a { color: #d5cbb8; }
+.footer .wrap { display: flex; flex-wrap: wrap; gap: var(--s2) var(--s4); justify-content: space-between; font-size: .9375rem; }
+
+.js .rise, .js .sheet .stag th, .js .sheet .stag td {
+  opacity: 0; transform: translateY(12px);
+  transition: opacity .7s var(--ease), transform .7s var(--ease);
+}
+.js .rise.in, .js .sheet .stag.in th, .js .sheet .stag.in td { opacity: 1; transform: none; }
+
+@media (min-width: 800px) {
+  .wrap, .nav { width: min(1120px, calc(100% - 80px)); }
+  .nav { grid-template-columns: auto 1fr auto; grid-template-areas: "mark links end"; padding-block: var(--s2); }
+  .nav-links { justify-content: center; }
+  section { padding-top: var(--s10); }
+  .how-grid { grid-template-columns: 5fr 7fr; gap: var(--s7); }
+  .how-stage { position: sticky; top: 88px; }
+  .step { min-height: 52vh; }
+  .step:last-child { min-height: 36vh; }
+}
+@media (max-width: 520px) {
+  h1 { font-size: 2.4rem; }
+  .sun { width: 180px; top: 2vh; }
+}
+@media (max-width: 799px) {
+  .s8, .s7, .s6, .s5, .s4 { grid-column: 1 / -1; }
+  .principles .s4 + .s4 { margin-top: var(--s4); }
+  .principles p { max-width: var(--measure); }
+  .stage { padding: var(--s2); }
+  .sheet, .sheet tbody, .sheet tr, .sheet th, .sheet td { display: block; width: auto; }
+  .sheet tr { padding-block: 8px; border-bottom: 1px solid var(--line); }
+  .sheet th, .sheet td { border-bottom: 0; padding: 4px 0; }
+  .how-grid { display: flex; flex-direction: column; }
+  .how-stage { order: -1; margin-bottom: var(--s4); }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .line, .hero .lead, .hero-actions { animation: fade .4s linear both; }
+  @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+  .js .rise, .js .sheet .stag th, .js .sheet .stag td { opacity: 0; transform: none; transition: opacity .4s linear; }
+  .js .rise.in, .js .sheet .stag.in th, .js .sheet .stag.in td { opacity: 1; }
+  .js .hero-mock .panel, .js .hero-mock .row { opacity: 1; transform: none; }
+  .how-mock .row, .btn, .theme, .draw::after, .tones button::after, .faq-a, .plus::after, .out, .step h3 {
+    transition: none;
+  }
+  .caret.on { animation: none; }
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#content">Skip to content</a>
+<header class="nav" id="nav">
+  <a class="wordmark" href="#top">Jerox</a>
+  <nav class="nav-links" aria-label="Primary">
+    <a class="draw" href="#features">Features</a>
+    <a class="draw" href="#rephrase">Rephrase</a>
+    <a class="draw" href="#shortcuts">Shortcuts</a>
+    <a class="draw" href="#faq">FAQ</a>
+  </nav>
+  <div class="nav-end">
+    <button class="theme" type="button" id="theme" aria-label="Switch to dark theme">
+      <svg class="icon-moon" viewBox="0 0 16 16" aria-hidden="true"><path d="M9.2 2.2a5.2 5.2 0 1 0 4.6 7.6A4.4 4.4 0 0 1 9.2 2.2z" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+      <svg class="icon-sun" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="2.4" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M8 1.8v1.6M8 12.6v1.6M1.8 8h1.6M12.6 8h1.6M3.5 3.5l1.1 1.1M11.4 11.4l1.1 1.1M12.5 3.5l-1.1 1.1M4.6 11.4 3.5 12.5" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+    </button>
+    <a class="btn btn-sm" href="#download">Download</a>
+  </div>
+</header>
+
+<main id="content">
+  <section class="hero" id="top" aria-labelledby="hero-title">
+    <div class="sky" aria-hidden="true"><span class="sun"></span></div>
+    <div class="wrap">
+    <h1 id="hero-title">
+      <span class="line">Everything you copy.</span>
+      <span class="line">Right where you <em>left</em> it.</span>
+    </h1>
+    <p class="lead">A menu-bar clipboard for macOS. It opens at the cursor.</p>
+    <div class="hero-actions">
+      <a class="btn" href="#download">Download for macOS</a>
+      <p class="note">Requires macOS 15.1 or later.</p>
+    </div>
+    <figure>
+      <div class="desk hero-mock" id="heroMock">
+        <div class="menubar" aria-hidden="true">
+          <b>Notes</b><span>File</span><span>Edit</span><span class="sp"></span>
+          <svg viewBox="0 0 16 16"><rect x="3.2" y="3.2" width="9.6" height="10.2" rx="1.4" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M6 3.1h4V4.8H6z" fill="currentColor"/></svg>
+        </div>
+        <div class="stage" aria-hidden="true">
+          <div class="doc">
+            <span class="bar w1"></span><span class="bar w2"></span><span class="bar w3"></span>
+            <svg class="pointer" viewBox="0 0 16 16"><path d="M3 2.2 12.2 8.2 7.4 9.2 5.6 13.6z" fill="currentColor"/></svg>
+          </div>
+          <div class="panel">
+            <div class="search">
+              <svg viewBox="0 0 16 16"><circle cx="7" cy="7" r="4.25" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="m10.2 10.2 2.8 2.8" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+              <span class="q"><span class="ph">Search</span><span class="typed" id="heroTyped"></span></span>
+              <span class="count">1 match</span>
+              <i class="caret" id="heroCaret"></i>
+            </div>
+            <ul class="rows">
+              <li class="row top sel"><svg class="pin" viewBox="0 0 16 16"><path d="M6 2h4v4l2 2v1H4V8l2-2zM8 9v5" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" stroke-linecap="round"/></svg><span>Studio door code: 4821</span><span class="kind">1</span></li>
+              <li class="row match"><svg class="pin" viewBox="0 0 16 16"><path d="M6 2h4v4l2 2v1H4V8l2-2zM8 9v5" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" stroke-linecap="round"/></svg><span>Invoice 4021 is due Friday.</span><span class="kind">2</span></li>
+              <li class="row"><svg class="pin" viewBox="0 0 16 16"><path d="M6 2h4v4l2 2v1H4V8l2-2zM8 9v5" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" stroke-linecap="round"/></svg><span>jxngrx.com</span><span class="kind">3</span></li>
+              <li class="row"><svg class="pin" viewBox="0 0 16 16"><path d="M6 2h4v4l2 2v1H4V8l2-2zM8 9v5" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" stroke-linecap="round"/></svg><span><i class="swatch"></i> #1D4E89</span><span class="kind">4</span></li>
+              <li class="row"><svg class="pin" viewBox="0 0 16 16"><path d="M6 2h4v4l2 2v1H4V8l2-2zM8 9v5" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" stroke-linecap="round"/></svg><span><code><span class="kw">let</span> row = items[0]</code></span><span class="kind">5</span></li>
+              <li class="row"><svg class="pin" viewBox="0 0 16 16"><path d="M6 2h4v4l2 2v1H4V8l2-2zM8 9v5" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" stroke-linecap="round"/></svg><pre>{
+  <span class="k">"due"</span>: "Friday"
+}</pre><span class="kind">6</span></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <figcaption>A drawing of the list. Not a screenshot.</figcaption>
+    </figure>
+    </div>
+  </section>
+
+  <section class="principles wrap" id="features" aria-labelledby="feat-title">
+    <h2 class="s12 rise" id="feat-title">Three things, and then it gets out of the way.</h2>
+    <div class="grid">
+      <div class="s4 rise">
+        <h3>Native</h3>
+        <p>Built with Swift, SwiftUI, and AppKit. It requires macOS 15.1 or later. There is no Dock icon while you work.</p>
+      </div>
+      <div class="s4 rise">
+        <h3>Quiet</h3>
+        <p>Open it with <span class="keys"><kbd>⌃</kbd><kbd>⌥</kbd><kbd>⌘</kbd><kbd>V</kbd></span>, or from the menu bar. Escape or a click outside closes it and returns you to your app.</p>
+      </div>
+      <div class="s4 rise">
+        <h3>Yours</h3>
+        <p>History stays on disk, on your Mac. Rephrase uses a key you keep in the Keychain. Nothing is sent until you ask.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="how wrap band" id="how" aria-labelledby="how-title">
+    <h2 class="rise" id="how-title">How it works</h2>
+    <div class="how-grid">
+      <ol class="steps">
+        <li class="step is-active" data-state="open">
+          <h3>Open</h3>
+          <p>The list opens at the cursor, newest first. Press the shortcut again, press Escape, or click outside to dismiss it.</p>
+          <p class="keys"><kbd>⌃</kbd><kbd>⌥</kbd><kbd>⌘</kbd><kbd>V</kbd></p>
+        </li>
+        <li class="step" data-state="search">
+          <h3>Search</h3>
+          <p>Type a phrase. An exact match ranks above a looser, character-by-character one.</p>
+        </li>
+        <li class="step" data-state="paste">
+          <h3>Paste</h3>
+          <p>Return pastes the row in its original form. Shift-Return pastes plain text. The keys 1 to 9 paste a row directly. Arrow keys move the selection.</p>
+          <p><span class="keys"><kbd>↩</kbd></span> <span class="keys"><kbd>⇧</kbd><kbd>↩</kbd></span></p>
+        </li>
+        <li class="step" data-state="pin">
+          <h3>Pin</h3>
+          <p>Pin a row and it stays on top. Pins are exempt from your history limits, until you unpin them.</p>
+          <p class="keys"><kbd>⌘</kbd><kbd>P</kbd></p>
+        </li>
+      </ol>
+      <div class="how-stage">
+        <div class="desk how-mock is-open" id="howMock" data-state="open" aria-hidden="true">
+          <div class="menubar"><b>Notes</b><span>File</span><span>Edit</span><span class="sp"></span>
+            <svg viewBox="0 0 16 16"><rect x="3.2" y="3.2" width="9.6" height="10.2" rx="1.4" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M6 3.1h4V4.8H6z" fill="currentColor"/></svg>
+          </div>
+          <div class="stage">
+            <div class="doc">
+              <span class="bar w1"></span><span class="bar w2"></span><span class="bar w3"></span>
+              <p class="landed">Invoice 4021 is due Friday.</p>
+            </div>
+            <div class="panel">
+              <div class="search">
+                <svg viewBox="0 0 16 16"><circle cx="7" cy="7" r="4.25" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="m10.2 10.2 2.8 2.8" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+                <span class="q"><span class="ph">Search</span><span class="typed">invoice</span></span>
+                <span class="count">1 match</span>
+              </div>
+              <ul class="rows">
+                <li class="row top sel"><svg class="pin" viewBox="0 0 16 16"><path d="M6 2h4v4l2 2v1H4V8l2-2zM8 9v5" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" stroke-linecap="round"/></svg><span>Studio door code: 4821</span><span class="kind">1</span></li>
+                <li class="row match"><svg class="pin" viewBox="0 0 16 16"><path d="M6 2h4v4l2 2v1H4V8l2-2zM8 9v5" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" stroke-linecap="round"/></svg><span>Invoice 4021 is due Friday.</span><span class="kind">2</span></li>
+                <li class="row"><svg class="pin" viewBox="0 0 16 16"><path d="M6 2h4v4l2 2v1H4V8l2-2zM8 9v5" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" stroke-linecap="round"/></svg><span>jxngrx.com</span><span class="kind">3</span></li>
+                <li class="row"><svg class="pin" viewBox="0 0 16 16"><path d="M6 2h4v4l2 2v1H4V8l2-2zM8 9v5" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" stroke-linecap="round"/></svg><span><i class="swatch"></i> #1D4E89</span><span class="kind">4</span></li>
+                <li class="row"><svg class="pin" viewBox="0 0 16 16"><path d="M6 2h4v4l2 2v1H4V8l2-2zM8 9v5" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" stroke-linecap="round"/></svg><code><span class="kw">let</span> row = items[0]</code><span class="kind">5</span></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="wrap" id="captures" aria-labelledby="cap-title">
+    <h2 class="rise" id="cap-title">What it captures</h2>
+    <p class="lead rise">Copying the same thing again moves that row to the top, instead of adding a duplicate.</p>
+    <table class="sheet" data-stagger style="margin-top: var(--s6)">
+      <caption class="sr-only">Clipboard types Jerox keeps</caption>
+      <tbody>
+        <tr class="stag"><th scope="row">Text</th><td>Newest first. Return pastes it. The keys 1 to 9 paste a row directly.</td></tr>
+        <tr class="stag"><th scope="row">Rich text</th><td>Formatting is preserved on paste. Shift-Return pastes the same row as plain text.</td></tr>
+        <tr class="stag"><th scope="row">Images</th><td>Shown with a preview. Screenshots saved to the Desktop are included.</td></tr>
+        <tr class="stag"><th scope="row">Files</th><td>Kept so you can paste them back into the app you were using.</td></tr>
+        <tr class="stag"><th scope="row">Links</th><td>A web address is kept even when the copied text is a page title.</td></tr>
+        <tr class="stag"><th scope="row">Colors</th><td>Hex and rgb values, stored as a color and pasted as a color.</td></tr>
+        <tr class="stag"><th scope="row">Code</th><td>Detected from the text, with light syntax highlighting.</td></tr>
+        <tr class="stag"><th scope="row">JSON</th><td>A whole object or array is pretty-printed as it is saved.</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="wrap" id="rephrase" aria-labelledby="re-title">
+    <div class="grid">
+      <div class="s5">
+        <h2 class="rise" id="re-title">Rephrase</h2>
+        <p class="prose rise">It rewrites text so it sounds like a person wrote it. Three tones: Friendly chat, Professional chat, and Professional mail.</p>
+        <p class="prose rise">In the list, it rewrites the selected row. Anywhere else, select text and press <span class="keys"><kbd>⌘</kbd><kbd>⇧</kbd><kbd>R</kbd></span>. The result is pasted back in place.</p>
+      </div>
+      <div class="s7 rise">
+        <div class="re-demo">
+          <p class="re-label">Before</p>
+          <div class="before"><p>hey so about the thing u sent yesterday. i looked and its kinda broken. the export dies on big files. can u take a look before tmrw, client demo is at 10</p></div>
+          <div class="tones" role="tablist" aria-label="Rephrase tone">
+            <button type="button" role="tab" id="tab-friendly" aria-selected="true" aria-controls="tone-friendly">Friendly chat</button>
+            <button type="button" role="tab" id="tab-prochat" aria-selected="false" aria-controls="tone-prochat" tabindex="-1">Professional chat</button>
+            <button type="button" role="tab" id="tab-promail" aria-selected="false" aria-controls="tone-promail" tabindex="-1">Professional mail</button>
+          </div>
+          <div class="outs">
+            <div class="out is-on" role="tabpanel" id="tone-friendly" aria-labelledby="tab-friendly"><p>Hey. I looked at what you sent yesterday, and the export seems broken. It dies on big files. Could you take a look before tomorrow? The client demo is at 10.</p></div>
+            <div class="out" role="tabpanel" id="tone-prochat" aria-labelledby="tab-prochat" hidden><p>Hi. I reviewed what you sent yesterday. The export fails on large files. Could you look into it before tomorrow? The client demo is at 10.</p></div>
+            <div class="out" role="tabpanel" id="tone-promail" aria-labelledby="tab-promail" hidden><p>Hi,<br><br>I reviewed the file you sent yesterday. The export fails on large files. Could you look into this before tomorrow? We have a client demo at 10.<br><br>Thanks,<br>Sam</p></div>
+          </div>
+        </div>
+        <p class="re-note">Uses your own OpenRouter key, stored in the Keychain. Nothing runs until you ask.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="wrap" id="shortcuts" aria-labelledby="sc-title">
+    <h2 class="rise" id="sc-title">Shortcuts</h2>
+    <p class="lead rise">These are the defaults. Each one can be changed in Settings. Show Jerox and Rephrase need a modifier.</p>
+    <table class="sheet" data-stagger style="margin-top: var(--s6)">
+      <caption class="sr-only">Default keyboard shortcuts</caption>
+      <thead class="sr-only"><tr><th>Action</th><th>Keys</th><th>What it does</th></tr></thead>
+      <tbody>
+        <tr class="stag"><th scope="row">Show Jerox</th><td><span class="keys"><kbd>⌃</kbd><kbd>⌥</kbd><kbd>⌘</kbd><kbd>V</kbd></span></td><td>Opens the list at the cursor. Press again, Escape, or click outside to close it.</td></tr>
+        <tr class="stag"><th scope="row">Paste</th><td><span class="keys"><kbd>↩</kbd></span></td><td>Pastes the selected row in its original form.</td></tr>
+        <tr class="stag"><th scope="row">Paste plain</th><td><span class="keys"><kbd>⇧</kbd><kbd>↩</kbd></span></td><td>Pastes the same row as plain text.</td></tr>
+        <tr class="stag"><th scope="row">Paste a row</th><td><span class="keys"><kbd>1</kbd></span> to <span class="keys"><kbd>9</kbd></span></td><td>Pastes that row directly. Any key from 1 to 9.</td></tr>
+        <tr class="stag"><th scope="row">Pin</th><td><span class="keys"><kbd>⌘</kbd><kbd>P</kbd></span></td><td>Pins or unpins the selected row. Pins stay on top.</td></tr>
+        <tr class="stag"><th scope="row">Rephrase</th><td><span class="keys"><kbd>⌘</kbd><kbd>⇧</kbd><kbd>R</kbd></span></td><td>Rewrites the selected row, or selected text in another app, and pastes it back.</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="focused wrap band" id="focused" aria-labelledby="fd-title">
+    <h2 class="rise" id="fd-title">Focused by design</h2>
+    <p class="prose rise">Jerox keeps the thing you use many times a day small. The list below is a choice, not a backlog.</p>
+    <ul class="miss">
+      <li class="rise">No OCR.</li>
+      <li class="rise">No snippets or templates.</li>
+      <li class="rise">No per-app exclusions.</li>
+      <li class="rise">No clipboard stack.</li>
+    </ul>
+  </section>
+
+  <section class="wrap" id="faq" aria-labelledby="faq-title">
+    <h2 class="rise" id="faq-title">FAQ</h2>
+    <div class="faq-list">
+      <div class="faq-item">
+        <h3><button type="button" id="q1" aria-expanded="false" aria-controls="a1">Where is history stored? <span class="plus" aria-hidden="true"></span></button></h3>
+        <div class="faq-a" id="a1" role="region" aria-labelledby="q1" inert><div><p>On your Mac, on disk. It is not synced, and it is not sent anywhere. Nothing already on the clipboard at launch is imported.</p></div></div>
+      </div>
+      <div class="faq-item">
+        <h3><button type="button" id="q2" aria-expanded="false" aria-controls="a2">Does it need the internet? <span class="plus" aria-hidden="true"></span></button></h3>
+        <div class="faq-a" id="a2" role="region" aria-labelledby="q2" inert><div><p>No. The only network request is a Rephrase you start, through your own OpenRouter key. The key is stored in the Keychain.</p></div></div>
+      </div>
+      <div class="faq-item">
+        <h3><button type="button" id="q3" aria-expanded="false" aria-controls="a3">Which version of macOS? <span class="plus" aria-hidden="true"></span></button></h3>
+        <div class="faq-a" id="a3" role="region" aria-labelledby="q3" inert><div><p>macOS 15.1 or later. Jerox is a native app, built with Swift, SwiftUI, and AppKit.</p></div></div>
+      </div>
+      <div class="faq-item">
+        <h3><button type="button" id="q4" aria-expanded="false" aria-controls="a4">Can I change the shortcuts? <span class="plus" aria-hidden="true"></span></button></h3>
+        <div class="faq-a" id="a4" role="region" aria-labelledby="q4" inert><div><p>Yes. Show Jerox, Paste, Paste plain, Pin, and Rephrase can all be changed in Settings. Show Jerox and Rephrase need a modifier. Escape cancels an edit.</p></div></div>
+      </div>
+      <div class="faq-item">
+        <h3><button type="button" id="q5" aria-expanded="false" aria-controls="a5">How long is history kept? <span class="plus" aria-hidden="true"></span></button></h3>
+        <div class="faq-a" id="a5" role="region" aria-labelledby="q5" inert><div><p>You set both limits: up to 5,000 items, and up to 3,650 days. Pins are exempt from both.</p></div></div>
+      </div>
+      <div class="faq-item">
+        <h3><button type="button" id="q6" aria-expanded="false" aria-controls="a6">What does Rephrase need? <span class="plus" aria-hidden="true"></span></button></h3>
+        <div class="faq-a" id="a6" role="region" aria-labelledby="q6" inert><div><p>Your OpenRouter key. To paste a rewrite back into another app, macOS also needs Accessibility access. If that access is missing, the rewrite still goes to the clipboard, and macOS asks once per launch.</p></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta wrap band" id="download" aria-labelledby="cta-title">
+    <h2 class="rise" id="cta-title">Right where you left it.</h2>
+    <div class="hero-actions rise">
+      <a class="btn" href="#download">Download for macOS</a>
+      <p class="note">Requires macOS 15.1 or later.</p>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="wrap">
+    <span>Jerox</span>
+    <span>Developed by <a class="draw" href="https://jxngrx.com" rel="noopener">jxngrx.com</a></span>
+    <span>© 2026 Jerox</span>
+  </div>
+</footer>
+
+<script>
+(() => {
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const root = document.documentElement;
+
+  const themeBtn = document.getElementById('theme');
+  const themeMeta = document.querySelector('meta[name="theme-color"]');
+  const isDark = () => root.getAttribute('data-theme') === 'dark';
+  const paintTheme = () => {
+    const dark = isDark();
+    themeMeta.content = dark ? '#14160f' : '#f4ead7';
+    themeBtn.setAttribute('aria-label', dark ? 'Switch to light theme' : 'Switch to dark theme');
+    themeBtn.setAttribute('aria-pressed', dark ? 'true' : 'false');
+  };
+  paintTheme();
+  themeBtn.addEventListener('click', () => {
+    root.setAttribute('data-theme', isDark() ? 'light' : 'dark');
+    try { localStorage.setItem('jerox-theme', root.getAttribute('data-theme')); } catch (e) {}
+    paintTheme();
+  });
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+    if (!root.getAttribute('data-theme')) paintTheme();
+  });
+
+  const nav = document.getElementById('nav');
+  const onScroll = () => nav.classList.toggle('is-scrolled', scrollY > 8);
+  addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+
+  const mark = (el) => el.classList.add('in');
+  if (reduce) {
+    document.querySelectorAll('.rise, .stag').forEach(mark);
+  } else {
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        mark(entry.target);
+        io.unobserve(entry.target);
+      });
+    }, { threshold: 0.15, rootMargin: '0px 0px -8% 0px' });
+    document.querySelectorAll('.rise').forEach((el) => io.observe(el));
+    document.querySelectorAll('[data-stagger]').forEach((group) => {
+      const rows = [...group.querySelectorAll('.stag')];
+      const once = new IntersectionObserver((entries) => {
+        if (!entries.some((e) => e.isIntersecting)) return;
+        once.disconnect();
+        rows.forEach((row, i) => setTimeout(() => mark(row), i * 70));
+      }, { threshold: 0.2 });
+      once.observe(group);
+    });
+  }
+
+  const hero = document.getElementById('heroMock');
+  const typed = document.getElementById('heroTyped');
+  const caret = document.getElementById('heroCaret');
+  if (!reduce) {
+    const rows = [...hero.querySelectorAll('.row')];
+    const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+    (async () => {
+      await wait(500);
+      hero.classList.add('is-open');
+      rows.forEach((row, i) => setTimeout(() => row.classList.add('in'), 280 + i * 70));
+      await wait(280 + rows.length * 70 + 700);
+      hero.classList.add('is-typing');
+      caret.classList.add('on');
+      const word = 'invoice';
+      for (let i = 1; i <= word.length; i++) {
+        typed.textContent = word.slice(0, i);
+        await wait(80);
+      }
+      hero.classList.add('is-search');
+      await wait(1600);
+      typed.textContent = '';
+      hero.classList.remove('is-search', 'is-typing');
+      caret.classList.remove('on');
+    })();
+  }
+
+  const howMock = document.getElementById('howMock');
+  const steps = [...document.querySelectorAll('.step')];
+  const setStep = (step) => {
+    howMock.classList.remove('is-search', 'is-paste', 'is-pin');
+    if (step.dataset.state !== 'open') howMock.classList.add('is-' + step.dataset.state);
+    steps.forEach((s) => s.classList.toggle('is-active', s === step));
+  };
+  if ('IntersectionObserver' in window) {
+    const stepIO = new IntersectionObserver((entries) => {
+      const hit = entries.filter((e) => e.isIntersecting).sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+      if (hit) setStep(hit.target);
+    }, { rootMargin: '-45% 0px -45% 0px', threshold: [0, 0.25, 0.6] });
+    steps.forEach((s) => stepIO.observe(s));
+  }
+
+  document.querySelectorAll('.faq-item').forEach((item) => {
+    const btn = item.querySelector('button');
+    const panel = item.querySelector('.faq-a');
+    btn.addEventListener('click', () => {
+      const open = btn.getAttribute('aria-expanded') !== 'true';
+      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      item.classList.toggle('is-open', open);
+      if (open) panel.removeAttribute('inert');
+      else panel.setAttribute('inert', '');
+    });
+  });
+
+  const tabs = [...document.querySelectorAll('.tones button')];
+  const panels = [...document.querySelectorAll('.out')];
+  const selectTab = (tab) => {
+    tabs.forEach((t) => {
+      const on = t === tab;
+      t.setAttribute('aria-selected', on ? 'true' : 'false');
+      t.tabIndex = on ? 0 : -1;
+    });
+    panels.forEach((p) => {
+      const on = p.id === tab.getAttribute('aria-controls');
+      p.classList.toggle('is-on', on);
+      if (on) p.removeAttribute('hidden');
+      else p.setAttribute('hidden', '');
+    });
+  };
+  tabs.forEach((tab) => {
+    tab.addEventListener('click', () => selectTab(tab));
+    tab.addEventListener('keydown', (e) => {
+      const i = tabs.indexOf(tab);
+      if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+        e.preventDefault();
+        const next = tabs[(i + (e.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length];
+        selectTab(next);
+        next.focus();
+      }
+    });
+  });
+})();
+</script>
+</body>
+</html>

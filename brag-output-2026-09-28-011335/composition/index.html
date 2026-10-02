@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1920, height=1080">
+    <title>Jerox</title>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script src="audio-data.js"></script>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body {
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background: #0e1114;
+      }
+      #root {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        font-family: system-ui, sans-serif;
+        color: #f2f4f5;
+      }
+      .clip { position: absolute; inset: 0; }
+      .fill { position: absolute; inset: 0; background: #0e1114; }
+      .glow {
+        position: absolute;
+        width: 920px;
+        height: 920px;
+        left: -180px;
+        top: 220px;
+        background: radial-gradient(circle, rgba(46, 196, 214, 0.16) 0%, rgba(14, 17, 20, 0) 68%);
+      }
+      .grain {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        opacity: 0.05;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E");
+      }
+      .menubar {
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 34px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 16px;
+        background: rgba(18, 21, 24, 0.86);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        font-size: 13px;
+        font-weight: 600;
+        color: #e8edf0;
+      }
+      .menubar-left, .menubar-right { display: flex; align-items: center; gap: 14px; }
+      .status-otter { width: 18px; height: 18px; display: block; }
+      .notes {
+        position: absolute;
+        left: 168px;
+        top: 148px;
+        width: 760px;
+        height: 620px;
+        background: #1a1e22;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 12px;
+        box-shadow: 0 28px 80px rgba(0, 0, 0, 0.45);
+        overflow: hidden;
+      }
+      .notes-bar {
+        height: 42px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 0 14px;
+        background: #22272c;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      }
+      .dot { width: 12px; height: 12px; border-radius: 50%; }
+      .dot.r { background: #ff5f57; }
+      .dot.y { background: #febc2e; }
+      .dot.g { background: #28c840; }
+      .notes-title { margin-left: 10px; font-size: 13px; font-weight: 600; color: #c5cdd4; }
+      .notes-body {
+        padding: 36px 40px;
+        font-size: 22px;
+        line-height: 1.5;
+        font-weight: 400;
+        color: #e4e9ed;
+      }
+      .caret {
+        display: inline-block;
+        width: 2px;
+        height: 22px;
+        background: #2ec4d6;
+        vertical-align: -3px;
+        margin-left: 1px;
+      }
+      .pasted-line {
+        margin-top: 10px;
+        font-family: monospace;
+        font-size: 20px;
+        color: #c995fc;
+      }
+      .sel {
+        background: rgba(10, 132, 255, 0.34);
+        border-radius: 3px;
+        padding: 0 2px;
+      }
+      .picker {
+        position: absolute;
+        left: 690px;
+        top: 428px;
+        width: 480px;
+        height: 510px;
+        opacity: 0;
+      }
+      .picker-shell {
+        width: 100%;
+        height: 100%;
+        background: #2c3036;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 12px;
+        box-shadow: 0 22px 60px rgba(0, 0, 0, 0.5);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+      .search {
+        margin: 14px 14px 6px;
+        height: 34px;
+        border-radius: 8px;
+        background: #1c2024;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: #c5cdd4;
+        font-size: 16px;
+        display: flex;
+        align-items: center;
+        padding: 0 12px;
+      }
+      .rows { flex: 1; padding: 8px; display: flex; flex-direction: column; gap: 3px; }
+      .row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-height: 40px;
+        padding: 6px 10px;
+        border-radius: 6px;
+      }
+      .row.on { background: rgba(10, 132, 255, 0.22); }
+      .num {
+        width: 18px;
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+        font-size: 14px;
+        color: #c5cdd4;
+      }
+      .title { flex: 1; font-size: 16px; color: #f2f4f5; white-space: nowrap; overflow: hidden; }
+      .kw { color: #c995fc; }
+      .swatch {
+        width: 14px; height: 14px; border-radius: 3px;
+        background: #2ec4d6; display: inline-block; margin-right: 6px; vertical-align: -2px;
+      }
+      .thumb {
+        width: 22px; height: 22px; border-radius: 4px;
+        background: #4a5158; display: inline-block; margin-right: 6px; vertical-align: -5px;
+      }
+      .plain { font-size: 13px; color: #c5cdd4; }
+      .ai-bar { display: flex; align-items: center; gap: 10px; padding: 8px 14px 6px; }
+      .ai-btn {
+        font-size: 14px; color: #e8edf0; background: #3a4048;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 7px; padding: 5px 10px;
+      }
+      .rephrase-wrap { position: relative; }
+      .rephrase-menu {
+        position: absolute; left: 0; bottom: 36px; width: 210px;
+        background: #353a41; border: 1px solid rgba(255, 255, 255, 0.14);
+        border-radius: 8px; padding: 6px; opacity: 0;
+      }
+      .tone { font-size: 15px; color: #f2f4f5; padding: 7px 10px; border-radius: 6px; }
+      .hints {
+        display: flex; align-items: center; justify-content: space-around;
+        padding: 10px 12px 14px;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        color: #c5cdd4; font-size: 13px;
+      }
+      .hint { display: flex; align-items: center; gap: 5px; }
+      .keycap, .chord-key {
+        display: inline-flex; align-items: center; justify-content: center;
+        min-width: 22px; height: 20px; padding: 0 5px; border-radius: 5px;
+        background: #454b53; border: 1px solid rgba(255, 255, 255, 0.16);
+        font-size: 12px; font-weight: 600; color: #f2f4f5;
+      }
+      .chord {
+        position: absolute; left: 690px; top: 330px;
+        display: flex; gap: 8px; opacity: 0;
+      }
+      .chord-key {
+        min-width: 54px; height: 54px; font-size: 22px; border-radius: 10px;
+        background: #2c3036; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+      }
+      .super {
+        position: absolute; left: 168px; bottom: 56px;
+        font-size: 36px; font-weight: 600; letter-spacing: -0.03em;
+        color: #f2f4f5; opacity: 0;
+      }
+      .cursor {
+        position: absolute; left: 620px; top: 508px;
+        width: 22px; height: 22px; z-index: 8;
+      }
+      .loader {
+        position: absolute; left: 980px; top: 430px;
+        width: 22px; height: 22px; border-radius: 50%;
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        border-top-color: #2ec4d6;
+        opacity: 0;
+      }
+      .welcome-inner {
+        position: absolute; inset: 0;
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: center;
+      }
+      .welcome-line {
+        font-size: 52px; font-weight: 500; letter-spacing: -0.03em;
+        color: #f2f4f5; opacity: 0;
+      }
+      .welcome-line strong { font-weight: 700; }
+      .otter {
+        width: 240px; height: 240px; margin-top: 28px; opacity: 0;
+        border-radius: 50%; background: #eef3f5; object-fit: cover;
+      }
+      .lockup {
+        margin-top: 18px; font-size: 20px; font-weight: 600;
+        letter-spacing: 0.04em; color: #c5cdd4; opacity: 0;
+      }
+      .confetti {
+        position: absolute; width: 10px; height: 16px;
+        border-radius: 2px; opacity: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div data-hf-id="hf-if77" id="root" data-composition-id="main" data-start="0" data-duration="20.5" data-width="1920" data-height="1080">
+      <div data-hf-id="hf-4qej" class="fill"></div>
+      <div data-hf-id="hf-35j2" id="glow" class="glow"></div>
+      <div data-hf-id="hf-h60x" class="grain"></div>
+
+      <section data-hf-id="hf-niek" id="scene-desk" class="clip" data-start="0" data-duration="16.5" data-track-index="0">
+        <div data-hf-id="hf-7y28" class="menubar">
+          <div data-hf-id="hf-aaqq" class="menubar-left">
+            <span data-hf-id="hf-yzq6">Notes</span><span data-hf-id="hf-ycg7">File</span><span data-hf-id="hf-ge9h">Edit</span><span data-hf-id="hf-lgzi">Format</span>
+          </div>
+          <div data-hf-id="hf-z7f5" class="menubar-right">
+            <img data-hf-id="hf-radb" class="status-otter" src="assets/img/jerox-icon-menu.png" alt="">
+            <span data-hf-id="hf-nmo7">Mon 9:41</span>
+          </div>
+        </div>
+
+        <div data-hf-id="hf-a3lj" class="notes">
+          <div data-hf-id="hf-olmf" class="notes-bar">
+            <span data-hf-id="hf-620k" class="dot r"></span><span data-hf-id="hf-65hz" class="dot y"></span><span data-hf-id="hf-4ih5" class="dot g"></span>
+            <span data-hf-id="hf-plmk" class="notes-title">Untitled</span>
+          </div>
+          <div data-hf-id="hf-7mys" class="notes-body">
+            <div data-hf-id="hf-08bb" id="line-a">the paste should land here</div>
+            <div data-hf-id="hf-z1m3" id="pasted" class="pasted-line" style="opacity:0">func paste(_ clip: Clip)</div>
+            <div data-hf-id="hf-2z1z" id="line-b" style="opacity:0;margin-top:18px;position:relative;min-height:72px" data-layout-allow-overlap="">
+              <span data-hf-id="hf-feh2" id="draft-old" class="sel">hey can u send the build when u get a chance thx</span>
+              <span data-hf-id="hf-bxoh" id="draft-new" style="position:absolute;left:0;top:0;opacity:0">Could you send the build when you have a moment? Thank you.</span>
+            </div>
+            <span data-hf-id="hf-fir1" id="caret" class="caret"></span>
+          </div>
+        </div>
+
+        <div data-hf-id="hf-ygyi" id="chord" class="chord">
+          <span data-hf-id="hf-jszf" class="chord-key" id="k-ctrl">⌃</span>
+          <span data-hf-id="hf-62e3" class="chord-key" id="k-opt">⌥</span>
+          <span data-hf-id="hf-h04l" class="chord-key" id="k-cmd">⌘</span>
+          <span data-hf-id="hf-flq5" class="chord-key" id="k-v">V</span>
+        </div>
+
+        <div data-hf-id="hf-wfve" id="picker" class="picker">
+          <div data-hf-id="hf-80df" class="picker-shell">
+            <div data-hf-id="hf-ux6g" class="search">Search</div>
+            <div data-hf-id="hf-hnc7" class="rows">
+              <div data-hf-id="hf-eugs" class="row" id="row-1">
+                <span data-hf-id="hf-kud6" class="num">1</span>
+                <span data-hf-id="hf-k53a" class="title">ship the picker at the cursor</span>
+                <span data-hf-id="hf-zmrp" class="plain">Plain</span>
+              </div>
+              <div data-hf-id="hf-nicn" class="row" id="row-2">
+                <span data-hf-id="hf-l8o7" class="num">2</span>
+                <span data-hf-id="hf-hqqm" class="title"><span data-hf-id="hf-116l" class="swatch"></span>#2ec4d6</span>
+                <span data-hf-id="hf-oac9" class="plain">Plain</span>
+              </div>
+              <div data-hf-id="hf-n4cn" class="row on" id="row-3">
+                <span data-hf-id="hf-lmz8" class="num">3</span>
+                <span data-hf-id="hf-fyvo" class="title"><span data-hf-id="hf-4xz5" class="kw">func</span> paste(_ clip: Clip)</span>
+                <span data-hf-id="hf-ph9c" class="plain">Plain</span>
+              </div>
+              <div data-hf-id="hf-ufq9" class="row" id="row-4">
+                <span data-hf-id="hf-m1a9" class="num">4</span>
+                <span data-hf-id="hf-avmy" class="title"><span data-hf-id="hf-qbpz" class="thumb"></span>Image</span>
+                <span data-hf-id="hf-p2yb" class="plain">Plain</span>
+              </div>
+              <div data-hf-id="hf-rggo" class="row" id="row-5">
+                <span data-hf-id="hf-mfla" class="num">5</span>
+                <span data-hf-id="hf-2l1x" class="title">jxngrx.com</span>
+                <span data-hf-id="hf-n3f6" class="plain">Plain</span>
+              </div>
+            </div>
+            <div data-hf-id="hf-5n36" class="ai-bar">
+              <div data-hf-id="hf-t4ah" class="rephrase-wrap">
+                <span data-hf-id="hf-gh54" class="ai-btn">Rephrase</span>
+                <div data-hf-id="hf-ksp6" id="rephrase-menu" class="rephrase-menu">
+                  <div data-hf-id="hf-z5fn" class="tone">Friendly chat</div>
+                  <div data-hf-id="hf-v3qb" class="tone">Professional chat</div>
+                  <div data-hf-id="hf-nh6u" class="tone">Professional mail</div>
+                </div>
+              </div>
+            </div>
+            <div data-hf-id="hf-1ozu" class="hints">
+              <span data-hf-id="hf-lwfp" class="hint"><span data-hf-id="hf-eg5l" class="keycap">↩</span> paste</span>
+              <span data-hf-id="hf-8ygm" class="hint"><span data-hf-id="hf-l1hj" class="keycap">⇧</span><span data-hf-id="hf-1bul" class="keycap">↩</span> plain</span>
+              <span data-hf-id="hf-y3o9" class="hint"><span data-hf-id="hf-nh5y" class="keycap">⌘</span><span data-hf-id="hf-ixoe" class="keycap">P</span> pin</span>
+              <span data-hf-id="hf-alh1" class="hint">1–9</span>
+            </div>
+          </div>
+        </div>
+
+        <div data-hf-id="hf-xbhe" id="chord-3" class="chord" style="left:1240px;top:620px">
+          <span data-hf-id="hf-e0rp" class="chord-key" id="k-3">3</span>
+        </div>
+        <div data-hf-id="hf-8ixa" id="chord-r" class="chord" style="left:980px;top:360px">
+          <span data-hf-id="hf-9mbh" class="chord-key" id="k-cmd2">⌘</span>
+          <span data-hf-id="hf-f0og" class="chord-key" id="k-shift">⇧</span>
+          <span data-hf-id="hf-v865" class="chord-key" id="k-r">R</span>
+        </div>
+        <div data-hf-id="hf-vnpe" id="loader" class="loader"></div>
+
+        <svg data-hf-id="hf-y4oe" id="cursor" class="cursor" viewBox="0 0 24 24">
+          <path data-hf-id="hf-tb8u" d="M4 2l14 11-6 1 3 8-3 1-3-8-5 4z" fill="#f2f4f5" stroke="#0e1114" stroke-width="1.4" stroke-linejoin="round" />
+        </svg>
+
+        <div data-hf-id="hf-ydoc" id="super-a" class="super">At the cursor.</div>
+        <div data-hf-id="hf-1ahi" id="super-b" class="super">1–9.</div>
+        <div data-hf-id="hf-qlii" id="super-c" class="super">Without leaving the app.</div>
+      </section>
+
+      <section data-hf-id="hf-mwpi" id="scene-welcome" class="clip" data-start="16.5" data-duration="4" data-track-index="1">
+        <div data-hf-id="hf-mafj" class="welcome-inner">
+          <div data-hf-id="hf-tn8i" id="welcome-line" class="welcome-line">Namaste 🙏, Welcome to <strong data-hf-id="hf-p8wg">Jerox</strong> Family</div>
+          <img data-hf-id="hf-9bde" id="otter" class="otter" src="assets/img/jerox-icon.png" alt="">
+          <div data-hf-id="hf-zu9t" id="lockup" class="lockup">native · menu bar · on disk</div>
+        </div>
+        <div data-hf-id="hf-8pdl" id="confetti-layer"></div>
+      </section>
+
+      <audio data-hf-id="hf-9ooi" id="bgm" src="assets/music/happy-beats-business-moves-vol-11-by-ende-dot-app.mp3" data-start="0" data-duration="20.5" data-volume="0.22" data-fade-out="1.8"></audio>
+      <audio data-hf-id="hf-89rs" id="sfx-k1" src="assets/sfx/keyboard/keypress-001.wav" data-start="0.86" data-duration="0.12" data-volume="0.42"></audio>
+      <audio data-hf-id="hf-080h" id="sfx-k2" src="assets/sfx/keyboard/keypress-004.wav" data-start="1.08" data-duration="0.12" data-volume="0.42"></audio>
+      <audio data-hf-id="hf-cf3b" id="sfx-k3" src="assets/sfx/keyboard/keypress-008.wav" data-start="1.30" data-duration="0.12" data-volume="0.42"></audio>
+      <audio data-hf-id="hf-wjmm" id="sfx-k4" src="assets/sfx/keyboard/keypress-012.wav" data-start="1.48" data-duration="0.12" data-volume="0.46"></audio>
+      <audio data-hf-id="hf-5ndl" id="sfx-snap" src="assets/sfx/impact/impactSoft_medium_001.ogg" data-start="1.60" data-duration="0.18" data-volume="0.55"></audio>
+      <audio data-hf-id="hf-44pa" id="sfx-three" src="assets/sfx/keyboard/keypress-008.wav" data-start="8.96" data-duration="0.12" data-volume="0.46"></audio>
+      <audio data-hf-id="hf-bnma" id="sfx-r1" src="assets/sfx/keyboard/keypress-001.wav" data-start="12.20" data-duration="0.1" data-volume="0.4"></audio>
+      <audio data-hf-id="hf-cspw" id="sfx-r2" src="assets/sfx/keyboard/keypress-012.wav" data-start="12.65" data-duration="0.12" data-volume="0.46"></audio>
+      <audio data-hf-id="hf-y1c7" id="sfx-done" src="assets/sfx/interface/bong_001.ogg" data-start="13.70" data-duration="0.12" data-volume="0.32"></audio>
+      <audio data-hf-id="hf-8vgn" id="sfx-namaste" src="assets/sfx/impact/impactBell_heavy_000.ogg" data-start="17.91" data-duration="0.7" data-volume="0.22"></audio>
+    </div>
+    <script>
+      function mulberry32(a) {
+        return function () {
+          let t = (a += 0x6d2b79f5);
+          t = Math.imul(t ^ (t >>> 15), t | 1);
+          t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+          return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+        };
+      }
+
+      const confettiLayer = document.getElementById("confetti-layer");
+      const rand = mulberry32(20260928);
+      const bits = [];
+      const palette = ["#2EC4D6", "#F2F4F5", "#F47B2A", "#8BE3EE"];
+      for (let i = 0; i < 28; i++) {
+        const el = document.createElement("div");
+        el.className = "confetti";
+        el.id = "bit-" + i;
+        el.style.left = 520 + rand() * 880 + "px";
+        el.style.top = 200 + rand() * 70 + "px";
+        el.style.background = palette[i % palette.length];
+        confettiLayer.appendChild(el);
+        bits.push({ el, dy: 180 + rand() * 260, dx: (rand() - 0.5) * 220, rot: (rand() - 0.5) * 240 });
+      }
+
+      const tl = gsap.timeline({ paused: true });
+
+      tl.fromTo("#caret", { opacity: 1 }, {
+        opacity: 0.15, duration: 0.45, yoyo: true,
+        repeat: Math.max(0, Math.floor(16.5 / 0.9) - 1),
+        ease: "steps(1)"
+      }, 0);
+
+      tl.fromTo("#chord", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.28, ease: "power2.out" }, 0.62);
+      tl.to("#k-ctrl", { y: 6, duration: 0.08, ease: "power2.in" }, 0.86);
+      tl.to("#k-opt", { y: 6, duration: 0.08, ease: "power2.in" }, 1.08);
+      tl.to("#k-cmd", { y: 6, duration: 0.08, ease: "power2.in" }, 1.30);
+      tl.to("#k-v", { y: 6, duration: 0.08, ease: "power2.in" }, 1.48);
+
+      // beat-locked: 1.60s
+      tl.set("#picker", { opacity: 1 }, 1.60);
+      tl.to("#chord", { opacity: 0, duration: 0.18 }, 1.72);
+      tl.fromTo("#super-a", { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.22, ease: "power2.out" }, 1.72);
+      tl.to("#super-a", { opacity: 0, duration: 0.16 }, 3.30);
+
+      tl.fromTo("#super-b", { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.2 }, 3.70);
+      tl.fromTo("#rephrase-menu", { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.18 }, 5.80);
+      tl.to("#rephrase-menu", { opacity: 0, duration: 0.14 }, 7.80);
+
+      tl.fromTo("#chord-3", { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.16 }, 8.40);
+      // beat-locked: 8.96s
+      tl.to("#k-3", { y: 6, duration: 0.08 }, 8.96);
+      tl.to("#pasted", { opacity: 1, duration: 0.12 }, 9.10);
+      tl.to("#chord-3", { opacity: 0, duration: 0.14 }, 9.50);
+      tl.to("#super-b", { opacity: 0, duration: 0.14 }, 10.20);
+      tl.to("#picker", { opacity: 0, duration: 0.1 }, 10.35);
+
+      tl.set("#line-a", { opacity: 0.28 }, 10.50);
+      tl.set("#pasted", { opacity: 0.28 }, 10.50);
+      tl.set("#line-b", { opacity: 1 }, 10.50);
+      tl.to("#cursor", { x: 380, y: -40, duration: 0.45, ease: "power2.inOut" }, 10.55);
+
+      tl.fromTo("#chord-r", { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.18 }, 11.70);
+      tl.to("#k-cmd2", { y: 6, duration: 0.08 }, 12.20);
+      tl.to("#k-shift", { y: 6, duration: 0.08 }, 12.40);
+      // beat-locked: 12.65s
+      tl.to("#k-r", { y: 6, duration: 0.08 }, 12.65);
+      tl.to("#chord-r", { opacity: 0, duration: 0.14 }, 12.90);
+      tl.fromTo("#loader", { opacity: 0, rotation: 0 }, {
+        opacity: 1, rotation: 360, duration: 0.85, ease: "none"
+      }, 12.70);
+      tl.to("#loader", { opacity: 0, duration: 0.1 }, 13.55);
+      tl.to("#draft-old", { opacity: 0, duration: 0.1 }, 13.70);
+      tl.to("#draft-new", { opacity: 1, duration: 0.12 }, 13.70);
+      tl.fromTo("#super-c", { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.22 }, 13.85);
+      tl.to("#super-c", { opacity: 0, duration: 0.16 }, 16.20);
+
+      tl.fromTo("#welcome-line", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.32, ease: "power2.out" }, 16.68);
+      bits.forEach((bit, i) => {
+        tl.fromTo(bit.el, { opacity: 0, y: 0, x: 0, rotation: 0 }, {
+          opacity: 1, y: bit.dy, x: bit.dx, rotation: bit.rot,
+          duration: 1.5, ease: "power2.out"
+        }, 17.91 + (i % 6) * 0.03);
+        tl.to(bit.el, { opacity: 0, duration: 0.4 }, 19.2);
+      });
+      tl.fromTo("#otter", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.36, ease: "power2.out" }, 18.20);
+      tl.fromTo("#lockup", { opacity: 0 }, { opacity: 1, duration: 0.24 }, 18.50);
+
+      if (window.AUDIO_DATA) {
+        const data = window.AUDIO_DATA;
+        for (let f = 0; f < data.totalFrames; f++) {
+          tl.call((function (frame) {
+            return function () {
+              gsap.set("#glow", { opacity: 0.62 + frame.bands[0] * 0.38 });
+            };
+          })(data.frames[f]), [], f / data.fps);
+        }
+      }
+
+      window.__timelines["main"] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>

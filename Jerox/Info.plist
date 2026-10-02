@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleIconFile</key>
+	<string>jerox-icon</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Jerox listens after you press the dictate shortcut and turns speech into text on this Mac.</string>
+	<key>NSScreenCaptureUsageDescription</key>
+	<string>Jerox reads text from the part of the screen you choose.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>Jerox turns your speech into text on this Mac. The audio stays on this Mac.</string>
+</dict>
+</plist>

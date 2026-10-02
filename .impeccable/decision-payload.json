@@ -1,0 +1,191 @@
+{
+  "title": "How the Jerox site should feel",
+  "question": "The desk clipboard leads. Keep it, take another way of showing the four jobs, or re-roll.",
+  "options": [
+    {
+      "id": "assigned",
+      "label": "The Desk Clipboard",
+      "kicker": "THE ROLL",
+      "lineage": "A hardboard clipboard on a dark desk blotter",
+      "thesis": "What you just needed is still clipped to the board, and the rest of the desk is the app you were already in.",
+      "palette": ["#16332f", "#f3f4f2", "#4a3428", "#9aa3a1", "#2e9ea8"],
+      "materials": ["hardboard", "steel clip", "typed slips", "teal pin"],
+      "viewport": "One clipboard on a dark green blotter. Four slips under the clip show the real panels. The empty blotter is the other app. No download button.",
+      "risk": "Paper can turn into a stationery shop and bury the Mac interface the slips are meant to show.",
+      "raised": [
+        { "from": "Ikebana alcove", "raise": "The blotter stays mostly empty. That emptiness is the other app, and Jerox does not cover it." },
+        { "from": "ANSI night board", "raise": "The slips and the blotter are the only chrome. No stock cards, pills, or a software header." },
+        { "from": "Night-flight six-pack", "raise": "Four slips in one sweep. Each slip owns one job: copy, rewrite, dictate, read the screen." }
+      ],
+      "wireframe": {
+        "cols": 12,
+        "rows": 10,
+        "regions": [
+          { "label": "the other app", "x": 0, "y": 0, "w": 7, "h": 10 },
+          { "label": "clipboard", "x": 7, "y": 1, "w": 5, "h": 8, "accent": true },
+          { "label": "Jerox on the clip", "x": 8, "y": 1, "w": 3, "h": 1 },
+          { "label": "four job slips", "x": 8, "y": 3, "w": 3, "h": 5 }
+        ]
+      },
+      "comp": ".impeccable/mocks/decision/assigned.webp"
+    },
+    {
+      "id": "model-pick",
+      "label": "At the Cursor",
+      "kicker": "IMPECCABLE’S PICK",
+      "lineage": "The panel that opens on the caret",
+      "thesis": "The page is the document you were writing, and Jerox appears at the cursor exactly as it does on the Mac.",
+      "palette": ["#f6f6f4", "#2b2b29", "#2e9ea8", "#f2f2f0", "#fa546b"],
+      "materials": ["the real menu bar", "the dark dictation bar", "the cursor panel"],
+      "viewport": "A document fills the screen. The otter sits in the menu bar. The clipboard list opens at the caret, drawn like the app.",
+      "risk": "This is the picture most clipboard apps already use: their own window floating on a document.",
+      "wireframe": {
+        "cols": 12,
+        "rows": 10,
+        "regions": [
+          { "label": "menu bar and otter", "x": 0, "y": 0, "w": 12, "h": 1, "accent": true },
+          { "label": "the document", "x": 0, "y": 1, "w": 12, "h": 9 },
+          { "label": "panel at the caret", "x": 3, "y": 4, "w": 5, "h": 4, "accent": true }
+        ]
+      },
+      "comp": ".impeccable/mocks/decision/model-pick.webp"
+    },
+    {
+      "id": "challenger-sewing",
+      "label": "The Pattern Envelope",
+      "verdict": "competitive",
+      "lineage": "A home sewing pattern: envelope, tissue, and pins",
+      "thesis": "The four jobs are pattern pieces. You pin them to the app you are already in, on grain, and you do not rotate off that work.",
+      "palette": ["#e4d2a8", "#1a1a1a", "#c4312e", "#f6f1e4"],
+      "materials": ["manila envelope", "tissue", "dressmaker red", "pins"],
+      "viewport": "The envelope front lists views A to D. The tissue is the other app, with four pieces pinned along the fold.",
+      "case": "The pieces make the four jobs and the return to your app obvious. A person mid-sentence does not see themselves at a sewing table.",
+      "risk": "Dressmaking can smother a Mac tool if the tissue is costume instead of the instruction.",
+      "hero": "https://impeccable.style/worlds/cards/fashion-folded-worlds-sewing-pattern-envelope-hero.webp",
+      "board": "https://impeccable.style/worlds/cards/fashion-folded-worlds-sewing-pattern-envelope.webp",
+      "wireframe": {
+        "cols": 12,
+        "rows": 10,
+        "regions": [
+          { "label": "envelope views A–D", "x": 0, "y": 0, "w": 5, "h": 10, "accent": true },
+          { "label": "tissue on the app", "x": 5, "y": 0, "w": 7, "h": 10 },
+          { "label": "pinned pieces", "x": 6, "y": 2, "w": 5, "h": 6 }
+        ]
+      },
+      "comp": ".impeccable/mocks/decision/challenger-sewing.webp"
+    },
+    {
+      "id": "challenger-album",
+      "label": "The Album Spread",
+      "verdict": "competitive",
+      "lineage": "A sticker album with numbered slots and ghost outlines",
+      "thesis": "Four numbered slots. A filled slot is the real panel, sitting proud. An empty slot says which job is still missing.",
+      "palette": ["#d5cfc4", "#222220", "#2e9ea8", "#b7b2a8"],
+      "materials": ["matte album paper", "glossy stickers of the real UI"],
+      "viewport": "One album spread. Slots 1 to 4 are history, rewrite, dictate, and screen text, each sticker drawn from the app.",
+      "case": "The slots make the four jobs scannable. Collecting stickers is not the moment someone is mid-sentence in another app.",
+      "risk": "A half-filled album implies a set to complete, and Jerox is not a collection.",
+      "hero": "https://impeccable.style/worlds/cards/pop-culture-shelf-sticker-album-spread-hero.webp",
+      "board": "https://impeccable.style/worlds/cards/pop-culture-shelf-sticker-album-spread.webp",
+      "wireframe": {
+        "cols": 12,
+        "rows": 10,
+        "regions": [
+          { "label": "album header", "x": 0, "y": 0, "w": 12, "h": 1 },
+          { "label": "1 history", "x": 1, "y": 2, "w": 5, "h": 3, "accent": true },
+          { "label": "2 rewrite", "x": 6, "y": 2, "w": 5, "h": 3 },
+          { "label": "3 dictate", "x": 1, "y": 6, "w": 5, "h": 3 },
+          { "label": "4 read the screen", "x": 6, "y": 6, "w": 5, "h": 3 }
+        ]
+      },
+      "comp": ".impeccable/mocks/decision/challenger-album.webp"
+    },
+    {
+      "id": "challenger-poster",
+      "label": "The Solidarity Sheet",
+      "verdict": "competitive",
+      "lineage": "A flat silkscreen poster with the message running around the edge",
+      "thesis": "One emblem in the middle. The four jobs run around the edge as flat type. No pricing, no logo cloud, no software template.",
+      "palette": ["#e23b2f", "#f2c200", "#f4efe4", "#1a2744"],
+      "materials": ["flat silkscreen", "one emblem", "a typographic border"],
+      "viewport": "A full-bleed sheet. The otter or the cursor panel is the emblem. Copy, rewrite, dictate, and read the screen ring the edge.",
+      "case": "The offer is one picture and four true job names. A solidarity poster is not this person’s desk.",
+      "risk": "The fist-and-slogan habit can shout over a tool whose whole point is staying quiet.",
+      "hero": "https://impeccable.style/worlds/cards/posters-covers-sleeves-ospaaal-poster-hero.webp",
+      "board": "https://impeccable.style/worlds/cards/posters-covers-sleeves-ospaaal-poster.webp",
+      "wireframe": {
+        "cols": 12,
+        "rows": 10,
+        "regions": [
+          { "label": "four jobs as a border", "x": 0, "y": 0, "w": 12, "h": 10 },
+          { "label": "emblem", "x": 3, "y": 2, "w": 6, "h": 6, "accent": true }
+        ]
+      },
+      "comp": ".impeccable/mocks/decision/challenger-poster.webp"
+    },
+    {
+      "id": "challenger-ikebana",
+      "label": "The Alcove",
+      "verdict": "declined",
+      "lineage": "An ikebana arrangement in an empty plaster alcove",
+      "thesis": "Almost nothing is on the page. One mark is Jerox. The empty field is the work you were doing.",
+      "palette": ["#e7e2d8", "#6b5a48", "#2f5fbf", "#3a2e24"],
+      "materials": ["plaster", "one branch", "three stems"],
+      "viewport": "A wide empty field with one off-center cluster naming the four jobs.",
+      "case": "A person copying text does not read an alcove as a menu-bar app, and the offer disappears into the quiet.",
+      "kept": "The empty field stays active. The other app is the page, and Jerox does not cover it.",
+      "risk": "The jobs never become readable.",
+      "hero": "https://impeccable.style/worlds/cards/growth-metamorphosis-branching-ikebana-ma-arrangement-hero.webp"
+    },
+    {
+      "id": "challenger-bbs",
+      "label": "The Night Board",
+      "verdict": "declined",
+      "lineage": "A dial-up bulletin board in sixteen ANSI colors",
+      "thesis": "The site is a text screen you dial into, with four numbered doors.",
+      "palette": ["#000000", "#00ffff", "#ff00ff", "#ffffff"],
+      "materials": ["character grid", "block glyphs"],
+      "viewport": "An 80-column title, then four numbered lines for the jobs.",
+      "case": "Dialing into a board is the opposite of staying in the app you already have open.",
+      "kept": "Slips and blotter are the only chrome. No stock cards.",
+      "risk": "It leaves the Mac and becomes a terminal costume.",
+      "hero": "https://impeccable.style/worlds/cards/medium-native-ansi-bbs-nightboard-hero.webp"
+    },
+    {
+      "id": "challenger-sixpack",
+      "label": "The Six-Pack",
+      "verdict": "declined",
+      "lineage": "A small aircraft’s night instrument panel",
+      "thesis": "Each round gauge owns one truth, and you read them in one sweep.",
+      "palette": ["#101010", "#f2f2f0", "#7dffb3", "#e0a040"],
+      "materials": ["matte black panel", "luminous dials"],
+      "viewport": "Four glowing dials for the four jobs, read left to right.",
+      "case": "Paste-back and a cursor panel are not needle positions, and a cockpit is not this desk.",
+      "kept": "Four slips, one sweep, each slip owns one job.",
+      "risk": "The mechanism becomes a meter and the work disappears.",
+      "hero": "https://impeccable.style/worlds/cards/signals-instruments-night-flight-six-pack-hero.webp"
+    }
+  ],
+  "reroll": { "registers": ["safer", "bolder"] },
+  "buildPath": { "value": "code", "toggle": true },
+  "canon": true,
+  "canonCard": {
+    "label": "The category standard",
+    "thesis": "A centered headline, three feature cards, and a product shot. What app sites ship, played straight.",
+    "palette": ["#ffffff", "#111827", "#2563eb"],
+    "materials": ["clean grid", "product photography"],
+    "viewport": "Headline, three cards for the jobs, one product image, one quiet line of text. No price.",
+    "risk": "Indistinguishable from every other app site by design.",
+    "wireframe": {
+      "cols": 12,
+      "rows": 10,
+      "regions": [
+        { "label": "headline", "x": 2, "y": 1, "w": 8, "h": 2 },
+        { "label": "three feature cards", "x": 1, "y": 4, "w": 10, "h": 3 },
+        { "label": "product shot", "x": 3, "y": 8, "w": 6, "h": 2 }
+      ]
+    },
+    "comp": ".impeccable/mocks/decision/canon.webp"
+  },
+  "steer": true
+}
