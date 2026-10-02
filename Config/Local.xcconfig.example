@@ -1,0 +1,5 @@
+// Copy to Config/Local.xcconfig (git-ignored) to sign with your own team.
+CODE_SIGN_IDENTITY = Apple Development
+DEVELOPMENT_TEAM = YOUR_TEAM_ID
+// Use your own bundle id when you sign a fork:
+// PRODUCT_BUNDLE_IDENTIFIER = com.example.jerox

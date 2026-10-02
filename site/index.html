@@ -82,14 +82,21 @@ h3 { font-family: var(--sans); font-weight: 600; font-size: 18px; letter-spacing
 
 /* ── hero stage ── */
 .stage { position: relative; margin: 12px; min-height: calc(100svh - 24px); border-radius: var(--r-stage); border: 1px solid var(--line); background: linear-gradient(180deg, #121215 0%, #0b0b0d 60%, #09090b 100%); overflow: hidden; display: flex; align-items: center; justify-content: center; isolation: isolate; }
-.mark-bg { position: absolute; left: 50%; top: 50%; width: max(min(1180px, 112vw), 640px); height: auto; transform: translate(-50%, -44%); z-index: -1; }
+.mark-bg { position: absolute; left: 66%; top: 50%; width: max(min(1180px, 112vw), 640px); height: auto; transform: translate(-50%, -44%); z-index: -1; }
 .mark-bg path { fill: #1f1f24; }
 .mark-bg path + path { fill: #18181c; }
-.hero { text-align: center; padding: 140px 20px 120px; display: flex; flex-direction: column; align-items: center; gap: 26px; }
-.hero h1 { max-width: 12ch; }
+.hero { width: min(1240px, calc(100% - 64px)); padding: 140px 0 110px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: 64px; align-items: center; }
+.hero-copy { display: flex; flex-direction: column; align-items: flex-start; gap: 26px; }
+.hero h1 { max-width: 10ch; font-size: clamp(44px, 5.4vw, 84px); }
+.mac { border-radius: 16px; overflow: hidden; background: #eceef2; border: 1px solid rgba(255, 255, 255, .14); box-shadow: 0 50px 120px rgba(0, 0, 0, .65), 0 8px 24px rgba(0, 0, 0, .35); }
+.mac-bar { height: 38px; display: flex; align-items: center; gap: 8px; padding: 0 14px; background: #e3e5ea; border-bottom: 1px solid rgba(27, 29, 34, .1); font-size: 12.5px; font-weight: 600; color: #3a3f4b; }
+.mac-bar i { width: 12px; height: 12px; border-radius: 50%; background: #ff5f57; }
+.mac-bar i:nth-child(2) { background: #febc2e; } .mac-bar i:nth-child(3) { background: #28c840; }
+.mac-bar span { margin-left: 10px; }
+.mac .demo { height: 420px; border-radius: 0; }
 .hero h1 em { font-style: normal; color: var(--fg); position: relative; }
 .caret-dot { display: inline-block; width: .19em; height: .19em; border-radius: 50%; background: var(--blue); margin-left: .04em; vertical-align: baseline; box-shadow: 0 6px 18px rgba(10, 132, 255, .45); }
-.hero .lede { text-align: center; }
+.hero .lede { text-align: left; }
 
 /* waitlist form */
 .join { display: flex; gap: 8px; padding: 6px; border-radius: 999px; background: rgba(255, 255, 255, .04); border: 1px solid var(--line-2); width: min(480px, 100%); transition: border-color .25s; }
@@ -130,6 +137,7 @@ section.block { padding: clamp(110px, 14vw, 180px) 0 0; }
 .card:hover { border-color: var(--line-2); }
 .card.w7 { grid-column: span 7; } .card.w5 { grid-column: span 5; }
 .demo { position: relative; height: 380px; border-radius: var(--r-inner); background: var(--inner); overflow: hidden; }
+.clip-scene { position: absolute; inset: 0; background-color: #eceef2; background-image: linear-gradient(180deg, #f3f4f6, #e7e9ee); color: #1b1d22; }
 .demo.light { background-color: #eceef2; background-image: linear-gradient(180deg, #f3f4f6, #e7e9ee); color: #1b1d22; }
 .card-foot { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; padding: 18px 14px 12px; }
 .card-foot p { color: var(--muted); font-size: 15px; margin-top: 4px; max-width: 44ch; }
@@ -137,8 +145,10 @@ section.block { padding: clamp(110px, 14vw, 180px) 0 0; }
 /* clipboard demo (light, macOS-real) */
 .doc { position: absolute; left: 34px; top: 34px; right: 34px; font-size: 19px; color: #1b1d22; white-space: nowrap; }
 .doc small { display: block; font-size: 13px; font-weight: 600; color: #3a3f4b; margin-bottom: 10px; }
-.doc .ins { color: #0060df; text-decoration: underline; text-underline-offset: 4px; display: inline-block; clip-path: inset(0 100% 0 0); transition: clip-path .5s var(--ease); vertical-align: bottom; }
-.doc .ins.on { clip-path: inset(0 0 0 0); }
+.doc .ins { color: #0060df; text-decoration: underline; text-underline-offset: 4px; display: inline-block; max-width: 0; overflow: hidden; white-space: nowrap; transition: max-width .5s var(--ease); vertical-align: bottom; }
+.doc .ins.on { max-width: 12em; }
+.doc-lines { margin-top: 26px; display: grid; gap: 14px; }
+.doc-lines i { display: block; height: 11px; border-radius: 6px; background: rgba(27, 29, 34, .08); }
 .tcaret { display: inline-block; width: 2px; height: 1.05em; background: #0060df; vertical-align: -0.15em; margin-left: 1px; animation: blink 1s steps(1) infinite; }
 @keyframes blink { 50% { opacity: 0; } }
 .cb { position: absolute; left: 150px; top: 108px; width: 360px; border-radius: 13px; background: #fff; border: 1px solid rgba(27, 29, 34, .14); box-shadow: 0 24px 60px rgba(27, 29, 34, .18), 0 2px 6px rgba(27, 29, 34, .08); transform-origin: 20px 0; transition: opacity .3s var(--ease), transform .4s var(--ease); }
@@ -260,6 +270,8 @@ section.block { padding: clamp(110px, 14vw, 180px) 0 0; }
 .js .rv.in { opacity: 1; transform: none; filter: none; }
 
 @media (max-width: 900px) {
+  .hero { grid-template-columns: 1fr; gap: 44px; padding-bottom: 56px; }
+  .mark-bg { left: 50%; }
   .card, .card.w7, .card.w5 { grid-column: 1 / -1; }
   .ledger { grid-template-columns: 1fr; }
   .km-row { grid-template-columns: 1fr; gap: 8px; }
@@ -281,7 +293,7 @@ section.block { padding: clamp(110px, 14vw, 180px) 0 0; }
 @media (max-width: 560px) {
   .wrap { width: calc(100% - 32px); }
   .stage { margin: 8px; }
-  .hero { padding: 120px 14px 90px; }
+  .hero { width: calc(100% - 28px); padding: 116px 0 40px; }
   .join { flex-direction: column; border-radius: 22px; }
   .join input { height: 46px; }
   .doc { font-size: 16px; left: 22px; }
@@ -304,7 +316,7 @@ section.block { padding: clamp(110px, 14vw, 180px) 0 0; }
 
 <nav class="nav" aria-label="Primary">
   <a class="pill brand" href="#top"><img src="media/jerox-mark.png" alt="" width="24" height="24">Jerox</a>
-  <div class="pill links"><a href="#film">Film</a><a href="#features">Features</a><a href="#privacy">Privacy</a><a href="#keys">Shortcuts</a></div>
+  <div class="pill links"><a href="#film">Product</a><a href="#features">Features</a><a href="#privacy">Privacy</a><a href="#keys">Shortcuts</a></div>
   <div class="pill cta-pill"><a href="#join">Join waitlist</a></div>
 </nav>
 
@@ -316,6 +328,7 @@ section.block { padding: clamp(110px, 14vw, 180px) 0 0; }
       <path d="M520 430c0-46 30-86 74-100l300-96c62-20 126 26 126 92v330c0 46-30 86-74 100l-300 96c-62 20-126-26-126-92z" />
     </svg>
     <div class="hero">
+      <div class="hero-copy">
       <h1>It works where you already are<span class="caret-dot" aria-hidden="true"></span></h1>
       <p class="lede">Clipboard history, rewrite, and dictation for Mac. Each opens at your cursor and pastes back into the app you were using.</p>
       <form class="join" id="join" data-to="hello@jxngrx.com" novalidate>
@@ -324,6 +337,11 @@ section.block { padding: clamp(110px, 14vw, 180px) 0 0; }
         <button type="submit">Join the waitlist</button>
       </form>
       <p class="join-note" aria-live="polite">A menu-bar app · macOS 15.1 or later</p>
+      </div>
+      <div class="mac rv" aria-label="Jerox history opening at the cursor in Notes and pasting a link">
+        <div class="mac-bar"><i></i><i></i><i></i><span>Notes</span></div>
+        <div class="demo light" data-clip></div>
+      </div>
     </div>
   </header>
 
@@ -360,22 +378,7 @@ section.block { padding: clamp(110px, 14vw, 180px) 0 0; }
       </div>
       <div class="bento">
         <article class="card w7 rv">
-          <div class="demo light" id="demo-clip" aria-label="Clipboard history opening at the cursor and pasting a link">
-            <div class="doc"><small>Launch notes</small>Here’s the link: <span class="ins" id="cb-ins">jxngrx.com/jerox</span><span class="tcaret"></span></div>
-            <div class="cb" id="cb">
-              <div class="cb-search"><img src="media/app-icon.png" alt=""><span class="ph" id="cb-ph">Search history</span><span id="cb-q"></span></div>
-              <div class="cb-rows">
-                <div class="cb-sel" id="cb-sel" style="top:22px"></div>
-                <div class="cb-label" id="cb-l1" style="top:4px">PINNED</div>
-                <div class="cb-row" data-k="pin" style="top:22px"><span class="n">1</span><span class="g"><span style="width:12px;height:12px;border-radius:3px;background:#0a84ff"></span></span><span class="t">#0A84FF</span></div>
-                <div class="cb-label" id="cb-l2" style="top:58px">HISTORY</div>
-                <div class="cb-row" style="top:76px"><span class="n">2</span><span class="g"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M3 4h10M3 8h7M3 12h9"/></svg></span><span class="t">Meeting moved to 4:30 tomorrow</span></div>
-                <div class="cb-row" style="top:106px"><span class="n">3</span><span class="g"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5.5 4.5 2 8l3.5 3.5M10.5 4.5 14 8l-3.5 3.5"/></svg></span><span class="t" style="font-family:var(--mono);font-size:12px"><span class="tok-kw">const</span> pasteBack = <span class="tok-b">true</span></span></div>
-                <div class="cb-row" id="cb-link" style="top:136px"><span class="n" id="cb-ln">4</span><span class="g"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M7 9.5a3 3 0 0 0 4.2 0l2-2a3 3 0 0 0-4.2-4.2l-.6.6"/><path d="M9 6.5a3 3 0 0 0-4.2 0l-2 2a3 3 0 0 0 4.2 4.2l.6-.6"/></svg></span><span class="t">jxngrx.com/jerox</span></div>
-                <div class="cb-row" style="top:166px"><span class="n">5</span><span class="g"><span style="width:16px;height:12px;border-radius:3px;background:linear-gradient(135deg,#cfd9ee,#8fa3c8)"></span></span><span class="t">Screenshot 09.41</span></div>
-              </div>
-              <div class="cb-foot"><span><span class="k" id="cb-ret">↩</span>paste</span><span><span class="k">⇧</span><span class="k">↩</span>plain</span><span><span class="k">⌘</span><span class="k">P</span>pin</span><span>1–9</span></div>
-            </div>
+          <div class="demo light" data-clip aria-label="Clipboard history opening at the cursor and pasting a link">
           </div>
           <div class="card-foot"><div><h3>History at the cursor</h3><p>Everything you copy, newest first. Type to filter, press Return, and it pastes in its original format.</p></div><span class="kbd" aria-label="Control Option Command V"><kbd>⌃</kbd><kbd>⌥</kbd><kbd>⌘</kbd><kbd>V</kbd></span></div>
         </article>
@@ -498,6 +501,24 @@ section.block { padding: clamp(110px, 14vw, 180px) 0 0; }
   </section>
 </main>
 
+<template id="clip-tpl"><div class="clip-scene">
+            <div class="doc"><small>Launch notes</small>Here’s the link: <span class="ins">jxngrx.com/jerox</span><span class="tcaret"></span><div class="doc-lines" aria-hidden="true"><i style="width:92%"></i><i style="width:84%"></i><i style="width:88%"></i><i style="width:60%"></i><i style="width:78%"></i><i style="width:70%"></i></div></div>
+            <div class="cb">
+              <div class="cb-search"><img src="media/app-icon.png" alt=""><span class="ph">Search history</span><span class="q"></span></div>
+              <div class="cb-rows">
+                <div class="cb-sel" style="top:22px"></div>
+                <div class="cb-label" style="top:4px">PINNED</div>
+                <div class="cb-row" data-k="pin" style="top:22px"><span class="n">1</span><span class="g"><span style="width:12px;height:12px;border-radius:3px;background:#0a84ff"></span></span><span class="t">#0A84FF</span></div>
+                <div class="cb-label" style="top:58px">HISTORY</div>
+                <div class="cb-row" style="top:76px"><span class="n">2</span><span class="g"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M3 4h10M3 8h7M3 12h9"/></svg></span><span class="t">Meeting moved to 4:30 tomorrow</span></div>
+                <div class="cb-row" style="top:106px"><span class="n">3</span><span class="g"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5.5 4.5 2 8l3.5 3.5M10.5 4.5 14 8l-3.5 3.5"/></svg></span><span class="t" style="font-family:var(--mono);font-size:12px"><span class="tok-kw">const</span> pasteBack = <span class="tok-b">true</span></span></div>
+                <div class="cb-row link" style="top:136px"><span class="n ln">4</span><span class="g"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M7 9.5a3 3 0 0 0 4.2 0l2-2a3 3 0 0 0-4.2-4.2l-.6.6"/><path d="M9 6.5a3 3 0 0 0-4.2 0l-2 2a3 3 0 0 0 4.2 4.2l.6-.6"/></svg></span><span class="t">jxngrx.com/jerox</span></div>
+                <div class="cb-row" style="top:166px"><span class="n">5</span><span class="g"><span style="width:16px;height:12px;border-radius:3px;background:linear-gradient(135deg,#cfd9ee,#8fa3c8)"></span></span><span class="t">Screenshot 09.41</span></div>
+              </div>
+              <div class="cb-foot"><span><span class="k ret">↩</span>paste</span><span><span class="k">⇧</span><span class="k">↩</span>plain</span><span><span class="k">⌘</span><span class="k">P</span>pin</span><span>1–9</span></div>
+            </div>
+</div></template>
+
 <script>
 (function () {
   var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -602,25 +623,29 @@ section.block { padding: clamp(110px, 14vw, 180px) 0 0; }
     }
   }
 
-  // Clipboard
-  var cb = document.getElementById("cb"), q = document.getElementById("cb-q"), ph = document.getElementById("cb-ph"), sel = document.getElementById("cb-sel"), link = document.getElementById("cb-link"), ln = document.getElementById("cb-ln"), ins = document.getElementById("cb-ins"), ret = document.getElementById("cb-ret");
-  var others = Array.prototype.filter.call(document.querySelectorAll("#cb .cb-row"), function (r) { return r !== link; }).concat([document.getElementById("cb-l1"), document.getElementById("cb-l2")]);
-  function clipReset() { cb.classList.remove("out"); q.textContent = ""; ph.style.display = ""; sel.style.transform = ""; link.style.transform = ""; ln.textContent = "4"; ins.classList.remove("on"); others.forEach(function (o) { o.classList.remove("gone"); o.style.opacity = ""; }); }
-  demo(document.getElementById("demo-clip"), async function () {
-    clipReset();
-    if (reduce) return;
-    await sleep(1400);
-    ph.style.display = "none";
-    for (var c of "link") { q.textContent += c; await sleep(140); }
-    await sleep(250);
-    others.forEach(function (o) { o.style.opacity = "0"; });
-    link.style.transform = "translateY(-114px)"; sel.style.transform = "translateY(0)"; ln.textContent = "1";
-    sel.style.top = "22px";
-    await sleep(900);
-    ret.classList.add("press"); await sleep(160); ret.classList.remove("press");
-    cb.classList.add("out"); await sleep(220);
-    ins.classList.add("on");
-    await sleep(2600);
+  // Clipboard: one template, mounted wherever [data-clip] sits (hero window, feature card)
+  var tpl = document.getElementById("clip-tpl");
+  document.querySelectorAll("[data-clip]").forEach(function (root) {
+    root.appendChild(tpl.content.cloneNode(true));
+    var $ = function (q) { return root.querySelector(q); };
+    var cb = $(".cb"), q = $(".q"), ph = $(".ph"), sel = $(".cb-sel"), link = $(".cb-row.link"), ln = $(".ln"), ins = $(".ins"), ret = $(".ret");
+    var others = Array.prototype.filter.call(root.querySelectorAll(".cb-row, .cb-label"), function (r) { return r !== link; });
+    demo(root, async function () {
+      cb.classList.remove("out"); q.textContent = ""; ph.style.display = ""; sel.style.transform = ""; link.style.transform = ""; ln.textContent = "4"; ins.classList.remove("on");
+      others.forEach(function (o) { o.style.opacity = ""; });
+      if (reduce) return;
+      await sleep(1400);
+      ph.style.display = "none";
+      for (var c of "link") { q.textContent += c; await sleep(140); }
+      await sleep(250);
+      others.forEach(function (o) { o.style.opacity = "0"; });
+      link.style.transform = "translateY(-114px)"; ln.textContent = "1";
+      await sleep(900);
+      ret.classList.add("press"); await sleep(160); ret.classList.remove("press");
+      cb.classList.add("out"); await sleep(220);
+      ins.classList.add("on");
+      await sleep(2600);
+    });
   });
 
   // Rephrase

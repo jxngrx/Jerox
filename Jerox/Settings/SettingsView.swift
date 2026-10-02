@@ -1,0 +1,536 @@
+import AppKit
+import Foundation
+import ServiceManagement
+import Speech
+import SwiftUI
+
+struct SettingsView: View {
+    private enum Page: String, CaseIterable, Identifiable {
+        case general, history, models, advanced
+        var id: String { rawValue }
+        var title: String {
+            switch self {
+            case .general: "General"
+            case .history: "History"
+            case .models: "Models"
+            case .advanced: "Advanced"
+            }
+        }
+        var symbol: String {
+            switch self {
+            case .general: "waveform"
+            case .history: "clock"
+            case .models: "cpu"
+            case .advanced: "gearshape"
+            }
+        }
+    }
+
+    var onRetention: () -> Void
+    var onHotkey: () -> Void
+    @State private var page: Page? = .general
+    @AppStorage("micUID") private var micUID = ""
+    @AppStorage("speechLocale") private var speechLocale = ""
+    @AppStorage("showDictateOverlay") private var showOverlay = true
+    @AppStorage("theme") private var theme = "system"
+    @AppStorage("loginItem") private var loginItem = false
+    @AppStorage("dictateNotes") private var notesJSON = "[]"
+    @State private var mics: [(uid: String, name: String)] = []
+    @AppStorage("prettyJSON") private var prettyJSON = false
+    @AppStorage("historyLimit") private var limit = 200
+    @AppStorage("historyDays") private var days = 14
+    @AppStorage("hotkey.show.code") private var showCode = ShortcutDefaults.showCode
+    @AppStorage("hotkey.show.mods") private var showMods = ShortcutDefaults.showMods
+    @AppStorage("hotkey.paste.code") private var pasteCode = ShortcutDefaults.pasteCode
+    @AppStorage("hotkey.paste.mods") private var pasteMods = ShortcutDefaults.pasteMods
+    @AppStorage("hotkey.plain.code") private var plainCode = ShortcutDefaults.plainCode
+    @AppStorage("hotkey.plain.mods") private var plainMods = ShortcutDefaults.plainMods
+    @AppStorage("hotkey.pin.code") private var pinCode = ShortcutDefaults.pinCode
+    @AppStorage("hotkey.pin.mods") private var pinMods = ShortcutDefaults.pinMods
+    @AppStorage("hotkey.rephrase.code") private var rephraseCode = ShortcutDefaults.rephraseCode
+    @AppStorage("hotkey.rephrase.mods") private var rephraseMods = ShortcutDefaults.rephraseMods
+    @AppStorage("hotkey.dictate.code") private var dictateCode = ShortcutDefaults.dictateCode
+    @AppStorage("hotkey.dictate.mods") private var dictateMods = ShortcutDefaults.dictateMods
+    @AppStorage("hotkey.read.code") private var readCode = ShortcutDefaults.readCode
+    @AppStorage("hotkey.read.mods") private var readMods = ShortcutDefaults.readMods
+    @AppStorage("speechEngine") private var speechEngine = SpeechCatalog.apple
+    private let modelStore = ModelStore.shared
+    @AppStorage("aiProvider") private var providerRaw = AIService.openrouter.rawValue
+    @AppStorage("dictateRephrase") private var dictateRephrase = true
+    @AppStorage("dictateRephrasePrompt") private var dictateRephrasePrompt = "friendly"
+    @State private var customPrompts = RephrasePromptStore.load()
+    @State private var promptName = ""
+    @State private var promptInstruction = ""
+    @State private var editingPrompt: String?
+    @State private var apiKey = ""
+    @State private var modelName = ""
+    @State private var keyReady = false
+
+    var body: some View {
+        HStack(spacing: 0) {
+            VStack(spacing: 4) {
+                mascot
+                    .padding(.bottom, 8)
+                ForEach(Page.allCases) { item in
+                    Button {
+                        page = item
+                    } label: {
+                        Label(item.title, systemImage: item.symbol)
+                            .font(.system(size: 13, weight: .medium))
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 7)
+                            .foregroundStyle(page == item ? JeroxInk.accent : .primary.opacity(0.85))
+                            .background(page == item ? JeroxInk.accent.opacity(0.16) : Color.clear, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+                            .contentShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                    }
+                    .buttonStyle(.plain)
+                }
+                Spacer()
+            }
+            .padding(.horizontal, 8)
+            .padding(.top, 28)
+            .padding(.bottom, 12)
+            .frame(width: 168)
+            .background(JeroxInk.sidebar)
+            .overlay(alignment: .trailing) { Rectangle().fill(Color.primary.opacity(0.1)).frame(width: 1) }
+
+            ScrollView {
+                VStack(alignment: .leading, spacing: 22) {
+                    Text(page?.title ?? "")
+                        .font(.system(size: 22, weight: .bold))
+                        .padding(.horizontal, 4)
+                    pageBody
+                }
+                .padding(.horizontal, 24)
+                .padding(.top, 28)
+                .padding(.bottom, 24)
+                .frame(maxWidth: 520)
+                .frame(maxWidth: .infinity)
+            }
+        }
+        .frame(width: 760, height: 540)
+        .background(JeroxInk.canvas)
+        .tint(JeroxInk.accent)
+        .onAppear {
+            loadProvider()
+            applyTheme(theme)
+            mics = micDevices().map { ($0.uid, $0.name) }
+        }
+        .onChange(of: theme) { _, value in applyTheme(value) }
+        .onChange(of: loginItem) { _, value in setOpenAtLogin(value) }
+        .onChange(of: apiKey) { _, value in
+            if keyReady { APIKey.write(providerRaw, value) }
+        }
+        .onChange(of: modelName) { _, value in
+            UserDefaults.standard.set(value, forKey: "aiModel.\(providerRaw)")
+        }
+        .onChange(of: limit) { _, _ in onRetention() }
+        .onChange(of: days) { _, _ in onRetention() }
+        .onChange(of: hotkeyToken) { _, _ in onHotkey() }
+    }
+
+    private var hotkeyToken: String {
+        [showCode, showMods, rephraseCode, rephraseMods, dictateCode, dictateMods, readCode, readMods]
+            .map(String.init).joined(separator: ",")
+    }
+
+    private var mascot: some View {
+        HStack(spacing: 8) {
+            JeroxLogo(size: 40)
+            VStack(alignment: .leading, spacing: 0) {
+                Text("Jerox").font(.system(size: 15, weight: .semibold))
+                Text("Settings").font(.caption).foregroundStyle(.secondary)
+            }
+            Spacer(minLength: 0)
+        }
+        .padding(.horizontal, 4)
+    }
+
+    private var dictateNotes: [DictateNote] {
+        decodeDictateNotes(Data(notesJSON.utf8))
+    }
+
+    private var speechLocales: [Locale] {
+        SFSpeechRecognizer.supportedLocales().sorted { $0.identifier < $1.identifier }
+    }
+
+    @ViewBuilder private var pageBody: some View {
+        switch page {
+        case .history:
+            group("Transcriptions", hint: "The last 50 dictations. Copy puts one back on the clipboard.") {
+                if dictateNotes.isEmpty {
+                    line { Text("No transcriptions yet.").foregroundStyle(.secondary) }
+                }
+                ForEach(dictateNotes) { note in
+                    line {
+                        HStack(alignment: .center, spacing: 12) {
+                            VStack(alignment: .leading, spacing: 3) {
+                                Text(note.text).lineLimit(2)
+                                Text(note.at.formatted(date: .abbreviated, time: .shortened))
+                                    .font(.caption)
+                                    .foregroundStyle(.tertiary)
+                            }
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            iconButton("doc.on.doc", help: "Copy") {
+                                NSPasteboard.general.clearContents()
+                                NSPasteboard.general.setString(note.text, forType: .string)
+                            }
+                            iconButton("trash", help: "Delete", role: .destructive) {
+                                let left = dictateNotes.filter { $0.id != note.id }
+                                notesJSON = String(data: encodeDictateNotes(left), encoding: .utf8) ?? "[]"
+                            }
+                        }
+                    }
+                }
+            }
+        case .models:
+            group("Speech to text", hint: "Apple Speech shows live text as you talk. A downloaded model runs fully offline and types when you stop.") {
+                choice("Apple Speech", detail: "Built in · live text", selected: speechEngine == SpeechCatalog.apple || SpeechCatalog.active == nil) {
+                    speechEngine = SpeechCatalog.apple
+                }
+                ForEach(SpeechCatalog.models) { model in speechModelRow(model) }
+            }
+            group("Rephrase", hint: "Apple Intelligence runs on this Mac with no key. Online services use your key, kept in the Keychain.") {
+                row("Rephrase after dictate") { switchToggle($dictateRephrase) }
+                if appleIntelligenceReady() {
+                    choice("Apple Intelligence", detail: "On this Mac · no key", selected: providerRaw == AIService.apple.rawValue) {
+                        selectProvider(.apple)
+                    }
+                }
+                ForEach(AIService.allCases.filter { $0 != .apple }, id: \.self) { service in
+                    choice(service.title, detail: "Online · API key", selected: providerRaw == service.rawValue) {
+                        selectProvider(service)
+                    }
+                }
+                if providerRaw == AIService.apple.rawValue {
+                    line { Text("Rephrase runs on this Mac. No key.").foregroundStyle(.secondary) }
+                } else {
+                    line { field("API key", text: $apiKey, secure: true) }
+                    line { field("Model", text: $modelName, secure: false) }
+                }
+            }
+            group("After dictation", hint: "Friendly chat is the default.") {
+                if dictateRephrase {
+                    ForEach(rephrasePromptList(custom: customPrompts)) { prompt in
+                        line {
+                            Button { dictateRephrasePrompt = prompt.id } label: {
+                                HStack {
+                                    Text(prompt.name)
+                                    Spacer()
+                                    if dictateRephrasePrompt == prompt.id {
+                                        Image(systemName: "checkmark").foregroundStyle(JeroxInk.accent)
+                                    }
+                                }
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .contentShape(Rectangle())
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                } else {
+                    line { Text("Online rephrase is off.").foregroundStyle(.secondary) }
+                }
+            }
+            group("Your prompts", hint: "Built-ins are 1–3. Yours start at 4.") {
+                ForEach(customPrompts) { prompt in
+                    line {
+                        HStack {
+                            Text(prompt.name).lineLimit(1)
+                            Spacer()
+                            iconButton("pencil", help: "Edit") {
+                                editingPrompt = prompt.id
+                                promptName = prompt.name
+                                promptInstruction = prompt.instruction
+                            }
+                            iconButton("trash", help: "Delete", role: .destructive) {
+                                customPrompts.removeAll { $0.id == prompt.id }
+                                if editingPrompt == prompt.id {
+                                    editingPrompt = nil
+                                    promptName = ""
+                                    promptInstruction = ""
+                                }
+                                RephrasePromptStore.save(customPrompts)
+                            }
+                        }
+                    }
+                }
+                line { field("Name", text: $promptName, secure: false) }
+                line {
+                    ZStack(alignment: .topLeading) {
+                        if promptInstruction.isEmpty {
+                            Text("How to rewrite")
+                                .foregroundStyle(.tertiary)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 10)
+                                .allowsHitTesting(false)
+                        }
+                        TextEditor(text: $promptInstruction)
+                            .font(.body)
+                            .scrollContentBackground(.hidden)
+                            .padding(4)
+                    }
+                    .frame(height: 72)
+                }
+                line {
+                    Button(editingPrompt == nil ? "Add prompt" : "Save prompt", action: savePrompt)
+                        .buttonStyle(.plain)
+                        .foregroundStyle(JeroxInk.accent)
+                }
+            }
+        case .advanced:
+            group("App") {
+                row("Open at login") { switchToggle($loginItem) }
+                row("Show the dictation bar") { switchToggle($showOverlay) }
+                row("Theme") {
+                    Picker("", selection: $theme) {
+                        Text("System").tag("system")
+                        Text("Light").tag("light")
+                        Text("Dark").tag("dark")
+                    }
+                    .labelsHidden()
+                    .fixedSize()
+                }
+            }
+            group("Clipboard", hint: "Pins stay until you unpin them.") {
+                row("JSON pretty-print") { switchToggle($prettyJSON) }
+                row("Items to keep") { stepper($limit, in: 1...5000) }
+                row("Days to keep") { stepper($days, in: 1...3650) }
+            }
+            group("Shortcuts", hint: "Edit, then press the keys. Esc cancels.") {
+                line { ShortcutRecorder(title: "Show Jerox", requiresModifier: true, code: $showCode, mods: $showMods) }
+                line { ShortcutRecorder(title: "Paste", code: $pasteCode, mods: $pasteMods) }
+                line { ShortcutRecorder(title: "Paste plain", code: $plainCode, mods: $plainMods) }
+                line { ShortcutRecorder(title: "Pin", code: $pinCode, mods: $pinMods) }
+                line { ShortcutRecorder(title: "Rephrase", requiresModifier: true, code: $rephraseCode, mods: $rephraseMods) }
+            }
+        default:
+            group("Dictation") {
+                line { ShortcutRecorder(title: "Shortcut", requiresModifier: true, code: $dictateCode, mods: $dictateMods) }
+                line { ShortcutRecorder(title: "Read screen", requiresModifier: true, code: $readCode, mods: $readMods) }
+                row("Microphone") {
+                    Picker("", selection: $micUID) {
+                        Text("System default").tag("")
+                        ForEach(mics, id: \.uid) { mic in
+                            Text(mic.name).tag(mic.uid)
+                        }
+                    }
+                    .labelsHidden()
+                    .fixedSize()
+                }
+                row("Language") {
+                    Picker("", selection: $speechLocale) {
+                        Text("System").tag("")
+                        ForEach(speechLocales, id: \.identifier) { locale in
+                            Text(locale.localizedString(forIdentifier: locale.identifier) ?? locale.identifier).tag(locale.identifier)
+                        }
+                    }
+                    .labelsHidden()
+                    .fixedSize()
+                }
+            }
+        }
+    }
+
+    private func group<Content: View>(_ title: String, hint: String? = nil, @ViewBuilder content: () -> Content) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(title.uppercased())
+                .font(.system(size: 11, weight: .medium))
+                .foregroundStyle(.secondary)
+                .tracking(0.5)
+                .padding(.horizontal, 4)
+            if let hint {
+                Text(hint)
+                    .font(.caption)
+                    .foregroundStyle(.tertiary)
+                    .padding(.horizontal, 4)
+            }
+            Color.clear.frame(height: 4)
+            VStack(spacing: 0) { content() }
+                .padding(.bottom, -1)
+                .padding(.top, 2)
+                .background(JeroxInk.card, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous).stroke(Color.primary.opacity(0.1), lineWidth: 1))
+                .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+        }
+    }
+
+    /// Label leading, control trailing: every settings row shares this grid.
+    private func row<Control: View>(_ title: String, @ViewBuilder control: () -> Control) -> some View {
+        line {
+            HStack(spacing: 12) {
+                Text(title).frame(maxWidth: .infinity, alignment: .leading)
+                control()
+            }
+        }
+    }
+
+    private func iconButton(_ symbol: String, help: String, role: ButtonRole? = nil, action: @escaping () -> Void) -> some View {
+        Button(role: role, action: action) {
+            Image(systemName: symbol)
+                .font(.system(size: 12, weight: .medium))
+                .frame(width: 26, height: 26)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(IconButtonStyle(destructive: role == .destructive))
+        .help(help)
+    }
+
+    /// A selectable row: title and detail leading, radio trailing.
+    private func choice(_ title: String, detail: String, selected: Bool, action: @escaping () -> Void) -> some View {
+        line {
+            Button(action: action) {
+                HStack(spacing: 12) {
+                    titled(title, detail: Text(detail).foregroundStyle(.secondary))
+                    radio(selected)
+                }
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+        }
+    }
+
+    private func titled(_ title: String, badge: Bool = false, detail: Text) -> some View {
+        VStack(alignment: .leading, spacing: 2) {
+            HStack(spacing: 6) {
+                Text(title)
+                if badge {
+                    Text("Recommended")
+                        .font(.system(size: 10, weight: .semibold))
+                        .foregroundStyle(JeroxInk.accent)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 1)
+                        .background(JeroxInk.accent.opacity(0.14), in: Capsule())
+                }
+            }
+            detail.font(.caption)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private func radio(_ on: Bool) -> some View {
+        Image(systemName: on ? "checkmark.circle.fill" : "circle")
+            .font(.system(size: 15))
+            .foregroundStyle(on ? AnyShapeStyle(JeroxInk.accent) : AnyShapeStyle(.tertiary))
+            .frame(width: 26)
+    }
+
+    private func speechModelRow(_ model: SpeechModel) -> some View {
+        let phase = modelStore.phase(model)
+        let size = ByteCountFormatter.string(fromByteCount: model.bytes, countStyle: .file)
+        var caption = Text("\(model.detail) · \(size)").foregroundStyle(.secondary)
+        if case .failed(let message) = phase { caption = Text(message).foregroundStyle(JeroxInk.danger) }
+        return line {
+            HStack(spacing: 12) {
+                titled(model.name, badge: model.recommended, detail: caption)
+                    .contentShape(Rectangle())
+                    .onTapGesture { if phase == .ready { speechEngine = model.id } }
+                switch phase {
+                case .idle, .failed:
+                    Button { modelStore.download(model) } label: {
+                        Label(phase == .idle ? "Download" : "Retry", systemImage: "arrow.down.circle")
+                            .font(.system(size: 12, weight: .medium))
+                    }
+                    .buttonStyle(.plain)
+                    .foregroundStyle(JeroxInk.accent)
+                case .downloading(let done):
+                    ProgressView(value: done).frame(width: 80)
+                    Text("\(Int(done * 100))%")
+                        .font(.caption.monospacedDigit())
+                        .foregroundStyle(.secondary)
+                        .frame(width: 32, alignment: .trailing)
+                    iconButton("xmark", help: "Cancel") { modelStore.cancel(model) }
+                case .verifying:
+                    ProgressView().controlSize(.small)
+                    Text("Verifying").font(.caption).foregroundStyle(.secondary)
+                case .ready:
+                    iconButton("trash", help: "Delete", role: .destructive) { modelStore.delete(model) }
+                    Button { speechEngine = model.id } label: { radio(speechEngine == model.id) }
+                        .buttonStyle(.plain)
+                }
+            }
+        }
+    }
+
+    private func switchToggle(_ isOn: Binding<Bool>) -> some View {
+        Toggle("", isOn: isOn).labelsHidden().toggleStyle(.switch).controlSize(.mini)
+    }
+
+    private func stepper(_ value: Binding<Int>, in range: ClosedRange<Int>) -> some View {
+        HStack(spacing: 8) {
+            Text("\(value.wrappedValue)").monospacedDigit().foregroundStyle(.secondary)
+            Stepper("", value: value, in: range).labelsHidden()
+        }
+    }
+
+    private func line<Content: View>(@ViewBuilder _ content: () -> Content) -> some View {
+        content()
+            .padding(.horizontal, 14)
+            .padding(.vertical, 6)
+            .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+            .overlay(alignment: .bottom) {
+                Rectangle().fill(Color.primary.opacity(0.08)).frame(height: 1).padding(.horizontal, 14)
+            }
+    }
+
+    private func field(_ title: String, text: Binding<String>, secure: Bool) -> some View {
+        HStack(spacing: 12) {
+            Text(title)
+                .frame(width: 64, alignment: .leading)
+                .foregroundStyle(.secondary)
+            Group {
+                if secure {
+                    SecureField("", text: text, prompt: Text(title).foregroundStyle(.tertiary))
+                } else {
+                    TextField("", text: text, prompt: Text(title).foregroundStyle(.tertiary))
+                }
+            }
+            .textFieldStyle(.plain)
+            .foregroundStyle(.primary)
+            .tint(JeroxInk.accent)
+        }
+    }
+
+    private func setOpenAtLogin(_ on: Bool) {
+        do {
+            if on { try SMAppService.mainApp.register() }
+            else { try SMAppService.mainApp.unregister() }
+        } catch {
+            loginItem = false
+        }
+    }
+
+    private func loadProvider() {
+        if providerRaw == AIService.apple.rawValue, !appleIntelligenceReady() {
+            providerRaw = AIService.openrouter.rawValue
+        }
+        keyReady = false
+        apiKey = APIKey.read(providerRaw)
+        modelName = savedAIModel(service: providerRaw)
+        keyReady = true
+    }
+
+    private func selectProvider(_ service: AIService) {
+        keyReady = false
+        providerRaw = service.rawValue
+        apiKey = APIKey.read(service.rawValue)
+        modelName = savedAIModel(service: service.rawValue)
+        keyReady = true
+    }
+
+    private func savePrompt() {
+        let name = promptName.trimmingCharacters(in: .whitespacesAndNewlines)
+        let instruction = promptInstruction.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !name.isEmpty, !instruction.isEmpty else { return }
+        if let editingPrompt, let index = customPrompts.firstIndex(where: { $0.id == editingPrompt }) {
+            customPrompts[index].name = name
+            customPrompts[index].instruction = instruction
+        } else {
+            customPrompts.append(RephrasePrompt(id: UUID().uuidString, name: name, instruction: instruction))
+        }
+        RephrasePromptStore.save(customPrompts)
+        promptName = ""
+        promptInstruction = ""
+        editingPrompt = nil
+    }
+}

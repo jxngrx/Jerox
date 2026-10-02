@@ -3,16 +3,10 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 56;
+	objectVersion = 77;
 	objects = {
 
 /* Begin PBXBuildFile section */
-		A10000000000000000000001 /* History.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000003 /* History.swift */; };
-		A10000000000000000000002 /* JeroxApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000004 /* JeroxApp.swift */; };
-		A10000000000000000000014 /* jerox-icon-menu.png in Resources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000015 /* jerox-icon-menu.png */; };
-		A10000000000000000000016 /* jerox-icon.png in Resources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000017 /* jerox-icon.png */; };
-		A10000000000000000000018 /* jerox-icon.icns in Resources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000019 /* jerox-icon.icns */; };
-		A10000000000000000000020 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000021 /* Models.swift */; };
 		A10000000000000000000022 /* whisper.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = A10000000000000000000023 /* whisper.xcframework */; };
 		A10000000000000000000024 /* whisper.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = A10000000000000000000023 /* whisper.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
@@ -32,15 +26,31 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		A10000000000000000000003 /* History.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = History.swift; sourceTree = "<group>"; };
-		A10000000000000000000004 /* JeroxApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JeroxApp.swift; sourceTree = "<group>"; };
-		A10000000000000000000015 /* jerox-icon-menu.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = jerox-icon-menu.png; sourceTree = "<group>"; };
-		A10000000000000000000017 /* jerox-icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = jerox-icon.png; sourceTree = "<group>"; };
-		A10000000000000000000019 /* jerox-icon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = jerox-icon.icns; sourceTree = "<group>"; };
 		A10000000000000000000005 /* Jerox.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Jerox.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		A10000000000000000000021 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
-		A10000000000000000000023 /* whisper.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = Vendor/whisper.xcframework; sourceTree = "<group>"; };
+		A10000000000000000000023 /* whisper.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = Vendor/whisper.xcframework; sourceTree = SOURCE_ROOT; };
+		A10000000000000000000032 /* Base.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Config/Base.xcconfig; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		A10000000000000000000030 /* Exceptions for "Jerox" folder in "Jerox" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Resources/Info.plist,
+			);
+			target = A1000000000000000000000C /* Jerox */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		A10000000000000000000031 /* Jerox */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				A10000000000000000000030 /* Exceptions for "Jerox" folder in "Jerox" target */,
+			);
+			path = Jerox;
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		A10000000000000000000006 /* Frameworks */ = {
@@ -54,20 +64,6 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		A10000000000000000000009 /* Jerox */ = {
-			isa = PBXGroup;
-			children = (
-				A10000000000000000000003 /* History.swift */,
-				A10000000000000000000004 /* JeroxApp.swift */,
-				A10000000000000000000021 /* Models.swift */,
-				A10000000000000000000023 /* whisper.xcframework */,
-				A10000000000000000000015 /* jerox-icon-menu.png */,
-				A10000000000000000000017 /* jerox-icon.png */,
-				A10000000000000000000019 /* jerox-icon.icns */,
-			);
-			path = Jerox;
-			sourceTree = "<group>";
-		};
 		A1000000000000000000000A /* Products */ = {
 			isa = PBXGroup;
 			children = (
@@ -79,9 +75,27 @@
 		A1000000000000000000000B = {
 			isa = PBXGroup;
 			children = (
-				A10000000000000000000009 /* Jerox */,
+				A10000000000000000000031 /* Jerox */,
+				A10000000000000000000033 /* Config */,
+				A10000000000000000000034 /* Vendor */,
 				A1000000000000000000000A /* Products */,
 			);
+			sourceTree = "<group>";
+		};
+		A10000000000000000000033 /* Config */ = {
+			isa = PBXGroup;
+			children = (
+				A10000000000000000000032 /* Base.xcconfig */,
+			);
+			name = Config;
+			sourceTree = "<group>";
+		};
+		A10000000000000000000034 /* Vendor */ = {
+			isa = PBXGroup;
+			children = (
+				A10000000000000000000023 /* whisper.xcframework */,
+			);
+			name = Vendor;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -99,6 +113,9 @@
 			buildRules = (
 			);
 			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				A10000000000000000000031 /* Jerox */,
 			);
 			name = Jerox;
 			productName = Jerox;
@@ -120,7 +137,6 @@
 				};
 			};
 			buildConfigurationList = A10000000000000000000013 /* Build configuration list for PBXProject "Jerox" */;
-			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -128,6 +144,8 @@
 				Base,
 			);
 			mainGroup = A1000000000000000000000B;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
 			productRefGroup = A1000000000000000000000A /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -142,9 +160,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A10000000000000000000014 /* jerox-icon-menu.png in Resources */,
-				A10000000000000000000016 /* jerox-icon.png in Resources */,
-				A10000000000000000000018 /* jerox-icon.icns in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -155,9 +170,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A10000000000000000000001 /* History.swift in Sources */,
-				A10000000000000000000002 /* JeroxApp.swift in Sources */,
-				A10000000000000000000020 /* Models.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -166,15 +178,13 @@
 /* Begin XCBuildConfiguration section */
 		A1000000000000000000000E /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = A10000000000000000000032 /* Base.xcconfig */;
 			buildSettings = {
-				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 5QDKTMLU6B;
 				ENABLE_HARDENED_RUNTIME = NO;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = Jerox/Info.plist;
+				INFOPLIST_FILE = Jerox/Resources/Info.plist;
 				INFOPLIST_KEY_LSUIElement = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -187,7 +197,6 @@
 					"-weak_framework",
 					FoundationModels,
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.jxngrx.jerox;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_VERSION = 5.0;
@@ -196,15 +205,13 @@
 		};
 		A1000000000000000000000F /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = A10000000000000000000032 /* Base.xcconfig */;
 			buildSettings = {
-				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 5QDKTMLU6B;
 				ENABLE_HARDENED_RUNTIME = NO;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = Jerox/Info.plist;
+				INFOPLIST_FILE = Jerox/Resources/Info.plist;
 				INFOPLIST_KEY_LSUIElement = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -217,7 +224,6 @@
 					"-weak_framework",
 					FoundationModels,
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.jxngrx.jerox;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_VERSION = 5.0;

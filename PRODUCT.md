@@ -34,13 +34,13 @@ Confirmed jobs: recall a recent copy, rewrite text, dictate, and read text from 
 
 Dictation and screen-text reading stay on this Mac. Cloud AI is only for rephrase.
 
-Dictation runs on Apple Speech (live text) or a downloaded Whisper model (offline, transcribes on stop). Models come from a pinned Hugging Face revision of `ggerganov/whisper.cpp`, are sha256-verified, and live in `~/Library/Application Support/Jerox/Models`. The catalog is `SpeechCatalog` in `Jerox/Models.swift`.
+Dictation runs on Apple Speech (live text) or a downloaded Whisper model (offline, transcribes on stop). Models come from a pinned Hugging Face revision of `ggerganov/whisper.cpp`, are sha256-verified, and live in `~/Library/Application Support/Jerox/Models`. The catalog is `SpeechCatalog` in `Jerox/Dictation/SpeechModels.swift`.
 
 Minimum macOS 15.1. Existing app: Swift, SwiftUI, and AppKit.
 
 A downloaded on-device rewrite (LLM) model is not in the product. Add it only when asked. Downloaded speech models are.
 
-Undecided: pricing, distribution, and any audience beyond the person above.
+Distribution: open source under the MIT License. Undecided: pricing and any audience beyond the person above.
 
 ## Brand Commitments
 
@@ -50,7 +50,7 @@ The name is Jerox. The menu-bar icon is the stacked-panels mark (silver over gra
 
 ## Evidence on Hand
 
-The running app is the source of truth: `Jerox/JeroxApp.swift` and `Jerox/History.swift`.
+The running app is the source of truth: the sources under `Jerox/` (see README for the folder map).
 
 `docs/jerox-app.md` is behind the app. It still says screen-text reading is absent and that rephrase is OpenRouter-only. Do not treat that file as the current product.
 

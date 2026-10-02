@@ -5,6 +5,14 @@ DerivedData/
 xcuserdata/
 *.xcuserstate
 
+# Personal signing (copy Config/Local.xcconfig.example)
+Config/Local.xcconfig
+
+# Personal agent/editor hook configs (absolute local paths)
+.claude/settings.local.json
+.codex/
+.cursor/
+
 # Launch films: brag/Hyperframes outputs, renders, compositions
 launch/
 brag-output*/
