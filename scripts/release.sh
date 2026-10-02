@@ -1,0 +1,100 @@
+#!/usr/bin/env bash
+# Builds a versioned Jerox release into dist/:
+#   Jerox-<version>.dmg     drag-to-Applications disk image
+#   Jerox-<version>.pkg     macOS Installer package (installs to /Applications)
+#   Jerox-<version>.sha256  checksums
+#
+# Usage: scripts/release.sh [version]        version defaults to the latest v* git tag
+# Optional environment:
+#   SIGN_IDENTITY       "Developer ID Application: Name (TEAMID)"  signs the app with the hardened runtime
+#   INSTALLER_IDENTITY  "Developer ID Installer: Name (TEAMID)"    signs the .pkg
+#   NOTARY_PROFILE      notarytool keychain profile                 notarizes and staples both files
+#   RELAYOUT=1          re-arrange the DMG window in Finder and save it to installer/dmg-DS_Store
+set -euo pipefail
+cd "$(dirname "$0")/.."
+
+VERSION="${1:-$(git describe --tags --abbrev=0 2>/dev/null | sed 's/^v//' || true)}"
+VERSION="${VERSION:-0.1.0}"
+[[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+([-+.][0-9A-Za-z.]+)?$ ]] || { echo "error: version must look like 1.2.3 (got '$VERSION')" >&2; exit 1; }
+BUILD="$(git rev-list --count HEAD 2>/dev/null || echo 1)"
+
+DIST=dist
+DERIVED=build/release
+APP="$DERIVED/Build/Products/Release/Jerox.app"
+NAME="Jerox-$VERSION"
+mkdir -p "$DIST"
+rm -rf "$DERIVED" build/dmg build/pkgroot
+
+step() { printf '\n▸ %s\n' "$*"; }
+
+step "Building Jerox $VERSION (build $BUILD)"
+SIGN_ARGS=()
+if [[ -n "${SIGN_IDENTITY:-}" ]]; then
+  SIGN_ARGS=(CODE_SIGN_IDENTITY="$SIGN_IDENTITY" CODE_SIGN_STYLE=Manual ENABLE_HARDENED_RUNTIME=YES OTHER_CODE_SIGN_FLAGS=--timestamp)
+fi
+xcodebuild -quiet -project Jerox.xcodeproj -scheme Jerox -configuration Release -derivedDataPath "$DERIVED" \
+  MARKETING_VERSION="$VERSION" CURRENT_PROJECT_VERSION="$BUILD" ${SIGN_ARGS[@]+"${SIGN_ARGS[@]}"} build
+codesign --verify --deep --strict "$APP"
+SHIPPED="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "$APP/Contents/Info.plist")"
+[[ "$SHIPPED" == "$VERSION" ]] || { echo "error: app reports $SHIPPED, expected $VERSION" >&2; exit 1; }
+
+step "Disk image"
+mkdir -p build/dmg/.background
+cp -R "$APP" build/dmg/
+ln -s /Applications build/dmg/Applications
+cp installer/dmg-background.tiff build/dmg/.background/background.tiff
+[[ -f installer/dmg-DS_Store && "${RELAYOUT:-0}" != 1 ]] && cp installer/dmg-DS_Store build/dmg/.DS_Store
+hdiutil create -quiet -ov -volname Jerox -srcfolder build/dmg -fs HFS+ -format UDRW build/rw.dmg
+if [[ "${RELAYOUT:-0}" == 1 ]]; then
+  MOUNT="$(hdiutil attach -readwrite -noverify -noautoopen build/rw.dmg | awk -F'\t' '/\/Volumes\//{print $NF}')"
+  osascript <<EOS
+tell application "Finder"
+  tell disk "Jerox"
+    open
+    set current view of container window to icon view
+    set toolbar visible of container window to false
+    set statusbar visible of container window to false
+    set bounds of container window to {200, 120, 860, 520}
+    set opts to the icon view options of container window
+    set arrangement of opts to not arranged
+    set icon size of opts to 112
+    set background picture of opts to file ".background:background.tiff"
+    set position of item "Jerox.app" of container window to {165, 190}
+    set position of item "Applications" of container window to {495, 190}
+    update without registering applications
+    delay 1
+    close
+  end tell
+end tell
+EOS
+  sync
+  cp "$MOUNT/.DS_Store" installer/dmg-DS_Store
+  hdiutil detach -quiet "$MOUNT"
+  echo "saved window layout to installer/dmg-DS_Store"
+fi
+rm -f "$DIST/$NAME.dmg"
+hdiutil convert -quiet build/rw.dmg -format UDZO -imagekey zlib-level=9 -o "$DIST/$NAME.dmg"
+rm -f build/rw.dmg
+[[ -n "${SIGN_IDENTITY:-}" ]] && codesign --sign "$SIGN_IDENTITY" --timestamp "$DIST/$NAME.dmg"
+
+step "Installer package"
+mkdir -p build/pkgroot/Applications
+cp -R "$APP" build/pkgroot/Applications/
+pkgbuild --analyze --root build/pkgroot build/component.plist >/dev/null
+/usr/libexec/PlistBuddy -c 'Set :0:BundleIsRelocatable false' build/component.plist
+PKG_SIGN=()
+[[ -n "${INSTALLER_IDENTITY:-}" ]] && PKG_SIGN=(--sign "$INSTALLER_IDENTITY" --timestamp)
+pkgbuild --quiet --root build/pkgroot --component-plist build/component.plist --install-location / \
+  --identifier com.jxngrx.jerox.pkg --version "$VERSION" ${PKG_SIGN[@]+"${PKG_SIGN[@]}"} "$DIST/$NAME.pkg"
+
+if [[ -n "${NOTARY_PROFILE:-}" ]]; then
+  step "Notarizing"
+  for f in "$DIST/$NAME.dmg" "$DIST/$NAME.pkg"; do
+    xcrun notarytool submit "$f" --keychain-profile "$NOTARY_PROFILE" --wait
+    xcrun stapler staple "$f"
+  done
+fi
+
+( cd "$DIST" && shasum -a 256 "$NAME.dmg" "$NAME.pkg" > "$NAME.sha256" )
+step "Done"
+ls -lh "$DIST/$NAME".*

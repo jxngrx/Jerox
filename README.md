@@ -29,6 +29,12 @@ You can change every shortcut in Settings.
 
 **Privacy.** History stays on your disk. Dictation and screen reading run on your Mac. The network is used only for a rephrase you ask for: either Apple Intelligence on device (macOS 26) or OpenRouter, OpenAI, Anthropic, or Hugging Face with your own key, which is stored in the Keychain.
 
+## Install
+
+Download the latest `Jerox-<version>.dmg` from [Releases](https://github.com/jxngrx/Jerox/releases), open it, and drag Jerox into Applications. Prefer the macOS Installer? Use the `.pkg` from the same release. On first launch, onboarding walks you through the shortcuts and the three permissions.
+
+Builds that are not notarized need one extra step the first time: Control-click Jerox in Applications and choose **Open**.
+
 ## Requirements
 
 - macOS 15.1 or later to run.
@@ -76,10 +82,13 @@ Jerox/                     App sources (Xcode synchronized folder: new files bui
   Dictation/               Speech pipeline text helpers, Whisper models, microphones, dictation bar
   ScreenText/              Screen selection, text recognition, caption layout
   Shortcuts/               Default shortcuts, recorder, key caps
+  Onboarding/              First-run walkthrough and permissions
   Settings/                Settings window
   DesignSystem/            Colors, logo, shared styles, toast
   Resources/               App icon, menu-bar icon, Info.plist
-Config/                    Shared xcconfig; your Local.xcconfig for signing
+Config/                    Shared xcconfig, entitlements, your Local.xcconfig for signing
+installer/                 DMG background and window layout
+scripts/                   release.sh (versioned .dmg and .pkg)
 Vendor/                    whisper.cpp prebuilt framework (macOS slice) and its license
 site/                      Launch website (static HTML)
 assets/brand/              Logo source files
@@ -87,6 +96,10 @@ docs/                      Extra documentation
 ```
 
 Ignored locally: `build/`, `launch/` (launch films), `reference/` (inspiration material).
+
+## Releases
+
+Tag `vX.Y.Z` and push it; CI builds the `.dmg` and `.pkg` and publishes them. Details in [docs/RELEASING.md](docs/RELEASING.md).
 
 ## Contributing
 

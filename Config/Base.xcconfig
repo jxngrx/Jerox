@@ -6,5 +6,6 @@ CODE_SIGN_STYLE = Automatic
 CODE_SIGN_IDENTITY = -
 DEVELOPMENT_TEAM =
 PRODUCT_BUNDLE_IDENTIFIER = com.jxngrx.jerox
+CODE_SIGN_ENTITLEMENTS = Config/Jerox.entitlements
 
 #include? "Local.xcconfig"

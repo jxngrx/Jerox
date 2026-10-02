@@ -181,47 +181,4 @@ extension AppDelegate {
         let key = kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String
         AXIsProcessTrustedWithOptions([key: true] as CFDictionary)
     }
-
-    func showWelcomeIfNeeded() {
-        if ProcessInfo.processInfo.environment["JEROX_SKIP_WELCOME"] == "1" { return }
-        let key = "didShowWelcome"
-        guard !UserDefaults.standard.bool(forKey: key) else { return }
-        UserDefaults.standard.set(true, forKey: key)
-
-        let sentence = "🙏 Namaste, Welcome to Jerox Family \u{2014} this is developed by jxngrx.com 🎉💚"
-        let alert = NSAlert()
-        alert.messageText = sentence
-        alert.alertStyle = .informational
-        alert.addButton(withTitle: "OK")
-        alert.layout()
-        styleWelcome(sentence, window: alert.window)
-        alert.runModal()
-    }
-
-    func styleWelcome(_ sentence: String, window: NSWindow) {
-        let attr = NSMutableAttributedString(string: sentence)
-        let full = NSRange(location: 0, length: attr.length)
-        attr.addAttribute(.font, value: NSFont.systemFont(ofSize: 13), range: full)
-        attr.addAttribute(.foregroundColor, value: NSColor.labelColor, range: full)
-        let ns = sentence as NSString
-        let name = ns.range(of: "Jerox")
-        if name.location != NSNotFound {
-            attr.addAttribute(.font, value: NSFont.boldSystemFont(ofSize: 13), range: name)
-        }
-        let link = ns.range(of: "jxngrx.com")
-        if link.location != NSNotFound, let url = URL(string: "http://jxngrx.com") {
-            attr.addAttribute(.link, value: url, range: link)
-            attr.addAttribute(.underlineStyle, value: NSUnderlineStyle.single.rawValue, range: link)
-            attr.addAttribute(.foregroundColor, value: NSColor.linkColor, range: link)
-        }
-        func walk(_ view: NSView) {
-            if let field = view as? NSTextField, field.stringValue.contains("Namaste") {
-                field.allowsEditingTextAttributes = true
-                field.isSelectable = true
-                field.attributedStringValue = attr
-            }
-            view.subviews.forEach(walk)
-        }
-        if let content = window.contentView { walk(content) }
-    }
 }

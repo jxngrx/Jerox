@@ -1,0 +1,25 @@
+name: Release
+
+# Push a tag like v0.2.0 to build Jerox-0.2.0.dmg/.pkg and publish a GitHub Release.
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # full history: the build number is the commit count
+      - name: Self-checks
+        run: make test
+      - name: Build DMG and installer
+        run: scripts/release.sh "${GITHUB_REF_NAME#v}"
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" dist/* --title "Jerox ${GITHUB_REF_NAME#v}" --generate-notes

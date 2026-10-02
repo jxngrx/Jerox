@@ -194,7 +194,7 @@ Product-panel replicas carry the app's own palettes (the light clipboard panel o
 ### Named Rules
 **The Sentence Headline Rule.** Headlines are plain sentences ending in a period, sentence case, no labels above them.
 
-**The Machine Text Rule.** Mono is for keys, file sizes, and system notes. Never for headlines or prose.
+**The Machine Text Rule.** Mono is for keys, file sizes, system notes, and (user-pinned, 2026-10-02) the uppercase nav links, pill buttons, and hero aside. Never for headlines or prose.
 
 ## Layout
 

@@ -23,7 +23,7 @@ OWN-WORLD: True black page, one framed hero stage (rounded, hairline border), th
 
 STORY: They read "It works where you already are", watch the film resolve into the logo as they scroll, try each panel, and leave an email.
 
-FIRST VIEWPORT: Framed stage, pill nav top (Product · Features · Privacy · Shortcuts). Split: left-aligned three-line headline ending in the blue dot, one sentence, waitlist field plus blue button, macOS 15.1 note. Right: a light Notes window where the caret blinks, the history panel opens at the cursor, a query filters, Return pastes the link. Mark silhouette behind the window. Stacks copy-then-window under 900px. User-chosen split, 2026-10-02.
+FIRST VIEWPORT: User-pinned to the Griffin hero (2026-10-02). Full-bleed near-black, no framed stage. Top bar: mark + Jerox left, mono uppercase links centered (Product, Features, Privacy, Shortcuts), GitHub link with live stars and a light pill Join waitlist right. Left-aligned two-line headline ending in the blue dot; lede with the second sentence muted; light pill Join waitlist + ghost Star on GitHub. Right: a live Rewrite in place card (rough line selected, Rephrase with panel, rewrite pastes back). Below, a full-width glyph field: faint slash grid with JEROX written in bright glyphs, a blue sweep moving through it.
 
 FORM: User-pinned (rareUI grammar, Film 02 scroll-scrub); roll ccb7ba43 run, pin wins.
 

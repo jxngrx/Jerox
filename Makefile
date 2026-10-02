@@ -8,7 +8,7 @@ LOGIC := Jerox/Clipboard/Clip.swift Jerox/Clipboard/ClipboardHistory.swift \
          Jerox/Rephrase/RephrasePrompts.swift Jerox/Rephrase/AIProviders.swift \
          Jerox/Dictation/DictationText.swift Jerox/ScreenText/ScreenTextLayout.swift
 
-.PHONY: build run test ci clean
+.PHONY: build run test ci dmg clean
 
 build:
 	$(XCODE) build
@@ -25,5 +25,9 @@ test:
 ci: test
 	$(XCODE) CODE_SIGNING_ALLOWED=NO build
 
+# Versioned release: make dmg VERSION=1.2.3  (defaults to the latest v* tag). See docs/RELEASING.md.
+dmg:
+	scripts/release.sh $(VERSION)
+
 clean:
-	rm -rf build
+	rm -rf build dist
