@@ -27,6 +27,10 @@ struct SettingsView: View {
     }
 
     var onRetention: () -> Void
+    private var appVersion: String {
+        let info = Bundle.main.infoDictionary
+        return "Version \(info?["CFBundleShortVersionString"] as? String ?? "?") (\(info?["CFBundleVersion"] as? String ?? "?"))"
+    }
     var onHotkey: () -> Void
     @State private var page: Page? = .general
     @AppStorage("micUID") private var micUID = ""
@@ -87,6 +91,12 @@ struct SettingsView: View {
                     .buttonStyle(.plain)
                 }
                 Spacer()
+                Text(appVersion)
+                    .font(.caption.monospacedDigit())
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, 8)
+                    .textSelection(.enabled)
             }
             .padding(.horizontal, 8)
             .padding(.top, 28)
@@ -304,6 +314,14 @@ struct SettingsView: View {
                 line { ShortcutRecorder(title: "Pin", code: $pinCode, mods: $pinMods) }
                 line { ShortcutRecorder(title: "Rephrase", requiresModifier: true, code: $rephraseCode, mods: $rephraseMods) }
             }
+            #if DEBUG
+            group("Developer", hint: "Debug builds only. Not shipped.") {
+                row("__dev__ Onboarding") {
+                    Button("Open") { AppDelegate.shared?.showOnboarding() }
+                        .controlSize(.small)
+                }
+            }
+            #endif
         default:
             group("Dictation") {
                 line { ShortcutRecorder(title: "Shortcut", requiresModifier: true, code: $dictateCode, mods: $dictateMods) }

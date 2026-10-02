@@ -61,42 +61,53 @@ img { display: block; max-width: 100%; }
 h1, h2, h3 { font-family: var(--display); font-weight: 600; letter-spacing: -0.035em; text-wrap: balance; }
 h1 { font-size: clamp(46px, 7vw, 96px); line-height: 1.0; }
 h2 { font-size: clamp(36px, 4.6vw, 60px); line-height: 1.04; }
-h3 { font-family: var(--sans); font-weight: 600; font-size: 18px; letter-spacing: -0.01em; }
+h3, .card-title { font-family: var(--sans); font-weight: 600; font-size: 18px; letter-spacing: -0.01em; color: var(--fg); }
 .lede { font-size: clamp(17px, 1.5vw, 20px); color: var(--muted); max-width: 56ch; text-wrap: pretty; }
 .kbd { display: inline-flex; gap: 4px; }
 .kbd kbd { font-family: var(--mono); font-size: 12px; font-weight: 500; min-width: 24px; height: 24px; padding: 0 7px; display: inline-flex; align-items: center; justify-content: center; border-radius: 7px; background: #1c1c21; border: 1px solid #2c2c33; border-bottom-width: 2px; color: #d9d9de; }
 
-/* ── nav: three floating pills ── */
-.nav { position: fixed; top: 22px; left: 0; right: 0; z-index: 50; display: flex; justify-content: center; gap: 10px; pointer-events: none; transition: transform .5s var(--ease); }
-.nav > * { pointer-events: auto; }
-.pill { height: 46px; display: flex; align-items: center; gap: 2px; padding: 0 6px; border-radius: 999px; background: rgba(16, 16, 19, .78); border: 1px solid var(--line); backdrop-filter: blur(16px) saturate(140%); -webkit-backdrop-filter: blur(16px) saturate(140%); box-shadow: 0 10px 30px rgba(0, 0, 0, .35); }
-.brand { padding: 0 16px 0 10px; gap: 9px; font-weight: 600; font-size: 15px; }
-.brand img { width: 24px; height: 24px; }
-.links a { font-size: 14px; color: var(--muted); padding: 0 14px; height: 32px; display: inline-flex; align-items: center; border-radius: 999px; transition: color .2s, background .2s; }
-.links a + a { position: relative; }
-.links a + a::before { content: ""; position: absolute; left: 0; top: 10px; bottom: 10px; width: 1px; background: var(--line-2); }
-.links a:hover { color: var(--fg); }
-.nav .cta-pill { padding: 0 5px; }
-.nav .cta-pill a { height: 36px; padding: 0 16px; border-radius: 999px; background: var(--btn); color: #fff; font-size: 14px; font-weight: 600; display: inline-flex; align-items: center; transition: background .2s; }
-.nav .cta-pill a:hover { background: var(--btn-hi); }
+/* ── top bar ── */
+.nav { position: fixed; inset: 0 0 auto 0; z-index: 50; height: 68px; display: flex; align-items: center; justify-content: space-between; padding: 0 clamp(20px, 4vw, 56px); border-bottom: 1px solid transparent; transition: background .3s, border-color .3s; }
+.nav.scrolled { background: rgba(10, 10, 12, .74); backdrop-filter: blur(14px) saturate(140%); -webkit-backdrop-filter: blur(14px) saturate(140%); border-color: var(--line); }
+.brand { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 19px; letter-spacing: -0.02em; }
+.brand img { width: 26px; height: 26px; }
+.links { position: absolute; left: 50%; transform: translateX(-50%); display: flex; gap: clamp(18px, 2.4vw, 34px); }
+.links a, .gh, .btn { font-family: var(--mono); font-size: 12.5px; letter-spacing: .06em; text-transform: uppercase; }
+.links a, .gh { color: #d4d4d8; transition: color .2s; }
+.links a:hover, .gh:hover { color: #fff; }
+.nav-right { display: flex; align-items: center; gap: 22px; }
+.gh { display: inline-flex; align-items: center; gap: 8px; }
+.gh svg { width: 15px; height: 15px; }
+.gh b, .btn b { font-weight: 500; color: var(--fg); }
+.gh b:empty, .btn b:empty { display: none; }
+.btn { height: 40px; padding: 0 18px; display: inline-flex; align-items: center; gap: 10px; border-radius: 999px; white-space: nowrap; transition: background .2s, border-color .2s, transform .2s var(--ease); }
+.btn:active { transform: scale(.97); }
+.btn svg { width: 14px; height: 14px; flex: none; transition: transform .25s var(--ease); }
+.btn:hover svg.arr { transform: translateX(3px); }
+.btn-light { background: #ededef; color: #0b0b0d; }
+.btn-light:hover { background: #fff; }
+.btn-ghost { border: 1px solid var(--line-2); color: var(--fg); }
+.btn-ghost:hover { border-color: rgba(255, 255, 255, .34); }
 
-/* ── hero stage ── */
-.stage { position: relative; margin: 12px; min-height: calc(100svh - 24px); border-radius: var(--r-stage); border: 1px solid var(--line); background: linear-gradient(180deg, #121215 0%, #0b0b0d 60%, #09090b 100%); overflow: hidden; display: flex; align-items: center; justify-content: center; isolation: isolate; }
-.mark-bg { position: absolute; left: 66%; top: 50%; width: max(min(1180px, 112vw), 640px); height: auto; transform: translate(-50%, -44%); z-index: -1; }
-.mark-bg path { fill: #1f1f24; }
-.mark-bg path + path { fill: #18181c; }
-.hero { width: min(1240px, calc(100% - 64px)); padding: 140px 0 110px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: 64px; align-items: center; }
-.hero-copy { display: flex; flex-direction: column; align-items: flex-start; gap: 26px; }
-.hero h1 { max-width: 10ch; font-size: clamp(44px, 5.4vw, 84px); }
-.mac { border-radius: 16px; overflow: hidden; background: #eceef2; border: 1px solid rgba(255, 255, 255, .14); box-shadow: 0 50px 120px rgba(0, 0, 0, .65), 0 8px 24px rgba(0, 0, 0, .35); }
-.mac-bar { height: 38px; display: flex; align-items: center; gap: 8px; padding: 0 14px; background: #e3e5ea; border-bottom: 1px solid rgba(27, 29, 34, .1); font-size: 12.5px; font-weight: 600; color: #3a3f4b; }
-.mac-bar i { width: 12px; height: 12px; border-radius: 50%; background: #ff5f57; }
-.mac-bar i:nth-child(2) { background: #febc2e; } .mac-bar i:nth-child(3) { background: #28c840; }
-.mac-bar span { margin-left: 10px; }
-.mac .demo { height: 420px; border-radius: 0; }
-.hero h1 em { font-style: normal; color: var(--fg); position: relative; }
-.caret-dot { display: inline-block; width: .19em; height: .19em; border-radius: 50%; background: var(--blue); margin-left: .04em; vertical-align: baseline; box-shadow: 0 6px 18px rgba(10, 132, 255, .45); }
-.hero .lede { text-align: left; }
+/* ── hero ── */
+.hero { position: relative; min-height: 100svh; display: flex; flex-direction: column; justify-content: flex-end; background: #0b0b0d; }
+.hero-in { padding: 112px clamp(20px, 4vw, 56px) 40px; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 40px; }
+.hero h1 { font-size: clamp(48px, 6.6vw, 98px); font-weight: 500; letter-spacing: -0.035em; line-height: 1.0; max-width: 11ch; }
+.hero .lede { margin-top: 26px; max-width: 46ch; color: var(--fg); }
+.hero .lede span { color: var(--faint); }
+.hero-ctas { margin-top: 34px; display: flex; flex-wrap: wrap; gap: 12px; }
+.hero .hero-card { grid-column: auto; width: min(500px, 100%); justify-self: end; }
+.tabs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; padding: 8px 8px 12px; }
+.tabs button { display: flex; flex-direction: column; gap: 8px; padding: 0; border: 0; background: none; cursor: pointer; font-family: var(--mono); font-size: 11.5px; letter-spacing: .06em; text-transform: uppercase; text-align: left; color: var(--faint); transition: color .2s; }
+.tabs button[aria-selected="true"], .tabs button:hover { color: var(--fg); }
+.tabs i { display: block; height: 2px; border-radius: 2px; background: var(--line-2); overflow: hidden; }
+.tabs b { display: block; height: 100%; width: 100%; background: var(--blue); transform-origin: left; transform: scaleX(0); }
+.slides { position: relative; height: 320px; border-radius: var(--r-inner); overflow: hidden; background: var(--inner); }
+.slides .demo { position: absolute; inset: 0; height: 100%; opacity: 0; transform: scale(.985); filter: blur(6px); transition: opacity .5s var(--ease), transform .6s var(--ease), filter .5s var(--ease); pointer-events: none; }
+.slides .demo.on { opacity: 1; transform: none; filter: none; pointer-events: auto; }
+.caret-dot { display: inline-block; width: .17em; height: .17em; border-radius: 50%; background: var(--blue); margin-left: .04em; }
+.field { position: relative; height: clamp(170px, 24vh, 250px); border-top: 1px solid var(--line); }
+.field canvas { display: block; width: 100%; height: 100%; }
 
 /* waitlist form */
 .join { display: flex; gap: 8px; padding: 6px; border-radius: 999px; background: rgba(255, 255, 255, .04); border: 1px solid var(--line-2); width: min(480px, 100%); transition: border-color .25s; }
@@ -140,7 +151,7 @@ section.block { padding: clamp(110px, 14vw, 180px) 0 0; }
 .clip-scene { position: absolute; inset: 0; background-color: #eceef2; background-image: linear-gradient(180deg, #f3f4f6, #e7e9ee); color: #1b1d22; }
 .demo.light { background-color: #eceef2; background-image: linear-gradient(180deg, #f3f4f6, #e7e9ee); color: #1b1d22; }
 .card-foot { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; padding: 18px 14px 12px; }
-.card-foot p { color: var(--muted); font-size: 15px; margin-top: 4px; max-width: 44ch; }
+.card-foot p:not(.card-title) { color: var(--muted); font-size: 15px; margin-top: 4px; max-width: 44ch; }
 
 /* clipboard demo (light, macOS-real) */
 .doc { position: absolute; left: 34px; top: 34px; right: 34px; font-size: 19px; color: #1b1d22; white-space: nowrap; }
@@ -211,7 +222,7 @@ section.block { padding: clamp(110px, 14vw, 180px) 0 0; }
 
 /* screen-text demo */
 .st-shot { position: absolute; left: 40px; top: 46px; width: 430px; padding: 24px 26px; border-radius: 12px; background: #1a1b20; border: 1px solid rgba(255, 255, 255, .07); }
-.st-shot h4 { font-family: var(--sans); font-size: 17px; font-weight: 600; margin-bottom: 14px; }
+.st-shot .st-title { font-family: var(--sans); font-size: 17px; font-weight: 600; margin-bottom: 14px; }
 .st-shot li { list-style: none; display: flex; gap: 10px; align-items: center; font-size: 14px; color: #c9ccd4; padding: 6px 0; border-top: 1px solid rgba(255, 255, 255, .06); }
 .st-shot li i { width: 12px; height: 12px; border-radius: 3px; border: 1.5px solid #5b616e; flex: none; }
 .st-dim { position: absolute; inset: 0; background: rgba(0, 0, 0, .35); opacity: 0; transition: opacity .3s; }
@@ -270,13 +281,12 @@ section.block { padding: clamp(110px, 14vw, 180px) 0 0; }
 .js .rv.in { opacity: 1; transform: none; filter: none; }
 
 @media (max-width: 900px) {
-  .hero { grid-template-columns: 1fr; gap: 44px; padding-bottom: 56px; }
-  .mark-bg { left: 50%; }
   .card, .card.w7, .card.w5 { grid-column: 1 / -1; }
   .ledger { grid-template-columns: 1fr; }
   .km-row { grid-template-columns: 1fr; gap: 8px; }
   .keymap { padding: 6px 22px; }
   .links { display: none; }
+  .hero-in { grid-template-columns: 1fr; padding-top: 120px; }
   .demo { height: 340px; }
   .cb { left: 24px; }
   .st-side { display: none; }
@@ -291,9 +301,11 @@ section.block { padding: clamp(110px, 14vw, 180px) 0 0; }
   .foot { position: static; background: rgba(0, 0, 0, .55); text-shadow: none; }
 }
 @media (max-width: 560px) {
+  .gh span { display: none; }
+  .nav-right { gap: 14px; }
+  .nav .btn { padding: 0 14px; }
+  .hero-ctas .btn { flex: 1 1 auto; justify-content: center; }
   .wrap { width: calc(100% - 32px); }
-  .stage { margin: 8px; }
-  .hero { width: calc(100% - 28px); padding: 116px 0 40px; }
   .join { flex-direction: column; border-radius: 22px; }
   .join input { height: 46px; }
   .doc { font-size: 16px; left: 22px; }
@@ -315,33 +327,44 @@ section.block { padding: clamp(110px, 14vw, 180px) 0 0; }
 <body>
 
 <nav class="nav" aria-label="Primary">
-  <a class="pill brand" href="#top"><img src="media/jerox-mark.png" alt="" width="24" height="24">Jerox</a>
-  <div class="pill links"><a href="#film">Product</a><a href="#features">Features</a><a href="#privacy">Privacy</a><a href="#keys">Shortcuts</a></div>
-  <div class="pill cta-pill"><a href="#join">Join waitlist</a></div>
+  <a class="brand" href="#top"><img src="media/jerox-mark.png" alt="" width="26" height="26">Jerox</a>
+  <div class="links"><a href="#film">Product</a><a href="#features">Features</a><a href="#privacy">Privacy</a><a href="#keys">Shortcuts</a></div>
+  <div class="nav-right">
+    <a class="gh" href="https://github.com/jxngrx/Jerox" aria-label="Jerox on GitHub"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg><span>GitHub</span><b data-gh="stars"></b></a>
+    <a class="btn btn-light" href="#waitlist">Join waitlist</a>
+  </div>
 </nav>
 
 <main id="top">
   <!-- Hero: framed stage -->
-  <header class="stage">
-    <svg class="mark-bg" viewBox="0 0 1200 760" aria-hidden="true">
-      <path d="M210 330c0-46 30-86 74-100l300-96c62-20 126 26 126 92v330c0 46-30 86-74 100l-300 96c-62 20-126-26-126-92z" />
-      <path d="M520 430c0-46 30-86 74-100l300-96c62-20 126 26 126 92v330c0 46-30 86-74 100l-300 96c-62 20-126-26-126-92z" />
-    </svg>
-    <div class="hero">
-      <div class="hero-copy">
-      <h1>It works where you already are<span class="caret-dot" aria-hidden="true"></span></h1>
-      <p class="lede">Clipboard history, rewrite, and dictation for Mac. Each opens at your cursor and pastes back into the app you were using.</p>
-      <form class="join" id="join" data-to="hello@jxngrx.com" novalidate>
-        <label class="sr" for="email" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Email address</label>
-        <input id="email" name="email" type="email" inputmode="email" autocomplete="email" placeholder="you@domain.com" required>
-        <button type="submit">Join the waitlist</button>
-      </form>
-      <p class="join-note" aria-live="polite">A menu-bar app · macOS 15.1 or later</p>
+  <header class="hero">
+    <div class="hero-in">
+      <div>
+        <h1>It works where you already are<span class="caret-dot" aria-hidden="true"></span></h1>
+        <p class="lede">Clipboard history, rewrite, and dictation for Mac. <span>Each opens at your cursor and pastes back into the app you were using.</span></p>
+        <div class="hero-ctas">
+          <a class="btn btn-light" href="#waitlist">Join waitlist<svg class="arr" viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8.22 2.97a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042l2.97-2.97H3.75a.75.75 0 0 1 0-1.5h7.44L8.22 4.03a.75.75 0 0 1 0-1.06Z"/></svg></a>
+          <a class="btn btn-ghost" href="https://github.com/jxngrx/Jerox"><svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 .25a.75.75 0 0 1 .673.418l1.882 3.815 4.21.612a.75.75 0 0 1 .416 1.279l-3.046 2.97.719 4.192a.751.751 0 0 1-1.088.791L8 12.347l-3.766 1.98a.75.75 0 0 1-1.088-.79l.72-4.194L.818 6.374a.75.75 0 0 1 .416-1.28l4.21-.611L7.327.668A.75.75 0 0 1 8 .25Z"/></svg>Star on GitHub<b data-gh="stars"></b></a>
+        </div>
       </div>
-      <div class="mac rv" aria-label="Jerox history opening at the cursor in Notes and pasting a link">
-        <div class="mac-bar"><i></i><i></i><i></i><span>Notes</span></div>
-        <div class="demo light" data-clip></div>
-      </div>
+      <article class="card hero-card rv" aria-label="Jerox examples">
+        <div class="tabs" role="tablist" aria-label="Examples">
+          <button role="tab" aria-selected="true"><span>History</span><i><b></b></i></button>
+          <button role="tab" aria-selected="false"><span>Rewrite</span><i><b></b></i></button>
+          <button role="tab" aria-selected="false"><span>Dictate</span><i><b></b></i></button>
+          <button role="tab" aria-selected="false"><span>Read</span><i><b></b></i></button>
+        </div>
+        <div class="slides">
+          <div class="demo light slide on" data-demo="clip" data-slide aria-label="Clipboard history opening at the cursor and pasting a link"></div>
+          <div class="demo slide" data-demo="rp" data-slide aria-label="A rough sentence rewritten in place"></div>
+          <div class="demo slide" data-demo="dc" data-slide aria-label="The dictation bar writing spoken words"></div>
+          <div class="demo slide" data-demo="st" data-slide aria-label="Text read off a selected part of the screen"></div>
+        </div>
+        <div class="card-foot"><div><p class="card-title" id="ex-title">History at the cursor</p><p id="ex-desc">Type to filter. Return pastes in the original format.</p></div><span class="kbd" id="ex-keys"><kbd>⌃</kbd><kbd>⌥</kbd><kbd>⌘</kbd><kbd>V</kbd></span></div>
+      </article>
+    </div>
+    <div class="field" role="img" aria-label="The word JEROX drawn in a field of characters">
+      <canvas id="dictation-field"></canvas>
     </div>
   </header>
 
@@ -378,43 +401,24 @@ section.block { padding: clamp(110px, 14vw, 180px) 0 0; }
       </div>
       <div class="bento">
         <article class="card w7 rv">
-          <div class="demo light" data-clip aria-label="Clipboard history opening at the cursor and pasting a link">
+          <div class="demo light" data-demo="clip" aria-label="Clipboard history opening at the cursor and pasting a link">
           </div>
           <div class="card-foot"><div><h3>History at the cursor</h3><p>Everything you copy, newest first. Type to filter, press Return, and it pastes in its original format.</p></div><span class="kbd" aria-label="Control Option Command V"><kbd>⌃</kbd><kbd>⌥</kbd><kbd>⌘</kbd><kbd>V</kbd></span></div>
         </article>
 
         <article class="card w5 rv">
-          <div class="demo" id="demo-rp" aria-label="A rough sentence rewritten in place">
-            <div class="rp-line"><span class="rp-old" id="rp-old">hey can u send the deck by tmrw</span><span class="rp-new" id="rp-new">Could you send the deck by tomorrow?</span></div>
-            <div class="rp-tag" id="rp-tag"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" style="width:12px;height:12px;vertical-align:-1px;margin-right:6px"><path d="M12 2l1.8 5.4L19 9l-5.2 1.6L12 16l-1.8-5.4L5 9l5.2-1.6z"/></svg>Professional mail, pasted back</div>
-            <div class="pp" id="pp">
-              <div class="pp-h"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.8 5.4L19 9l-5.2 1.6L12 16l-1.8-5.4L5 9l5.2-1.6z"/></svg>Rephrase with</div>
-              <div class="pp-rows"><div class="pp-sel" id="pp-sel"></div><div class="pp-row"><span class="n">1</span>Friendly chat</div><div class="pp-row"><span class="n">2</span>Professional chat</div><div class="pp-row"><span class="n">3</span>Professional mail</div></div>
-              <div class="pp-f"><span><span class="k" id="pp-ret">↩</span>apply</span><span><span class="k">Esc</span>cancel</span></div>
-            </div>
-          </div>
+          <div class="demo" data-demo="rp" aria-label="A rough sentence rewritten in place"></div>
           <div class="card-foot"><div><h3>Rewrite in place</h3><p>Select text in any app, pick a tone, and the rewrite replaces it. Your own prompts sit beside the built-in three.</p></div><span class="kbd" aria-label="Command Shift R"><kbd>⌘</kbd><kbd>⇧</kbd><kbd>R</kbd></span></div>
         </article>
 
         <article class="card w5 rv">
-          <div class="demo" id="demo-dc" aria-label="The dictation bar writing spoken words">
-            <div class="dc-stage"></div>
-            <div class="dc-chip"><i></i>Whisper Small · runs on this Mac</div>
-            <div class="dc-bar">
-              <div class="dc-text" id="dc-text">Remind me to book the flight before Friday.</div>
-              <div class="dc-ctrl"><span class="dc-rec"></span><div class="dc-bars"><b style="animation-delay:-.1s"></b><b style="animation-delay:-.5s"></b><b style="animation-delay:-.2s"></b><b style="animation-delay:-.8s"></b><b style="animation-delay:-.3s"></b><b style="animation-delay:-.7s"></b><b style="animation-delay:-.15s"></b><b style="animation-delay:-.6s"></b><b style="animation-delay:-.4s"></b></div><span class="dc-clock" id="dc-clock">0:00</span><span class="dc-x"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 2l8 8M10 2 2 10"/></svg></span></div>
-            </div>
+          <div class="demo" data-demo="dc" aria-label="The dictation bar writing spoken words">
           </div>
           <div class="card-foot"><div><h3>Dictate anywhere</h3><p>Apple Speech shows live text. A downloaded Whisper model runs fully offline. Either way it pastes where you are.</p></div><span class="kbd" aria-label="Control Option Command D"><kbd>⌃</kbd><kbd>⌥</kbd><kbd>⌘</kbd><kbd>D</kbd></span></div>
         </article>
 
         <article class="card w7 rv">
-          <div class="demo" id="demo-st" aria-label="Text read off a selected part of the screen">
-            <div class="st-shot"><h4>Launch checklist</h4><ul><li><i></i>Record the product film</li><li><i></i>Write the share caption</li><li><i></i>Open the waitlist</li><li><i></i>Ship the first build</li></ul></div>
-            <div class="st-side"><span style="width:80%"></span><span></span><span style="width:60%"></span><span style="width:90%"></span><span style="width:70%"></span></div>
-            <div class="st-dim" id="st-dim"></div>
-            <div class="st-sel" id="st-sel"></div>
-            <div class="st-cap" id="st-cap">Record the product film<br>Write the share caption<small>CLICK TO COPY</small></div>
+          <div class="demo" data-demo="st" aria-label="Text read off a selected part of the screen">
           </div>
           <div class="card-foot"><div><h3>Read the screen</h3><p>Drag over anything you can see, an image, a video frame, a locked PDF, and its text appears right on it. Read on this Mac.</p></div><span class="kbd" aria-label="Control Option Command T"><kbd>⌃</kbd><kbd>⌥</kbd><kbd>⌘</kbd><kbd>T</kbd></span></div>
         </article>
@@ -489,7 +493,7 @@ section.block { padding: clamp(110px, 14vw, 180px) 0 0; }
     <div class="close-in">
       <h2 id="close-h">Stay in the app you’re in.</h2>
       <p class="lede">Jerox is in private testing. Leave your email and we’ll send the first build.</p>
-      <form class="join" data-to="hello@jxngrx.com" novalidate>
+      <form class="join" id="waitlist" data-to="hello@jxngrx.com" novalidate>
         <label for="email2" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Email address</label>
         <input id="email2" name="email" type="email" inputmode="email" autocomplete="email" placeholder="you@domain.com" required>
         <button type="submit">Join the waitlist</button>
@@ -519,6 +523,33 @@ section.block { padding: clamp(110px, 14vw, 180px) 0 0; }
             </div>
 </div></template>
 
+<template id="dc-tpl">
+            <div class="dc-stage"></div>
+            <div class="dc-chip"><i></i>Whisper Small · runs on this Mac</div>
+            <div class="dc-bar">
+              <div class="dc-text">Remind me to book the flight before Friday.</div>
+              <div class="dc-ctrl"><span class="dc-rec"></span><div class="dc-bars"><b style="animation-delay:-.1s"></b><b style="animation-delay:-.5s"></b><b style="animation-delay:-.2s"></b><b style="animation-delay:-.8s"></b><b style="animation-delay:-.3s"></b><b style="animation-delay:-.7s"></b><b style="animation-delay:-.15s"></b><b style="animation-delay:-.6s"></b><b style="animation-delay:-.4s"></b></div><span class="dc-clock">0:00</span><span class="dc-x"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 2l8 8M10 2 2 10"/></svg></span></div>
+            </div>
+</template>
+
+<template id="st-tpl">
+            <div class="st-shot"><p class="st-title">Launch checklist</p><ul><li><i></i>Record the product film</li><li><i></i>Write the share caption</li><li><i></i>Open the waitlist</li><li><i></i>Ship the first build</li></ul></div>
+            <div class="st-side"><span style="width:80%"></span><span></span><span style="width:60%"></span><span style="width:90%"></span><span style="width:70%"></span></div>
+            <div class="st-dim"></div>
+            <div class="st-sel"></div>
+            <div class="st-cap">Record the product film<br>Write the share caption<small>CLICK TO COPY</small></div>
+</template>
+
+<template id="rp-tpl">
+            <div class="rp-line"><span class="rp-old">hey can u send the deck by tmrw</span><span class="rp-new">Could you send the deck by tomorrow?</span></div>
+            <div class="rp-tag"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" style="width:12px;height:12px;vertical-align:-1px;margin-right:6px"><path d="M12 2l1.8 5.4L19 9l-5.2 1.6L12 16l-1.8-5.4L5 9l5.2-1.6z"/></svg>Professional mail, pasted back</div>
+            <div class="pp">
+              <div class="pp-h"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.8 5.4L19 9l-5.2 1.6L12 16l-1.8-5.4L5 9l5.2-1.6z"/></svg>Rephrase with</div>
+              <div class="pp-rows"><div class="pp-sel"></div><div class="pp-row"><span class="n">1</span>Friendly chat</div><div class="pp-row"><span class="n">2</span>Professional chat</div><div class="pp-row"><span class="n">3</span>Professional mail</div></div>
+              <div class="pp-f"><span><span class="k ret">↩</span>apply</span><span><span class="k">Esc</span>cancel</span></div>
+            </div>
+</template>
+
 <script>
 (function () {
   var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -530,9 +561,88 @@ section.block { padding: clamp(110px, 14vw, 180px) 0 0; }
   }, { rootMargin: "0px 0px -8% 0px" });
   document.querySelectorAll(".rv").forEach(function (el, i) { el.style.transitionDelay = (i % 3) * 70 + "ms"; io.observe(el); });
 
+  /* ── GitHub stats: real numbers or none ── */
+  (function () {
+    var REPO = "jxngrx/Jerox", KEY = "jerox-gh", fmt = new Intl.NumberFormat("en", { notation: "compact" });
+    function show(d) {
+      document.querySelectorAll("[data-gh]").forEach(function (el) {
+        var v = d[el.dataset.gh];
+        if (typeof v === "number" && v > 0) { el.textContent = fmt.format(v); el.hidden = false; }
+      });
+    }
+    try { var c = JSON.parse(localStorage.getItem(KEY)); if (c && Date.now() - c.t < 36e5) return show(c); } catch (e) {}
+    Promise.all([
+      fetch("https://api.github.com/repos/" + REPO).then(function (r) { return r.ok ? r.json() : null; }),
+      fetch("https://api.github.com/repos/" + REPO + "/contributors?per_page=1&anon=1").then(function (r) {
+        if (!r.ok) return null;
+        var last = /[?&]page=(\d+)>; rel="last"/.exec(r.headers.get("Link") || "");
+        return last ? +last[1] : r.json().then(function (a) { return a.length; });
+      })
+    ]).then(function (res) {
+      if (!res[0]) return; // private or rate-limited: keep plain labels
+      var d = { t: Date.now(), stars: res[0].stargazers_count, forks: res[0].forks_count, contributors: res[1] };
+      try { localStorage.setItem(KEY, JSON.stringify(d)); } catch (e) {}
+      show(d);
+    }).catch(function () {});
+  })();
+
+  /* ── nav: solid once scrolled; waitlist links focus the email field ── */
+  var nav = document.querySelector(".nav");
+  function navState() { nav.classList.toggle("scrolled", scrollY > 24); }
+  addEventListener("scroll", navState, { passive: true }); navState();
+  document.querySelectorAll('a[href="#waitlist"]').forEach(function (a) {
+    a.addEventListener("click", function () { setTimeout(function () { document.getElementById("email2").focus({ preventScroll: true }); }, 600); });
+  });
+
+  /* ── wordmark field: JEROX written with the glyph grid, a light sweep moving through it ── */
+  (function () {
+    var cv = document.getElementById("dictation-field"), g = cv.getContext("2d");
+    var RH = 10, FONT = '500 9px "JetBrains Mono", ui-monospace, monospace', GLYPHS = "JEROX/";
+    var W, H, dpr, cw, cols, rows, cells = [], base = document.createElement("canvas"), running = false, t0 = 0;
+    function hash(x, y) { var h = Math.imul(x, 374761393) + Math.imul(y, 668265263); h = Math.imul(h ^ (h >>> 13), 1274126177); return ((h ^ (h >>> 16)) >>> 0) / 4294967296; }
+    function size() {
+      var r = cv.getBoundingClientRect(); dpr = Math.min(devicePixelRatio || 1, 2);
+      W = r.width; H = r.height; cv.width = base.width = Math.round(W * dpr); cv.height = base.height = Math.round(H * dpr);
+      g.setTransform(dpr, 0, 0, dpr, 0, 0); g.font = FONT; g.textBaseline = "top";
+      cw = Math.ceil(g.measureText("M").width); cols = Math.ceil(W / cw); rows = Math.floor(H / RH);
+      // Mask: JEROX set in Inter at grid resolution (cells are taller than wide, so squash x).
+      var m = document.createElement("canvas"), mg = m.getContext("2d"); m.width = cols; m.height = rows;
+      mg.font = "700 " + rows * 0.9 + "px Inter, system-ui, sans-serif";
+      var sx = Math.min(RH / cw, (cols * 0.86) / mg.measureText("JEROX").width);
+      mg.setTransform(sx, 0, 0, 1, cols / 2, rows / 2); mg.textAlign = "center"; mg.textBaseline = "middle";
+      mg.fillStyle = "#fff"; mg.fillText("JEROX", 0, rows * 0.04);
+      var px = mg.getImageData(0, 0, cols, rows).data; cells = [];
+      var b = base.getContext("2d"); b.setTransform(dpr, 0, 0, dpr, 0, 0); b.font = FONT; b.textBaseline = "top"; b.clearRect(0, 0, W, H);
+      b.fillStyle = "rgba(255,255,255,0.075)";
+      for (var y = 0; y < rows; y++) for (var x = 0; x < cols; x++) {
+        if (px[(y * cols + x) * 4 + 3] > 110) cells.push(x, y);
+        else if (hash(x, y) > 0.5) b.fillText("/", x * cw, y * RH + 1);
+      }
+      if (!running) draw(2.2);
+    }
+    function draw(t) {
+      g.clearRect(0, 0, W, H); g.drawImage(base, 0, 0, W, H);
+      var sweep = ((t * 0.18) % 1.4 - 0.2) * cols;
+      for (var i = 0; i < cells.length; i += 2) {
+        var x = cells[i], y = cells[i + 1], d = (x - sweep) / 9, near = Math.exp(-d * d);
+        var flip = Math.floor(t * 1.3 + hash(x, y) * 7);
+        g.fillStyle = near > 0.5 ? "rgba(61,157,255," + (0.55 + 0.45 * near) + ")" : "rgba(236,238,244," + (0.5 + 0.35 * hash(y, x) + 0.15 * near) + ")";
+        g.fillText(GLYPHS[(Math.floor(hash(x, y) * 6) + (near > 0.2 ? flip : 0)) % 6], x * cw, y * RH + 1);
+      }
+    }
+    function tick(now) { if (!running) return; draw((now - t0) / 1000); requestAnimationFrame(tick); }
+    new IntersectionObserver(function (es) {
+      var on = es[0].isIntersecting && !reduce;
+      if (on && !running) { running = true; t0 = performance.now(); requestAnimationFrame(tick); }
+      if (!on) running = false;
+    }).observe(cv);
+    addEventListener("resize", size);
+    document.fonts.ready.then(size);
+  })();
+
   /* ── waitlist: validates, then opens a prefilled email ── */
   document.querySelectorAll("form.join").forEach(function (form) {
-    var note = form.nextElementSibling, input = form.querySelector("input");
+    var note = form.nextElementSibling, input = form.querySelector("input"), base = note.textContent;
     form.addEventListener("submit", function (ev) {
       ev.preventDefault();
       var v = input.value.trim();
@@ -546,7 +656,7 @@ section.block { padding: clamp(110px, 14vw, 180px) 0 0; }
       note.textContent = "Opening your mail app to confirm…";
       location.href = "mailto:" + form.dataset.to + "?subject=" + encodeURIComponent("Jerox waitlist") + "&body=" + encodeURIComponent("Please add me to the Jerox waitlist: " + v);
     });
-    input.addEventListener("input", function () { if (note.dataset.state === "error") { note.dataset.state = ""; note.textContent = "A menu-bar app · macOS 15.1 or later"; } });
+    input.addEventListener("input", function () { if (note.dataset.state === "error") { note.dataset.state = ""; note.textContent = base; } });
   });
 
   /* ── Film 02: canvas frames scrubbed by scroll, eased ── */
@@ -623,77 +733,123 @@ section.block { padding: clamp(110px, 14vw, 180px) 0 0; }
     }
   }
 
-  // Clipboard: one template, mounted wherever [data-clip] sits (hero window, feature card)
-  var tpl = document.getElementById("clip-tpl");
-  document.querySelectorAll("[data-clip]").forEach(function (root) {
-    root.appendChild(tpl.content.cloneNode(true));
-    var $ = function (q) { return root.querySelector(q); };
-    var cb = $(".cb"), q = $(".q"), ph = $(".ph"), sel = $(".cb-sel"), link = $(".cb-row.link"), ln = $(".ln"), ins = $(".ins"), ret = $(".ret");
-    var others = Array.prototype.filter.call(root.querySelectorAll(".cb-row, .cb-label"), function (r) { return r !== link; });
-    demo(root, async function () {
-      cb.classList.remove("out"); q.textContent = ""; ph.style.display = ""; sel.style.transform = ""; link.style.transform = ""; ln.textContent = "4"; ins.classList.remove("on");
-      others.forEach(function (o) { o.style.opacity = ""; });
-      if (reduce) return;
-      await sleep(1400);
-      ph.style.display = "none";
-      for (var c of "link") { q.textContent += c; await sleep(140); }
-      await sleep(250);
-      others.forEach(function (o) { o.style.opacity = "0"; });
-      link.style.transform = "translateY(-114px)"; ln.textContent = "1";
-      await sleep(900);
-      ret.classList.add("press"); await sleep(160); ret.classList.remove("press");
-      cb.classList.add("out"); await sleep(220);
-      ins.classList.add("on");
-      await sleep(2600);
-    });
+  // Demos: each kind clones its template and returns run(signal); a stopped signal ends the run early.
+  function stopper(sig) { return function (ms) { return sleep(ms).then(function () { if (sig.stop) throw "stop"; }); }; }
+  var DEMOS = {
+    clip: function (root) {
+      var $ = function (q) { return root.querySelector(q); };
+      var cb = $(".cb"), q = $(".q"), ph = $(".ph"), sel = $(".cb-sel"), link = $(".cb-row.link"), ln = $(".ln"), ins = $(".ins"), ret = $(".ret");
+      var others = Array.prototype.filter.call(root.querySelectorAll(".cb-row, .cb-label"), function (r) { return r !== link; });
+      return async function (sig) {
+        var wait = stopper(sig);
+        cb.classList.remove("out"); q.textContent = ""; ph.style.display = ""; sel.style.transform = ""; link.style.transform = ""; ln.textContent = "4"; ins.classList.remove("on");
+        others.forEach(function (o) { o.style.opacity = ""; });
+        if (reduce) return;
+        await wait(1200);
+        ph.style.display = "none";
+        for (var c of "link") { q.textContent += c; await wait(140); }
+        await wait(250);
+        others.forEach(function (o) { o.style.opacity = "0"; });
+        link.style.transform = "translateY(-114px)"; ln.textContent = "1";
+        await wait(900);
+        ret.classList.add("press"); await wait(160); ret.classList.remove("press");
+        cb.classList.add("out"); await wait(220);
+        ins.classList.add("on");
+        await wait(2200);
+      };
+    },
+    rp: function (root) {
+      var $ = function (q) { return root.querySelector(q); };
+      var old = $(".rp-old"), neu = $(".rp-new"), tag = $(".rp-tag"), pp = $(".pp"), ppSel = $(".pp-sel"), ppRet = $(".ret");
+      return async function (sig) {
+        var wait = stopper(sig);
+        old.classList.remove("sel", "gone"); neu.classList.remove("on"); tag.classList.remove("on"); pp.classList.add("out"); ppSel.style.transform = "";
+        if (reduce) { pp.classList.remove("out"); return; }
+        await wait(600);
+        old.classList.add("sel"); await wait(600);
+        pp.classList.remove("out"); await wait(800);
+        ppSel.style.transform = "translateY(34px)"; await wait(500);
+        ppSel.style.transform = "translateY(68px)"; await wait(600);
+        ppRet.classList.add("press"); await wait(160); ppRet.classList.remove("press");
+        pp.classList.add("out"); await wait(150);
+        old.classList.add("gone"); await wait(180);
+        neu.classList.add("on"); await wait(300);
+        tag.classList.add("on");
+        await wait(2400);
+      };
+    },
+    dc: function (root) {
+      var text = root.querySelector(".dc-text"), clock = root.querySelector(".dc-clock");
+      var spans = text.textContent.split(" ").map(function (w) { var sp = document.createElement("span"); sp.textContent = w + " "; return sp; });
+      text.textContent = ""; spans.forEach(function (sp) { text.appendChild(sp); });
+      return async function (sig) {
+        var wait = stopper(sig);
+        spans.forEach(function (sp) { sp.classList.toggle("on", reduce); });
+        clock.textContent = "0:00";
+        if (reduce) return;
+        await wait(500);
+        for (var i = 0; i < spans.length; i++) { spans[i].classList.add("on"); clock.textContent = "0:0" + Math.min(9, Math.floor(i / 2.5)); await wait(260); }
+        clock.textContent = "0:03";
+        await wait(2400);
+      };
+    },
+    st: function (root) {
+      var els = [".st-dim", ".st-sel", ".st-cap"].map(function (q) { return root.querySelector(q); });
+      return async function (sig) {
+        var wait = stopper(sig);
+        els.forEach(function (e) { e.classList.toggle("on", reduce); });
+        if (reduce) return;
+        await wait(700);
+        els[0].classList.add("on"); await wait(300);
+        els[1].classList.add("on"); await wait(800);
+        els[2].classList.add("on");
+        await wait(2600);
+      };
+    }
+  };
+  var runs = new Map();
+  document.querySelectorAll("[data-demo]").forEach(function (root) {
+    root.appendChild(document.getElementById(root.dataset.demo + "-tpl").content.cloneNode(true));
+    var run = DEMOS[root.dataset.demo](root);
+    runs.set(root, run);
+    if (!root.hasAttribute("data-slide")) demo(root, function () { return run({}).catch(function () {}); });
   });
 
-  // Rephrase
-  var old = document.getElementById("rp-old"), neu = document.getElementById("rp-new"), tag = document.getElementById("rp-tag"), pp = document.getElementById("pp"), ppSel = document.getElementById("pp-sel"), ppRet = document.getElementById("pp-ret");
-  function rpReset() { old.classList.remove("sel", "gone"); neu.classList.remove("on"); tag.classList.remove("on"); pp.classList.add("out"); ppSel.style.transform = ""; }
-  rpReset();
-  if (reduce) { pp.classList.remove("out"); }
-  demo(document.getElementById("demo-rp"), async function () {
-    rpReset();
-    if (reduce) { pp.classList.remove("out"); return; }
-    await sleep(700);
-    old.classList.add("sel"); await sleep(600);
-    pp.classList.remove("out"); await sleep(800);
-    ppSel.style.transform = "translateY(34px)"; await sleep(500);
-    ppSel.style.transform = "translateY(68px)"; await sleep(600);
-    ppRet.classList.add("press"); await sleep(160); ppRet.classList.remove("press");
-    pp.classList.add("out"); await sleep(150);
-    old.classList.add("gone"); await sleep(180);
-    neu.classList.add("on"); await sleep(300);
-    tag.classList.add("on");
-    await sleep(2800);
-  });
-
-  // Dictation
-  var dct = document.getElementById("dc-text"), dclock = document.getElementById("dc-clock");
-  var words = dct.textContent.split(" "); dct.textContent = "";
-  var spans = words.map(function (w) { var s = document.createElement("span"); s.textContent = w + " "; dct.appendChild(s); return s; });
-  demo(document.getElementById("demo-dc"), async function () {
-    spans.forEach(function (s) { s.classList.toggle("on", reduce); });
-    dclock.textContent = "0:00";
-    if (reduce) return;
-    await sleep(600);
-    for (var i = 0; i < spans.length; i++) { spans[i].classList.add("on"); dclock.textContent = "0:0" + Math.min(9, Math.floor(i / 2.5)); await sleep(260); }
-    dclock.textContent = "0:03";
-    await sleep(2600);
-  });
-
-  // Screen text
-  var dim = document.getElementById("st-dim"), ssel = document.getElementById("st-sel"), scap = document.getElementById("st-cap");
-  demo(document.getElementById("demo-st"), async function () {
-    [dim, ssel, scap].forEach(function (e) { e.classList.toggle("on", reduce); });
-    if (reduce) return;
-    await sleep(800);
-    dim.classList.add("on"); await sleep(300);
-    ssel.classList.add("on"); await sleep(800);
-    scap.classList.add("on");
-    await sleep(2800);
-  });
+  // Hero carousel: play each example once, advance; a tab click jumps and cancels the running one.
+  (function () {
+    var card = document.querySelector(".hero-card"), tabs = card.querySelectorAll(".tabs button"), slides = card.querySelectorAll("[data-slide]");
+    var fills = card.querySelectorAll(".tabs b"), title = document.getElementById("ex-title"), desc = document.getElementById("ex-desc"), keys = document.getElementById("ex-keys");
+    var INFO = [
+      ["History at the cursor", "Type to filter. Return pastes in the original format.", "⌃⌥⌘V", 6000],
+      ["Rewrite in place", "Select text in any app, pick a tone, and it pastes back.", "⌘⇧R", 6400],
+      ["Dictate anywhere", "Speak. Text appears at your cursor, transcribed on this Mac.", "⌃⌥⌘D", 5100],
+      ["Read the screen", "Drag over anything on screen and its text appears on it.", "⌃⌥⌘T", 4400]
+    ];
+    var cur = 0, sig = { stop: true }, visible = false, started = 0, raf = 0;
+    function paint() {
+      fills.forEach(function (f, k) { f.style.transform = "scaleX(" + (k < cur ? 1 : k > cur ? 0 : Math.min(1, (performance.now() - started) / INFO[cur][3])) + ")"; });
+      if (!sig.stop) raf = requestAnimationFrame(paint);
+    }
+    function show(i) {
+      sig.stop = true; cancelAnimationFrame(raf);
+      cur = i; var my = sig = { stop: false };
+      tabs.forEach(function (t, k) { t.setAttribute("aria-selected", k === i ? "true" : "false"); });
+      slides.forEach(function (sl, k) { sl.classList.toggle("on", k === i); });
+      title.textContent = INFO[i][0]; desc.textContent = INFO[i][1];
+      keys.innerHTML = INFO[i][2].split("").map(function (c) { return "<kbd>" + c + "</kbd>"; }).join("");
+      if (reduce) { runs.get(slides[i])(my); return; }
+      started = performance.now(); paint();
+      runs.get(slides[i])(my).then(function () {
+        if (!my.stop && visible) show((i + 1) % slides.length);
+      }, function () {});
+    }
+    tabs.forEach(function (t, k) { t.addEventListener("click", function () { show(k); }); });
+    new IntersectionObserver(function (es) {
+      visible = es[0].isIntersecting;
+      if (visible && sig.stop) show(cur);
+      if (!visible) { sig.stop = true; cancelAnimationFrame(raf); }
+    }, { threshold: 0.3 }).observe(card);
+  })();
 })();
 </script>
 </body>

@@ -78,6 +78,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     var clickMonitor: Any?
     var didPromptAX = false
     var settingsWindow: NSWindow?
+    var onboardingWindow: NSWindow?
     var shotWatch: DispatchSourceFileSystemObject?
     var watchedShotDir: String?
     var knownShots: Set<String> = []
@@ -200,8 +201,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     }
 
     func windowWillClose(_ notification: Notification) {
-        guard (notification.object as? NSWindow) === settingsWindow else { return }
-        NSApp.setActivationPolicy(.accessory)
+        let closing = notification.object as? NSWindow
+        if closing === onboardingWindow { UserDefaults.standard.set(true, forKey: "didShowWelcome") }
+        guard closing === settingsWindow || closing === onboardingWindow else { return }
+        // No Dock icon while the person works: drop it once neither window is up.
+        let other = closing === settingsWindow ? onboardingWindow : settingsWindow
+        if other?.isVisible != true { NSApp.setActivationPolicy(.accessory) }
     }
 
     func applyAppIcon() {

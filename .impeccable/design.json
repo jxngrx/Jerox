@@ -419,7 +419,7 @@
       },
       {
         "name": "The Machine Text Rule",
-        "body": "Mono is for keys, file sizes, and system notes. Never for headlines or prose.",
+        "body": "Mono is for keys, file sizes, system notes, and (user-pinned, 2026-10-02) the uppercase nav links, pill buttons, and hero aside. Never for headlines or prose.",
         "section": "typography"
       },
       {

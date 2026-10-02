@@ -22,6 +22,10 @@ Sources live in `Jerox/`, one folder per feature (see the layout in the README).
 - `AppDelegate` is split into extensions by feature (`App/AppDelegate+Dictation.swift` and so on). Stored properties stay in `App/AppDelegate.swift`.
 - Colors and shared styles live in `DesignSystem/JeroxTheme.swift`. Use `JeroxInk` instead of new literal colors.
 
+## Testing onboarding
+
+In a Debug build, open Settings → Advanced → Developer and press **Open** next to `__dev__ Onboarding`. To render every page to PNGs without clicking through, run the Debug binary with `JEROX_SNAPSHOT_ONBOARDING=<folder>`.
+
 ## Style
 
 - Follow the code around you: naming, comment density, and SwiftUI patterns.

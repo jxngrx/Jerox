@@ -1,6 +1,7 @@
 # macOS / Xcode
 .DS_Store
 build/
+dist/
 DerivedData/
 xcuserdata/
 *.xcuserstate
