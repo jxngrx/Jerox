@@ -1,1 +1,0 @@
-Jerox: hit a hotkey and clipboard history is already at the cursor. Scroll the hot-corner pie. Paste with 1–9. Native macOS. On device.

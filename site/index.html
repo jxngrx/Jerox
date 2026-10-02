@@ -1,792 +1,673 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Jerox. Everything you copy, right where you left it.</title>
-<meta name="description" content="Jerox is a native macOS menu-bar clipboard manager. History opens at the cursor, pins stay on top, and Rephrase pastes back. Requires macOS 15.1 or later.">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Jerox — It works where you already are</title>
+<meta name="description" content="Jerox is a Mac menu-bar app for clipboard history, rewrite, dictation, and reading text off the screen. Each opens at your cursor and pastes back into the app you were using.">
 <meta property="og:type" content="website">
-<meta property="og:title" content="Jerox. Everything you copy, right where you left it.">
-<meta property="og:description" content="A native macOS clipboard manager. It opens at the cursor, keeps history on your disk, and rewrites text only when you ask.">
-<meta property="og:site_name" content="Jerox">
-<meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Jerox. Everything you copy, right where you left it.">
-<meta name="twitter:description" content="A native macOS menu-bar clipboard. History at the cursor. Requires macOS 15.1 or later.">
-<meta name="theme-color" content="#f4ead7">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23161513'/%3E%3Cpath d='M20.8 7.2v12.4c0 3.3-2.3 5.6-5.6 5.6s-5.6-2.3-5.6-5.6' fill='none' stroke='%23f3f1ec' stroke-width='2.4' stroke-linecap='round'/%3E%3C/svg%3E">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..72,500;6..72,600&family=JetBrains+Mono:wght@500&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet">
-<script>
-  document.documentElement.classList.add('js');
-  try {
-    var saved = localStorage.getItem('jerox-theme');
-    if (saved === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
-    document.querySelector('meta[name="theme-color"]').content = saved === 'dark' ? '#14160f' : '#f4ead7';
-  } catch (e) {}
-</script>
+<meta property="og:title" content="Jerox — It works where you already are">
+<meta property="og:description" content="Clipboard history, rewrite, and dictation for Mac, right where your cursor already is.">
+<meta property="og:image" content="media/app-icon.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#000000">
+<link rel="icon" type="image/png" href="media/favicon.png">
+<link rel="preload" href="media/fonts/inter.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="media/frames/f001.jpg" as="image">
 <style>
+@font-face { font-family: "Inter"; src: url("media/fonts/inter.woff2") format("woff2"); font-weight: 400 700; font-display: swap; }
+body, h1, h2, h3, .cap, .giant { font-optical-sizing: auto; }
+@font-face { font-family: "JetBrains Mono"; src: url("media/fonts/jetbrainsmono.woff2") format("woff2"); font-weight: 500; font-display: swap; }
+
 :root {
-  --bg: #f4ead7;
-  --bg-2: #e7d7b8;
-  --panel: #fbf3e4;
-  --ink: #1a1612;
-  --ink-2: #3a2a22;
-  --muted: #5c5348;
-  --line: #ddcfb4;
-  --line-2: #b7a88e;
-  --sel: #f0e2c8;
-  --accent: #9a3412;
-  --hot: #e45712;
-  --sun: #f0b45a;
-  --shadow: 0 12px 28px rgba(26, 22, 18, .08);
-  --display: "Bodoni Moda", "Iowan Old Style", Palatino, "Palatino Linotype", serif;
-  --sans: "Source Sans 3", "Avenir Next", "Segoe UI", sans-serif;
-  --mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-  --s1: 8px; --s2: 16px; --s3: 24px; --s4: 32px; --s5: 40px;
-  --s6: 48px; --s7: 64px; --s8: 80px; --s9: 96px; --s10: 128px;
-  --ease: cubic-bezier(.22, 1, .36, 1);
-  --measure: 68ch;
-  color-scheme: light;
-  background: var(--bg);
-  color: var(--ink);
-}
-:root[data-theme="dark"] {
-  --bg: #14160f; --bg-2: #1c1f16; --panel: #22261c;
-  --ink: #f4ead7; --ink-2: #fff6e8; --muted: #d5cbb8;
-  --line: #3d4034; --line-2: #5c5748; --sel: #2c3124;
-  --accent: #f0b45a;
-  --shadow: 0 12px 28px rgba(0, 0, 0, .35);
+  --bg: #000;
+  --stage: #0c0c0e;
+  --frame: #0a0a0c;
+  --inner: #131316;
+  --line: rgba(255, 255, 255, .08);
+  --line-2: rgba(255, 255, 255, .14);
+  --fg: #f4f4f5;
+  --muted: #a1a1aa;
+  --faint: #80808a;
+  --blue: #0a84ff;
+  --blue-hi: #3d9dff;
+  --btn: #0068d6;
+  --btn-hi: #0071e3;
+  --silver-1: #eef0f4;
+  --silver-2: #9ea5b4;
+  --graphite: #212328;
+  --display: "Inter", system-ui, sans-serif;
+  --sans: "Inter", system-ui, -apple-system, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --ease: cubic-bezier(.16, 1, .3, 1);
+  --r-stage: 28px;
+  --r-card: 24px;
+  --r-inner: 17px;
   color-scheme: dark;
 }
-:root[data-theme="light"] { color-scheme: light; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { background: var(--bg); scrollbar-color: #2a2a30 var(--bg); -webkit-text-size-adjust: 100%; }
+body { background: var(--bg); color: var(--fg); font-family: var(--sans); font-size: 17px; line-height: 1.55; -webkit-font-smoothing: antialiased; overflow-x: clip; }
+::selection { background: rgba(10, 132, 255, .38); color: #fff; }
+::-webkit-scrollbar { width: 10px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: #26262c; border-radius: 10px; border: 2px solid var(--bg); }
+a { color: inherit; text-decoration: none; }
+a:focus-visible, button:focus-visible, input:focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; border-radius: 999px; }
+img { display: block; max-width: 100%; }
+.wrap { width: min(1200px, calc(100% - 40px)); margin-inline: auto; }
 
-*, *::before, *::after { box-sizing: border-box; }
-html { scroll-behavior: smooth; }
-body {
-  margin: 0;
-  background: var(--bg);
-  color: var(--ink);
-  font: 400 1.0625rem/1.6 var(--sans);
-  text-rendering: optimizeLegibility;
-  font-feature-settings: "kern" 1, "liga" 1;
-}
-img, svg { display: block; }
-button, input { font: inherit; color: inherit; }
-a { color: var(--accent); }
-:focus { outline: none; }
-:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
-::selection { background: var(--accent); color: var(--bg); }
-html { scrollbar-color: var(--line-2) transparent; }
-.sr-only {
-  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
-  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
-}
-.skip {
-  position: absolute; left: var(--s2); top: 0; z-index: 20;
-  transform: translateY(-120%);
-  background: var(--ink); color: var(--bg);
-  padding: var(--s1) var(--s2); border-radius: 8px;
-}
-.skip:focus { transform: none; }
+/* ── type ── */
+h1, h2, h3 { font-family: var(--display); font-weight: 600; letter-spacing: -0.035em; text-wrap: balance; }
+h1 { font-size: clamp(46px, 7vw, 96px); line-height: 1.0; }
+h2 { font-size: clamp(36px, 4.6vw, 60px); line-height: 1.04; }
+h3 { font-family: var(--sans); font-weight: 600; font-size: 18px; letter-spacing: -0.01em; }
+.lede { font-size: clamp(17px, 1.5vw, 20px); color: var(--muted); max-width: 56ch; text-wrap: pretty; }
+.kbd { display: inline-flex; gap: 4px; }
+.kbd kbd { font-family: var(--mono); font-size: 12px; font-weight: 500; min-width: 24px; height: 24px; padding: 0 7px; display: inline-flex; align-items: center; justify-content: center; border-radius: 7px; background: #1c1c21; border: 1px solid #2c2c33; border-bottom-width: 2px; color: #d9d9de; }
 
-.wrap { width: min(1120px, calc(100% - 48px)); margin-inline: auto; }
-.grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: var(--s3); }
-.s12 { grid-column: span 12; }
-.s8 { grid-column: span 8; }
-.s7 { grid-column: span 7; }
-.s6 { grid-column: span 6; }
-.s5 { grid-column: span 5; }
-.s4 { grid-column: span 4; }
-section { padding-top: var(--s9); scroll-margin-top: 72px; }
-h1, h2, h3 { font-family: var(--display); font-weight: 600; letter-spacing: -.03em; line-height: 1.05; margin: 0; text-wrap: balance; }
-h1 { font-size: clamp(2.6rem, 7vw, 6rem); letter-spacing: -.04em; line-height: .92; text-transform: uppercase; max-width: 12ch; }
-h2 { font-size: clamp(2rem, 4vw, 3.25rem); margin-bottom: var(--s6); }
-h3 { font-size: 1.5rem; letter-spacing: -.02em; }
-p { margin: 0; text-wrap: pretty; }
-.lead { max-width: var(--measure); color: var(--muted); font-size: 1.25rem; line-height: 1.5; }
-.prose { max-width: var(--measure); color: var(--muted); }
-.prose + .prose { margin-top: var(--s2); }
-em { font-style: normal; color: var(--accent); }
+/* ── nav: three floating pills ── */
+.nav { position: fixed; top: 22px; left: 0; right: 0; z-index: 50; display: flex; justify-content: center; gap: 10px; pointer-events: none; transition: transform .5s var(--ease); }
+.nav > * { pointer-events: auto; }
+.pill { height: 46px; display: flex; align-items: center; gap: 2px; padding: 0 6px; border-radius: 999px; background: rgba(16, 16, 19, .78); border: 1px solid var(--line); backdrop-filter: blur(16px) saturate(140%); -webkit-backdrop-filter: blur(16px) saturate(140%); box-shadow: 0 10px 30px rgba(0, 0, 0, .35); }
+.brand { padding: 0 16px 0 10px; gap: 9px; font-weight: 600; font-size: 15px; }
+.brand img { width: 24px; height: 24px; }
+.links a { font-size: 14px; color: var(--muted); padding: 0 14px; height: 32px; display: inline-flex; align-items: center; border-radius: 999px; transition: color .2s, background .2s; }
+.links a + a { position: relative; }
+.links a + a::before { content: ""; position: absolute; left: 0; top: 10px; bottom: 10px; width: 1px; background: var(--line-2); }
+.links a:hover { color: var(--fg); }
+.nav .cta-pill { padding: 0 5px; }
+.nav .cta-pill a { height: 36px; padding: 0 16px; border-radius: 999px; background: var(--btn); color: #fff; font-size: 14px; font-weight: 600; display: inline-flex; align-items: center; transition: background .2s; }
+.nav .cta-pill a:hover { background: var(--btn-hi); }
 
-.draw { position: relative; text-decoration: none; }
-.draw::after {
-  content: ""; position: absolute; left: 0; bottom: -1px; width: 100%; height: 1px;
-  background: currentColor; transform: scaleX(0); transform-origin: left;
-  transition: transform .35s var(--ease);
-}
-.draw:hover::after { transform: scaleX(1); }
+/* ── hero stage ── */
+.stage { position: relative; margin: 12px; min-height: calc(100svh - 24px); border-radius: var(--r-stage); border: 1px solid var(--line); background: linear-gradient(180deg, #121215 0%, #0b0b0d 60%, #09090b 100%); overflow: hidden; display: flex; align-items: center; justify-content: center; isolation: isolate; }
+.mark-bg { position: absolute; left: 50%; top: 50%; width: max(min(1180px, 112vw), 640px); height: auto; transform: translate(-50%, -44%); z-index: -1; }
+.mark-bg path { fill: #1f1f24; }
+.mark-bg path + path { fill: #18181c; }
+.hero { text-align: center; padding: 140px 20px 120px; display: flex; flex-direction: column; align-items: center; gap: 26px; }
+.hero h1 { max-width: 12ch; }
+.hero h1 em { font-style: normal; color: var(--fg); position: relative; }
+.caret-dot { display: inline-block; width: .19em; height: .19em; border-radius: 50%; background: var(--blue); margin-left: .04em; vertical-align: baseline; box-shadow: 0 6px 18px rgba(10, 132, 255, .45); }
+.hero .lede { text-align: center; }
 
-.btn {
-  display: inline-flex; align-items: center; justify-content: center;
-  height: 48px; padding: 0 22px; border: 0; border-radius: 999px;
-  background: #e07a22; color: #1a1612; text-decoration: none;
-  font-family: var(--sans); font-weight: 600; font-size: .82rem; letter-spacing: .12em; text-transform: uppercase;
-  transition: transform .25s var(--ease), background .25s var(--ease);
-}
-.btn:hover { transform: translateY(-2px); background: #ee8c2a; color: #1a1612; }
-.btn:active { transform: translateY(0); }
-.btn-sm { height: 36px; padding: 0 14px; font-size: .95rem; }
-.note { color: var(--muted); font-size: .9375rem; }
+/* waitlist form */
+.join { display: flex; gap: 8px; padding: 6px; border-radius: 999px; background: rgba(255, 255, 255, .04); border: 1px solid var(--line-2); width: min(480px, 100%); transition: border-color .25s; }
+.join:focus-within { border-color: rgba(10, 132, 255, .7); }
+.join input { flex: 1; min-width: 0; background: transparent; border: 0; color: var(--fg); font: inherit; font-size: 16px; padding: 0 16px; caret-color: var(--blue); }
+.join input::placeholder { color: var(--faint); }
+.join input:focus-visible { outline: none; }
+.join button { height: 46px; padding: 0 22px; border: 0; border-radius: 999px; background: var(--btn); color: #fff; font: inherit; font-size: 15px; font-weight: 600; cursor: pointer; white-space: nowrap; transition: background .2s, transform .2s var(--ease); }
+.join button:hover { background: var(--btn-hi); }
+.join button:active { transform: scale(.97); }
+.join-note { font-family: var(--mono); font-size: 12.5px; color: var(--faint); letter-spacing: .02em; min-height: 1.4em; }
+.join-note[data-state="error"] { color: #ff8a80; }
+.join-note[data-state="ok"] { color: #8cc8ff; }
 
-kbd {
-  font-family: var(--mono); font-weight: 500; font-size: .75rem; line-height: 1;
-  min-width: 1.5rem; height: 1.5rem; padding: 0 6px;
-  display: inline-grid; place-items: center;
-  border: 1px solid var(--line); border-radius: 4px;
-  background: var(--panel); color: var(--ink);
-  transition: transform .15s var(--ease), border-color .15s var(--ease);
-}
-.keys { display: inline-flex; gap: 4px; vertical-align: middle; }
-.keys:hover kbd { transform: translateY(1px); border-color: var(--muted); }
+/* ── film (scroll-scrubbed) ── */
+.film { position: relative; height: 560vh; }
+.film-sticky { position: sticky; top: 0; height: 100svh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; padding: 80px 20px 24px; }
+.film-head { text-align: center; display: flex; flex-direction: column; gap: 10px; align-items: center; }
+.frame { --w: min(1180px, 94vw, calc((100svh - 360px) * 16 / 9)); width: var(--w); padding: 8px; border-radius: var(--r-card); background: var(--frame); border: 1px solid var(--line); box-shadow: 0 40px 120px rgba(0, 0, 0, .6); }
+.screen { position: relative; aspect-ratio: 16 / 9; border-radius: var(--r-inner); overflow: hidden; background: #0c0d10 url("media/frames/f001.jpg") center / cover no-repeat; }
+.screen canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+.film-meta { width: min(1180px, 94vw, calc((100svh - 360px) * 16 / 9)); display: grid; gap: 14px; }
+.cap { display: grid; font-family: var(--display); font-weight: 600; font-size: clamp(20px, 2vw, 26px); letter-spacing: -0.02em; line-height: 1.3; }
+.cap span { grid-area: 1 / 1; opacity: 0; transform: translateY(60%); filter: blur(6px); transition: opacity .45s var(--ease), transform .55s var(--ease), filter .45s var(--ease); }
+.cap span.on { opacity: 1; transform: none; filter: none; }
+.rail { display: grid; grid-template-columns: 2.12fr 3.16fr 3.16fr 2.62fr 2.64fr 1.58fr 2.72fr; gap: 4px; margin-top: 8px; }
+.rail i { height: 3px; border-radius: 3px; background: #222228; overflow: hidden; }
+.rail i b { display: block; height: 100%; width: 100%; background: var(--blue); transform-origin: left; transform: scaleX(0); }
 
-.nav {
-  position: sticky; top: 0; z-index: 10;
-  display: grid; grid-template-columns: 1fr auto; grid-template-areas: "mark end" "links links";
-  gap: var(--s1) var(--s2); align-items: center;
-  width: min(1120px, calc(100% - 48px)); margin-inline: auto;
-  padding-block: var(--s2);
-  background: color-mix(in srgb, var(--bg) 88%, transparent);
-  border-bottom: 1px solid transparent;
-}
-.nav.is-scrolled { border-bottom-color: var(--line); background: var(--bg); }
-.wordmark {
-  grid-area: mark; color: var(--ink); text-decoration: none;
-  font-family: var(--sans); font-weight: 600; font-size: .78rem; letter-spacing: .16em; text-transform: uppercase;
-}
-.nav-links { grid-area: links; display: flex; flex-wrap: wrap; gap: var(--s1) var(--s3); }
-.nav-links a { color: var(--muted); text-decoration: none; font-size: .78rem; letter-spacing: .14em; text-transform: uppercase; font-weight: 600; }
-.nav-links a:hover { color: var(--ink); }
-.nav-end { grid-area: end; display: flex; align-items: center; gap: var(--s1); }
-.theme {
-  width: 36px; height: 36px; display: grid; place-items: center;
-  border: 1px solid var(--line); border-radius: 8px; background: transparent; cursor: pointer;
-  transition: transform .25s var(--ease), border-color .25s var(--ease);
-}
-.theme:hover { transform: translateY(-2px); border-color: var(--muted); }
-.theme svg { width: 16px; height: 16px; }
-.icon-sun { display: none; }
-:root[data-theme="dark"] .icon-moon { display: none; }
-:root[data-theme="dark"] .icon-sun { display: block; }
-:root[data-theme="light"] .icon-sun { display: none; }
-:root[data-theme="light"] .icon-moon { display: block; }
+/* ── sections ── */
+section.block { padding: clamp(110px, 14vw, 180px) 0 0; }
+.block-head { display: flex; flex-direction: column; gap: 16px; margin-bottom: 52px; max-width: 760px; }
+.block-head.center { align-items: center; text-align: center; margin-inline: auto; }
 
-.hero { position: relative; padding: 8vh 0 var(--s8); overflow: hidden; }
-.sky { position: absolute; inset: 0; pointer-events: none; }
-.sun {
-  position: absolute; right: max(4vw, 16px); top: 6vh;
-  width: min(42vw, 460px); aspect-ratio: 1; border-radius: 50%; background: var(--sun);
-}
-.sun::before { content: ""; position: absolute; inset: 16%; border-radius: 50%; background: #f7e2a8; }
-.hero .wrap { position: relative; }
-.hero h1 { margin-bottom: var(--s3); }
-.hero .lead { margin-bottom: var(--s4); }
-.hero-actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s2) var(--s3); }
-.hero figure { margin: var(--s7) 0 0; max-width: 480px; }
+/* bento */
+.bento { display: grid; grid-template-columns: repeat(12, 1fr); gap: 14px; }
+.card { grid-column: span 6; padding: 8px; border-radius: var(--r-card); background: var(--frame); border: 1px solid var(--line); display: flex; flex-direction: column; transition: border-color .3s; }
+.card:hover { border-color: var(--line-2); }
+.card.w7 { grid-column: span 7; } .card.w5 { grid-column: span 5; }
+.demo { position: relative; height: 380px; border-radius: var(--r-inner); background: var(--inner); overflow: hidden; }
+.demo.light { background-color: #eceef2; background-image: linear-gradient(180deg, #f3f4f6, #e7e9ee); color: #1b1d22; }
+.card-foot { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; padding: 18px 14px 12px; }
+.card-foot p { color: var(--muted); font-size: 15px; margin-top: 4px; max-width: 44ch; }
 
-.line { display: block; }
-.line, .hero .lead, .hero-actions { animation: rise .7s var(--ease) both; }
-.line:nth-child(2) { animation-delay: .12s; }
-.hero .lead { animation-delay: .24s; }
-.hero-actions { animation-delay: .36s; }
-@keyframes rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
-
-.desk { border: 1px solid var(--line); border-radius: 8px; background: var(--bg-2); box-shadow: var(--shadow); }
-.menubar {
-  height: 40px; display: flex; align-items: center; gap: var(--s2);
-  padding: 0 var(--s2); border-bottom: 1px solid var(--line);
-  font-size: .875rem; color: var(--muted);
-}
-.menubar b { color: var(--ink); font-weight: 600; }
-.menubar .sp { flex: 1; }
-.menubar svg { width: 15px; height: 15px; color: var(--ink); }
-.stage { padding: var(--s4); display: flex; flex-direction: column; align-items: center; }
-.doc { display: grid; gap: 10px; min-height: 72px; position: relative; margin-bottom: var(--s3); width: min(100%, 440px); }
-.bar { height: 8px; border-radius: 2px; background: var(--line); display: block; }
-.bar.w1 { width: 72%; } .bar.w2 { width: 54%; } .bar.w3 { width: 33%; }
-.pointer { position: absolute; left: 54%; top: 14px; width: 14px; height: 14px; color: var(--ink); }
-.landed {
-  position: absolute; inset: 0 auto auto 0; margin: 0;
-  font-size: 1rem; color: var(--ink); opacity: 0;
-}
-.panel { width: min(100%, 440px); background: var(--panel); border: 1px solid var(--line); border-radius: 8px; }
-.search {
-  height: 40px; display: flex; align-items: center; gap: var(--s1);
-  padding: 0 12px; border-bottom: 1px solid var(--line); color: var(--muted); font-size: .9375rem;
-}
-.search svg { width: 14px; height: 14px; flex: none; }
-.q { position: relative; flex: 1; height: 1.2em; }
-.ph, .typed { position: absolute; left: 0; top: 0; }
-.typed { color: var(--ink); }
-.count { margin-left: auto; font-family: var(--mono); font-size: .6875rem; letter-spacing: .02em; opacity: 0; }
-.caret { width: 1px; height: 14px; background: var(--accent); opacity: 0; flex: none; }
-.rows { list-style: none; margin: 0; padding: 4px 0; }
-.row {
-  min-height: 44px; display: grid; grid-template-columns: 16px 1fr auto; gap: 10px; align-items: center;
-  padding: 6px 12px; font-size: .9375rem;
-}
-.row > span { display: flex; align-items: center; gap: 8px; min-width: 0; }
-.row.sel { background: var(--sel); }
-.pin { width: 14px; height: 14px; color: var(--accent); opacity: 0; }
-.row.top .pin { opacity: 1; }
-.swatch { width: 14px; height: 14px; border-radius: 3px; background: var(--accent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ink) 18%, transparent); flex: none; }
-.kind { font-family: var(--mono); font-size: .6875rem; color: var(--muted); }
-code, pre { font-family: var(--mono); font-size: .8125rem; }
-pre { margin: 0; line-height: 1.45; color: var(--muted); white-space: pre; }
-.k, .kw { color: var(--accent); }
-figcaption { margin-top: 12px; color: var(--muted); font-size: .9375rem; }
-
-.js .hero-mock .panel { opacity: 0; transform: translateY(8px); }
-.js .hero-mock.is-open .panel { opacity: 1; transform: none; transition: opacity .6s var(--ease), transform .6s var(--ease); }
-.js .hero-mock .row { opacity: 0; transform: translateY(8px); }
-.js .hero-mock .row.in { opacity: 1; transform: none; transition: opacity .5s var(--ease), transform .5s var(--ease); }
-.hero-mock.is-typing .ph, .is-search .ph { opacity: 0; }
-.how-mock .typed { opacity: 0; }
-.how-mock.is-search .typed { opacity: 1; }
-.is-search .count, .is-typing .caret, .is-search .caret { opacity: 1; }
-.is-search .row:not(.match) { opacity: 0; }
-.is-paste .bar { opacity: .2; }
-.is-paste .landed { opacity: 1; }
-.is-paste .row.sel, .is-search .row.sel, .is-pin .row.sel { background: transparent; }
-.is-paste .row.match, .is-search .row.match, .is-pin .row.match { background: var(--sel); }
-.is-pin .row.match .pin { opacity: 1; }
-.how-mock .row { transition: transform .45s var(--ease), background-color .4s var(--ease), opacity .4s var(--ease); }
-.how-mock.is-pin .row.match { transform: translateY(-44px); }
-.how-mock.is-pin .row.top { transform: translateY(44px); }
-.caret.on { animation: blink 1.1s steps(1) infinite; }
+/* clipboard demo (light, macOS-real) */
+.doc { position: absolute; left: 34px; top: 34px; right: 34px; font-size: 19px; color: #1b1d22; white-space: nowrap; }
+.doc small { display: block; font-size: 13px; font-weight: 600; color: #3a3f4b; margin-bottom: 10px; }
+.doc .ins { color: #0060df; text-decoration: underline; text-underline-offset: 4px; display: inline-block; clip-path: inset(0 100% 0 0); transition: clip-path .5s var(--ease); vertical-align: bottom; }
+.doc .ins.on { clip-path: inset(0 0 0 0); }
+.tcaret { display: inline-block; width: 2px; height: 1.05em; background: #0060df; vertical-align: -0.15em; margin-left: 1px; animation: blink 1s steps(1) infinite; }
 @keyframes blink { 50% { opacity: 0; } }
+.cb { position: absolute; left: 150px; top: 108px; width: 360px; border-radius: 13px; background: #fff; border: 1px solid rgba(27, 29, 34, .14); box-shadow: 0 24px 60px rgba(27, 29, 34, .18), 0 2px 6px rgba(27, 29, 34, .08); transform-origin: 20px 0; transition: opacity .3s var(--ease), transform .4s var(--ease); }
+.cb.out { opacity: 0; transform: scale(.97) translateY(-4px); }
+.cb-search { margin: 10px; height: 34px; border-radius: 9px; background: rgba(27, 29, 34, .05); border: 1px solid rgba(27, 29, 34, .08); display: flex; align-items: center; gap: 8px; padding: 0 8px; font-size: 13.5px; color: #1b1d22; }
+.cb-search img { width: 22px; height: 22px; }
+.cb-search .ph { color: #5b616e; }
+.cb-rows { position: relative; height: 196px; margin: 0 6px; }
+.cb-row { position: absolute; left: 0; right: 0; height: 30px; display: flex; align-items: center; gap: 8px; padding: 0 8px; font-size: 13px; color: #1b1d22; transition: opacity .3s var(--ease), transform .45s var(--ease); white-space: nowrap; }
+.cb-row .n { width: 10px; font-family: var(--mono); font-size: 10.5px; color: #5b616e; text-align: right; }
+.cb-row .g { width: 20px; height: 20px; display: grid; place-items: center; color: #5b616e; flex: none; }
+.cb-row .g svg { width: 13px; height: 13px; }
+.cb-row .t { overflow: hidden; text-overflow: ellipsis; }
+.cb-row.gone { opacity: 0; }
+.cb-label { position: absolute; left: 10px; font-size: 9.5px; font-weight: 700; letter-spacing: .08em; color: #5b616e; transition: opacity .3s; }
+.cb-sel { position: absolute; left: 0; right: 0; height: 30px; border-radius: 7px; background: rgba(10, 132, 255, .16); transition: transform .45s var(--ease); }
+.cb-foot { border-top: 1px solid rgba(27, 29, 34, .1); height: 38px; display: flex; align-items: center; justify-content: space-around; font-size: 11px; color: #5b616e; }
+.cb-foot .k { font-family: var(--mono); font-size: 10px; font-weight: 500; padding: 2px 5px; border-radius: 5px; background: rgba(27, 29, 34, .07); border: 1px solid rgba(27, 29, 34, .14); color: #1b1d22; margin-right: 4px; transition: background .15s, transform .15s; }
+.cb-foot .k.press { background: rgba(10, 132, 255, .35); transform: scale(.9); }
+.tok-kw { color: #8e3bd4; } .tok-b { color: #0060df; }
 
-.principles { padding-top: var(--s10); }
-.principles h2 { margin-bottom: var(--s2); }
-.principles h3::before {
-  content: ""; display: block; width: 92px; height: 92px; margin-bottom: var(--s2);
-  border-radius: 50%; background: var(--sun);
-}
-.principles .s4 { padding-top: var(--s4); border-top: 1px solid var(--line); }
-.principles p { margin-top: var(--s2); color: var(--muted); max-width: 36ch; }
+/* rephrase demo (dark) */
+.rp-line { position: absolute; left: 36px; right: 36px; top: 56px; font-size: 21px; color: var(--fg); height: 34px; }
+.rp-line > span { position: absolute; left: 0; top: 0; white-space: nowrap; transition: opacity .35s var(--ease), transform .45s var(--ease), filter .35s; }
+.rp-old { padding: 1px 4px; margin-left: -4px; border-radius: 6px; background-image: linear-gradient(rgba(10, 132, 255, .32), rgba(10, 132, 255, .32)); background-repeat: no-repeat; background-size: 0% 100%; transition: background-size .45s var(--ease), opacity .35s, transform .45s var(--ease), filter .35s !important; }
+.rp-old.sel { background-size: 100% 100%; }
+.rp-old.gone { opacity: 0; transform: translateY(-10px); filter: blur(6px); }
+.rp-new { opacity: 0; transform: translateY(10px); filter: blur(6px); }
+.rp-new.on { opacity: 1; transform: none; filter: none; }
+.rp-tag { position: absolute; left: 36px; top: 102px; font-size: 13px; color: #8cc8ff; opacity: 0; transition: opacity .4s; }
+.rp-tag.on { opacity: 1; }
+.pp { position: absolute; left: 36px; top: 108px; width: 300px; border-radius: 13px; background: #1d1e22; border: 1px solid rgba(255, 255, 255, .12); box-shadow: 0 24px 60px rgba(0, 0, 0, .5); overflow: hidden; transition: opacity .3s var(--ease), transform .4s var(--ease); transform-origin: 20px 0; }
+.pp.out { opacity: 0; transform: scale(.97) translateY(-4px); }
+.pp-h { height: 40px; display: flex; align-items: center; gap: 8px; padding: 0 14px; font-size: 12.5px; font-weight: 600; color: var(--muted); border-bottom: 1px solid rgba(255, 255, 255, .08); }
+.pp-h svg { width: 13px; height: 13px; color: var(--blue-hi); }
+.pp-rows { position: relative; padding: 6px; }
+.pp-row { position: relative; height: 34px; display: flex; align-items: center; gap: 10px; padding: 0 10px; font-size: 13.5px; color: var(--fg); }
+.pp-row .n { width: 10px; font-family: var(--mono); font-size: 10.5px; color: var(--faint); }
+.pp-sel { position: absolute; left: 6px; right: 6px; top: 6px; height: 34px; border-radius: 8px; background: rgba(10, 132, 255, .2); transition: transform .3s var(--ease); }
+.pp-f { height: 34px; display: flex; align-items: center; gap: 14px; padding: 0 14px; border-top: 1px solid rgba(255, 255, 255, .08); font-size: 11px; color: var(--faint); }
+.pp-f .k { font-family: var(--mono); font-size: 10px; padding: 1px 5px; border-radius: 5px; background: rgba(255, 255, 255, .08); border: 1px solid rgba(255, 255, 255, .14); color: #e4e4e7; margin-right: 4px; transition: background .15s; }
+.pp-f .k.press { background: rgba(10, 132, 255, .5); }
 
-.how-grid { display: grid; gap: var(--s6); align-items: start; }
-.steps { list-style: none; margin: 0; padding: 0; }
-.step h3 { color: var(--muted); transition: color .4s var(--ease); }
-.step p { margin-top: var(--s2); color: var(--muted); max-width: 42ch; }
-.step.is-active h3 { color: var(--ink); }
-.step .keys { margin-top: var(--s2); }
+/* dictation demo */
+.dc-stage { position: absolute; inset: 0; background: linear-gradient(180deg, transparent 40%, rgba(255, 255, 255, .025)); }
+.dc-bar { position: absolute; left: 50%; bottom: 48px; width: min(420px, 86%); transform: translateX(-50%); border-radius: 20px; background: var(--graphite); border: 1px solid rgba(255, 255, 255, .1); box-shadow: 0 30px 70px rgba(0, 0, 0, .55); overflow: hidden; }
+.dc-text { padding: 16px 18px 0; min-height: 70px; font-size: 17px; font-style: italic; color: rgba(255, 255, 255, .94); line-height: 1.35; }
+.dc-text span { opacity: 0; filter: blur(4px); transition: opacity .3s, filter .3s; }
+.dc-text span.on { opacity: 1; filter: none; }
+.dc-ctrl { position: relative; height: 44px; display: flex; align-items: center; padding: 0 8px 0 16px; }
+.dc-rec { width: 8px; height: 8px; border-radius: 50%; background: #fa546b; }
+.dc-bars { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; gap: 3px; pointer-events: none; }
+.dc-bars b { width: 4px; height: 18px; border-radius: 2px; background: linear-gradient(var(--silver-1), var(--silver-2)); transform-origin: center; animation: lvl 1.1s ease-in-out infinite; }
+@keyframes lvl { 0%, 100% { transform: scaleY(.25); } 50% { transform: scaleY(1); } }
+.dc-clock { margin-left: auto; margin-right: 8px; font-family: var(--mono); font-size: 12px; color: rgba(255, 255, 255, .6); }
+.dc-x { width: 24px; height: 24px; border-radius: 50%; background: rgba(255, 255, 255, .1); display: grid; place-items: center; }
+.dc-x svg { width: 9px; height: 9px; color: rgba(255, 255, 255, .75); }
+.dc-chip { position: absolute; left: 50%; top: 40px; transform: translateX(-50%); display: flex; align-items: center; gap: 8px; padding: 7px 14px; border-radius: 999px; border: 1px solid var(--line-2); background: rgba(255, 255, 255, .04); font-size: 13px; color: #d4d4d8; white-space: nowrap; }
+.dc-chip i { width: 7px; height: 7px; border-radius: 50%; background: var(--blue); }
 
-.sheet { width: 100%; border-collapse: collapse; }
-.sheet th, .sheet td {
-  text-align: left; vertical-align: baseline; padding: 20px 16px 20px 0;
-  border-bottom: 1px solid var(--line); font-weight: 400;
-}
-.sheet th {
-  width: 22%; font-family: var(--display); font-weight: 600; letter-spacing: -.02em;
-  font-size: 1.125rem; color: var(--ink);
-}
-.sheet td { color: var(--muted); }
-.sheet td:last-child { padding-right: 0; }
+/* screen-text demo */
+.st-shot { position: absolute; left: 40px; top: 46px; width: 430px; padding: 24px 26px; border-radius: 12px; background: #1a1b20; border: 1px solid rgba(255, 255, 255, .07); }
+.st-shot h4 { font-family: var(--sans); font-size: 17px; font-weight: 600; margin-bottom: 14px; }
+.st-shot li { list-style: none; display: flex; gap: 10px; align-items: center; font-size: 14px; color: #c9ccd4; padding: 6px 0; border-top: 1px solid rgba(255, 255, 255, .06); }
+.st-shot li i { width: 12px; height: 12px; border-radius: 3px; border: 1.5px solid #5b616e; flex: none; }
+.st-dim { position: absolute; inset: 0; background: rgba(0, 0, 0, .35); opacity: 0; transition: opacity .3s; }
+.st-dim.on { opacity: 1; }
+.st-sel { position: absolute; left: 52px; top: 96px; width: 330px; height: 106px; border: 1.5px solid #fff; clip-path: inset(0 100% 100% 0); transition: clip-path .6s var(--ease); }
+.st-sel.on { clip-path: inset(0 0 0 0); }
+.st-cap { position: absolute; left: 52px; top: 210px; width: 330px; padding: 10px 12px; border-radius: 10px; background: rgba(36, 37, 42, .92); border: 1px solid rgba(255, 255, 255, .12); font-size: 13px; line-height: 1.45; color: var(--fg); box-shadow: 0 18px 40px rgba(0, 0, 0, .45); opacity: 0; transform: translateY(6px); transition: opacity .35s var(--ease), transform .45s var(--ease); }
+.st-cap.on { opacity: 1; transform: none; }
+.st-cap small { display: block; margin-top: 6px; font-family: var(--mono); font-size: 10.5px; color: #8cc8ff; letter-spacing: .06em; }
+.st-side { position: absolute; right: 36px; top: 46px; bottom: 46px; width: 150px; display: flex; flex-direction: column; gap: 10px; }
+.st-side span { display: block; height: 10px; border-radius: 5px; background: #1d1e23; }
 
-.re-demo { border: 1px solid var(--line); border-radius: 8px; padding: var(--s3); }
-.re-label {
-  font-family: var(--mono); font-size: .75rem; letter-spacing: .04em;
-  color: var(--muted); margin-bottom: var(--s1);
-}
-.before, .out {
-  padding-bottom: var(--s3); margin-bottom: var(--s3); border-bottom: 1px solid var(--line);
-}
-.before p, .out p { max-width: 58ch; }
-.tones { display: flex; flex-wrap: wrap; gap: var(--s1) var(--s3); margin-bottom: var(--s3); }
-.tones button {
-  padding: 0 0 4px; border: 0; background: none; cursor: pointer;
-  color: var(--muted); position: relative;
-}
-.tones button[aria-selected="true"] { color: var(--ink); }
-.tones button::after {
-  content: ""; position: absolute; left: 0; bottom: 0; width: 100%; height: 1px;
-  background: currentColor; transform: scaleX(0); transform-origin: left;
-  transition: transform .35s var(--ease);
-}
-.tones button[aria-selected="true"]::after, .tones button:hover::after { transform: scaleX(1); }
-.outs { display: grid; }
-.out { grid-area: 1 / 1; opacity: 0; border-bottom: 0; margin: 0; padding: 0; }
-.out.is-on { opacity: 1; transition: opacity .45s var(--ease); }
-.re-note { margin-top: var(--s3); color: var(--muted); max-width: var(--measure); }
+/* ledger */
+.ledger { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.ledger .card { grid-column: auto; }
+.ledger .pane { border-radius: var(--r-inner); background: var(--inner); padding: 30px 30px 10px; height: 100%; }
+.pane h3 { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+.pane h3 i { width: 9px; height: 9px; border-radius: 50%; background: var(--blue); }
+.pane h3 i.off { background: transparent; border: 1.5px solid var(--muted); }
+.pane dl { display: grid; grid-template-columns: minmax(130px, auto) 1fr; }
+.pane dt, .pane dd { padding: 15px 0; border-top: 1px solid var(--line); font-size: 15px; }
+.pane dt { color: var(--fg); font-weight: 500; padding-right: 18px; }
+.pane dd { color: var(--muted); }
 
-.focused .miss { list-style: none; margin: var(--s4) 0 0; padding: 0; max-width: var(--measure); }
-.focused li { padding: 16px 0; border-top: 1px solid var(--line); color: var(--ink); }
-.focused li:last-child { border-bottom: 1px solid var(--line); }
+.models { margin-top: 14px; }
+.models .pane { padding: 30px; }
+.mtable { width: 100%; border-collapse: collapse; font-size: 15px; font-variant-numeric: tabular-nums; }
+.mtable th { text-align: left; font-weight: 500; font-size: 13px; color: var(--faint); padding: 0 0 12px; }
+.mtable td { padding: 14px 0; border-top: 1px solid var(--line); color: var(--muted); }
+.mtable td:first-child { color: var(--fg); font-weight: 500; }
+.mtable td.num { white-space: nowrap; text-align: right; font-family: var(--mono); font-size: 13.5px; color: #d4d4d8; }
+.mtable th.num { text-align: right; }
+.rec { font-size: 11.5px; font-weight: 600; color: #d4d4d8; background: rgba(255, 255, 255, .08); padding: 2px 8px; border-radius: 999px; margin-left: 10px; white-space: nowrap; }
+.fine { margin-top: 18px; font-size: 14px; color: var(--faint); }
 
-.faq-item { border-top: 1px solid var(--line); }
-.faq-item:last-child { border-bottom: 1px solid var(--line); }
-.faq-item button {
-  width: 100%; display: flex; justify-content: space-between; align-items: center; gap: var(--s3);
-  padding: 20px 0; border: 0; background: none; cursor: pointer; text-align: left;
-  font-family: var(--display); font-weight: 600; font-size: 1.25rem; letter-spacing: -.02em;
-}
-.plus { width: 12px; height: 12px; position: relative; flex: none; }
-.plus::before, .plus::after {
-  content: ""; position: absolute; left: 0; top: 5px; width: 12px; height: 1px; background: currentColor;
-}
-.plus::after { transform: rotate(90deg); transition: transform .35s var(--ease); }
-.faq-item.is-open .plus::after { transform: rotate(0deg); }
-.faq-a { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .45s var(--ease); }
-.faq-item.is-open .faq-a { grid-template-rows: 1fr; }
-.faq-a > div { overflow: hidden; }
-.faq-a p { padding-bottom: 20px; max-width: var(--measure); color: var(--muted); }
+/* shortcuts: one keymap */
+.keymap { padding: 10px 30px; }
+.km-row { display: grid; grid-template-columns: 170px 220px 1fr; align-items: center; gap: 20px; padding: 18px 0; border-top: 1px solid var(--line); }
+.km-row:first-child { border-top: 0; }
+.km-row .kbd kbd { height: 32px; min-width: 32px; font-size: 14px; border-radius: 9px; }
+.km-row strong { font-weight: 500; }
+.km-note { color: var(--muted); font-size: 15px; }
 
-.cta { padding-bottom: var(--s10); }
-.cta h2 { font-size: clamp(2.5rem, 5vw, 4.5rem); max-width: 14ch; margin-bottom: var(--s4); }
-.cta .hero-actions { animation: none; }
+/* close + footer */
+.close { position: relative; margin: clamp(110px, 14vw, 180px) 12px 12px; border-radius: var(--r-stage); border: 1px solid var(--line); overflow: hidden; background: #050506; isolation: isolate; }
+.close-in { padding: 120px 20px 0; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 24px; }
+.haze { position: absolute; inset: auto -10% -35% -10%; height: 75%; z-index: -1; background: radial-gradient(42% 62% at 28% 72%, rgba(10, 132, 255, .85), transparent 70%), radial-gradient(36% 56% at 72% 78%, rgba(61, 157, 255, .7), transparent 70%), radial-gradient(70% 55% at 50% 105%, rgba(0, 98, 219, .95), transparent 72%); filter: blur(48px); }
+.giant { font-family: var(--display); font-weight: 700; font-size: clamp(120px, 24vw, 360px); line-height: .78; letter-spacing: -0.035em; margin-top: 70px; margin-bottom: -.12em; color: #f4f4f5; white-space: nowrap; }
+.giant span { color: var(--blue); }
+.foot { position: absolute; left: 0; right: 0; bottom: 0; display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap; padding: 22px 28px; font-size: 13.5px; color: #fff; text-shadow: 0 1px 8px rgba(0, 0, 0, .5); }
+.foot a:hover { color: #fff; text-decoration: underline; text-underline-offset: 3px; }
 
-.band {
-  background: #14160f; color: #f4ead7;
-  --bg: #14160f; --bg-2: #1c1f16; --panel: #22261c;
-  --ink: #f4ead7; --ink-2: #fff6e8; --muted: #d5cbb8;
-  --line: #3d4034; --line-2: #5c5748; --sel: #2c3124; --accent: #f0b45a;
-}
-.how.wrap, .focused.wrap, .cta.wrap {
-  width: 100%; max-width: none;
-  padding-inline: max(24px, calc((100% - 1120px) / 2));
-  padding-bottom: var(--s10);
-}
-.footer { border-top: 0; padding-block: var(--s4); background: #14160f; }
-.footer .wrap, .footer a { color: #d5cbb8; }
-.footer .wrap { display: flex; flex-wrap: wrap; gap: var(--s2) var(--s4); justify-content: space-between; font-size: .9375rem; }
+/* reveal */
+.rv { opacity: 1; }
+.js .rv { opacity: 0; transform: translateY(28px); filter: blur(6px); transition: opacity .9s var(--ease), transform 1s var(--ease), filter .9s var(--ease); }
+.js .rv.in { opacity: 1; transform: none; filter: none; }
 
-.js .rise, .js .sheet .stag th, .js .sheet .stag td {
-  opacity: 0; transform: translateY(12px);
-  transition: opacity .7s var(--ease), transform .7s var(--ease);
+@media (max-width: 900px) {
+  .card, .card.w7, .card.w5 { grid-column: 1 / -1; }
+  .ledger { grid-template-columns: 1fr; }
+  .km-row { grid-template-columns: 1fr; gap: 8px; }
+  .keymap { padding: 6px 22px; }
+  .links { display: none; }
+  .demo { height: 340px; }
+  .cb { left: 24px; }
+  .st-side { display: none; }
+  .st-shot, .st-sel, .st-cap { left: 22px; }
+  .st-shot { width: calc(100% - 44px); }
+  .st-sel, .st-cap { width: calc(100% - 70px); left: 34px; }
 }
-.js .rise.in, .js .sheet .stag.in th, .js .sheet .stag.in td { opacity: 1; transform: none; }
-
-@media (min-width: 800px) {
-  .wrap, .nav { width: min(1120px, calc(100% - 80px)); }
-  .nav { grid-template-columns: auto 1fr auto; grid-template-areas: "mark links end"; padding-block: var(--s2); }
-  .nav-links { justify-content: center; }
-  section { padding-top: var(--s10); }
-  .how-grid { grid-template-columns: 5fr 7fr; gap: var(--s7); }
-  .how-stage { position: sticky; top: 88px; }
-  .step { min-height: 52vh; }
-  .step:last-child { min-height: 36vh; }
+@media (min-width: 641px) {
+  .giant span { position: relative; top: -0.2em; }
 }
-@media (max-width: 520px) {
-  h1 { font-size: 2.4rem; }
-  .sun { width: 180px; top: 2vh; }
+@media (max-width: 640px) {
+  .foot { position: static; background: rgba(0, 0, 0, .55); text-shadow: none; }
 }
-@media (max-width: 799px) {
-  .s8, .s7, .s6, .s5, .s4 { grid-column: 1 / -1; }
-  .principles .s4 + .s4 { margin-top: var(--s4); }
-  .principles p { max-width: var(--measure); }
-  .stage { padding: var(--s2); }
-  .sheet, .sheet tbody, .sheet tr, .sheet th, .sheet td { display: block; width: auto; }
-  .sheet tr { padding-block: 8px; border-bottom: 1px solid var(--line); }
-  .sheet th, .sheet td { border-bottom: 0; padding: 4px 0; }
-  .how-grid { display: flex; flex-direction: column; }
-  .how-stage { order: -1; margin-bottom: var(--s4); }
+@media (max-width: 560px) {
+  .wrap { width: calc(100% - 32px); }
+  .stage { margin: 8px; }
+  .hero { padding: 120px 14px 90px; }
+  .join { flex-direction: column; border-radius: 22px; }
+  .join input { height: 46px; }
+  .doc { font-size: 16px; left: 22px; }
+  .cb { width: calc(100% - 44px); left: 22px; }
+  .pp { width: calc(100% - 44px); left: 22px; }
+  .rp-line { left: 22px; font-size: 17px; }
+  .rp-tag { left: 22px; }
+  .pane dl { grid-template-columns: 1fr; }
+  .pane dd { border-top: 0; padding-top: 0; }
+  .mtable .hide-s { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {
-  html { scroll-behavior: auto; }
-  .line, .hero .lead, .hero-actions { animation: fade .4s linear both; }
-  @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
-  .js .rise, .js .sheet .stag th, .js .sheet .stag td { opacity: 0; transform: none; transition: opacity .4s linear; }
-  .js .rise.in, .js .sheet .stag.in th, .js .sheet .stag.in td { opacity: 1; }
-  .js .hero-mock .panel, .js .hero-mock .row { opacity: 1; transform: none; }
-  .how-mock .row, .btn, .theme, .draw::after, .tones button::after, .faq-a, .plus::after, .out, .step h3 {
-    transition: none;
-  }
-  .caret.on { animation: none; }
+  .js .rv { opacity: 1; transform: none; filter: none; transition: none; }
+  .dc-bars b, .tcaret { animation: none; }
 }
 </style>
+<script>document.documentElement.classList.add("js");</script>
 </head>
 <body>
-<a class="skip" href="#content">Skip to content</a>
-<header class="nav" id="nav">
-  <a class="wordmark" href="#top">Jerox</a>
-  <nav class="nav-links" aria-label="Primary">
-    <a class="draw" href="#features">Features</a>
-    <a class="draw" href="#rephrase">Rephrase</a>
-    <a class="draw" href="#shortcuts">Shortcuts</a>
-    <a class="draw" href="#faq">FAQ</a>
-  </nav>
-  <div class="nav-end">
-    <button class="theme" type="button" id="theme" aria-label="Switch to dark theme">
-      <svg class="icon-moon" viewBox="0 0 16 16" aria-hidden="true"><path d="M9.2 2.2a5.2 5.2 0 1 0 4.6 7.6A4.4 4.4 0 0 1 9.2 2.2z" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
-      <svg class="icon-sun" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="2.4" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M8 1.8v1.6M8 12.6v1.6M1.8 8h1.6M12.6 8h1.6M3.5 3.5l1.1 1.1M11.4 11.4l1.1 1.1M12.5 3.5l-1.1 1.1M4.6 11.4 3.5 12.5" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
-    </button>
-    <a class="btn btn-sm" href="#download">Download</a>
-  </div>
-</header>
 
-<main id="content">
-  <section class="hero" id="top" aria-labelledby="hero-title">
-    <div class="sky" aria-hidden="true"><span class="sun"></span></div>
+<nav class="nav" aria-label="Primary">
+  <a class="pill brand" href="#top"><img src="media/jerox-mark.png" alt="" width="24" height="24">Jerox</a>
+  <div class="pill links"><a href="#film">Film</a><a href="#features">Features</a><a href="#privacy">Privacy</a><a href="#keys">Shortcuts</a></div>
+  <div class="pill cta-pill"><a href="#join">Join waitlist</a></div>
+</nav>
+
+<main id="top">
+  <!-- Hero: framed stage -->
+  <header class="stage">
+    <svg class="mark-bg" viewBox="0 0 1200 760" aria-hidden="true">
+      <path d="M210 330c0-46 30-86 74-100l300-96c62-20 126 26 126 92v330c0 46-30 86-74 100l-300 96c-62 20-126-26-126-92z" />
+      <path d="M520 430c0-46 30-86 74-100l300-96c62-20 126 26 126 92v330c0 46-30 86-74 100l-300 96c-62 20-126-26-126-92z" />
+    </svg>
+    <div class="hero">
+      <h1>It works where you already are<span class="caret-dot" aria-hidden="true"></span></h1>
+      <p class="lede">Clipboard history, rewrite, and dictation for Mac. Each opens at your cursor and pastes back into the app you were using.</p>
+      <form class="join" id="join" data-to="hello@jxngrx.com" novalidate>
+        <label class="sr" for="email" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Email address</label>
+        <input id="email" name="email" type="email" inputmode="email" autocomplete="email" placeholder="you@domain.com" required>
+        <button type="submit">Join the waitlist</button>
+      </form>
+      <p class="join-note" aria-live="polite">A menu-bar app · macOS 15.1 or later</p>
+    </div>
+  </header>
+
+  <!-- Film 02, scrubbed by scroll -->
+  <section class="film" id="film" aria-label="Product film">
+    <div class="film-sticky">
+      <div class="film-head rv">
+        <h2>Scroll to play.</h2>
+      </div>
+      <div class="frame rv">
+        <div class="screen"><canvas id="film-canvas" role="img" aria-label="Jerox film: a blue cursor dot becomes the words clipboard, rewrite and dictate, the rephrase toast, dictation levels, history, and the Jerox logo."></canvas></div>
+      </div>
+      <div class="film-meta">
+        <div class="cap" id="cap">
+          <span class="on">Copy in one app. Paste in another. The dot is your cursor.</span>
+          <span>History, rewrite, dictate. One shortcut each.</span>
+          <span>Pick a tone. The rewrite pastes back where you were.</span>
+          <span>Speak. Text appears at your cursor.</span>
+          <span>Every copy, kept on your Mac, newest first.</span>
+          <span>Nothing leaves unless you ask for a rephrase.</span>
+          <span>Jerox. It works where you already are.</span>
+        </div>
+        <div class="rail" aria-hidden="true"><i><b></b></i><i><b></b></i><i><b></b></i><i><b></b></i><i><b></b></i><i><b></b></i><i><b></b></i></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section class="block" id="features">
     <div class="wrap">
-    <h1 id="hero-title">
-      <span class="line">Everything you copy.</span>
-      <span class="line">Right where you <em>left</em> it.</span>
-    </h1>
-    <p class="lead">A menu-bar clipboard for macOS. It opens at the cursor.</p>
-    <div class="hero-actions">
-      <a class="btn" href="#download">Download for macOS</a>
-      <p class="note">Requires macOS 15.1 or later.</p>
-    </div>
-    <figure>
-      <div class="desk hero-mock" id="heroMock">
-        <div class="menubar" aria-hidden="true">
-          <b>Notes</b><span>File</span><span>Edit</span><span class="sp"></span>
-          <svg viewBox="0 0 16 16"><rect x="3.2" y="3.2" width="9.6" height="10.2" rx="1.4" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M6 3.1h4V4.8H6z" fill="currentColor"/></svg>
-        </div>
-        <div class="stage" aria-hidden="true">
-          <div class="doc">
-            <span class="bar w1"></span><span class="bar w2"></span><span class="bar w3"></span>
-            <svg class="pointer" viewBox="0 0 16 16"><path d="M3 2.2 12.2 8.2 7.4 9.2 5.6 13.6z" fill="currentColor"/></svg>
-          </div>
-          <div class="panel">
-            <div class="search">
-              <svg viewBox="0 0 16 16"><circle cx="7" cy="7" r="4.25" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="m10.2 10.2 2.8 2.8" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
-              <span class="q"><span class="ph">Search</span><span class="typed" id="heroTyped"></span></span>
-              <span class="count">1 match</span>
-              <i class="caret" id="heroCaret"></i>
-            </div>
-            <ul class="rows">
-              <li class="row top sel"><svg class="pin" viewBox="0 0 16 16"><path d="M6 2h4v4l2 2v1H4V8l2-2zM8 9v5" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" stroke-linecap="round"/></svg><span>Studio door code: 4821</span><span class="kind">1</span></li>
-              <li class="row match"><svg class="pin" viewBox="0 0 16 16"><path d="M6 2h4v4l2 2v1H4V8l2-2zM8 9v5" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" stroke-linecap="round"/></svg><span>Invoice 4021 is due Friday.</span><span class="kind">2</span></li>
-              <li class="row"><svg class="pin" viewBox="0 0 16 16"><path d="M6 2h4v4l2 2v1H4V8l2-2zM8 9v5" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" stroke-linecap="round"/></svg><span>jxngrx.com</span><span class="kind">3</span></li>
-              <li class="row"><svg class="pin" viewBox="0 0 16 16"><path d="M6 2h4v4l2 2v1H4V8l2-2zM8 9v5" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" stroke-linecap="round"/></svg><span><i class="swatch"></i> #1D4E89</span><span class="kind">4</span></li>
-              <li class="row"><svg class="pin" viewBox="0 0 16 16"><path d="M6 2h4v4l2 2v1H4V8l2-2zM8 9v5" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" stroke-linecap="round"/></svg><span><code><span class="kw">let</span> row = items[0]</code></span><span class="kind">5</span></li>
-              <li class="row"><svg class="pin" viewBox="0 0 16 16"><path d="M6 2h4v4l2 2v1H4V8l2-2zM8 9v5" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" stroke-linecap="round"/></svg><pre>{
-  <span class="k">"due"</span>: "Friday"
-}</pre><span class="kind">6</span></li>
-            </ul>
-          </div>
-        </div>
+      <div class="block-head rv">
+        <h2>Four jobs. One menu bar.</h2>
+        <p class="lede">No Dock icon while you work. Each job opens where you are and hands the result back to the app you were using.</p>
       </div>
-      <figcaption>A drawing of the list. Not a screenshot.</figcaption>
-    </figure>
-    </div>
-  </section>
-
-  <section class="principles wrap" id="features" aria-labelledby="feat-title">
-    <h2 class="s12 rise" id="feat-title">Three things, and then it gets out of the way.</h2>
-    <div class="grid">
-      <div class="s4 rise">
-        <h3>Native</h3>
-        <p>Built with Swift, SwiftUI, and AppKit. It requires macOS 15.1 or later. There is no Dock icon while you work.</p>
-      </div>
-      <div class="s4 rise">
-        <h3>Quiet</h3>
-        <p>Open it with <span class="keys"><kbd>⌃</kbd><kbd>⌥</kbd><kbd>⌘</kbd><kbd>V</kbd></span>, or from the menu bar. Escape or a click outside closes it and returns you to your app.</p>
-      </div>
-      <div class="s4 rise">
-        <h3>Yours</h3>
-        <p>History stays on disk, on your Mac. Rephrase uses a key you keep in the Keychain. Nothing is sent until you ask.</p>
-      </div>
-    </div>
-  </section>
-
-  <section class="how wrap band" id="how" aria-labelledby="how-title">
-    <h2 class="rise" id="how-title">How it works</h2>
-    <div class="how-grid">
-      <ol class="steps">
-        <li class="step is-active" data-state="open">
-          <h3>Open</h3>
-          <p>The list opens at the cursor, newest first. Press the shortcut again, press Escape, or click outside to dismiss it.</p>
-          <p class="keys"><kbd>⌃</kbd><kbd>⌥</kbd><kbd>⌘</kbd><kbd>V</kbd></p>
-        </li>
-        <li class="step" data-state="search">
-          <h3>Search</h3>
-          <p>Type a phrase. An exact match ranks above a looser, character-by-character one.</p>
-        </li>
-        <li class="step" data-state="paste">
-          <h3>Paste</h3>
-          <p>Return pastes the row in its original form. Shift-Return pastes plain text. The keys 1 to 9 paste a row directly. Arrow keys move the selection.</p>
-          <p><span class="keys"><kbd>↩</kbd></span> <span class="keys"><kbd>⇧</kbd><kbd>↩</kbd></span></p>
-        </li>
-        <li class="step" data-state="pin">
-          <h3>Pin</h3>
-          <p>Pin a row and it stays on top. Pins are exempt from your history limits, until you unpin them.</p>
-          <p class="keys"><kbd>⌘</kbd><kbd>P</kbd></p>
-        </li>
-      </ol>
-      <div class="how-stage">
-        <div class="desk how-mock is-open" id="howMock" data-state="open" aria-hidden="true">
-          <div class="menubar"><b>Notes</b><span>File</span><span>Edit</span><span class="sp"></span>
-            <svg viewBox="0 0 16 16"><rect x="3.2" y="3.2" width="9.6" height="10.2" rx="1.4" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M6 3.1h4V4.8H6z" fill="currentColor"/></svg>
-          </div>
-          <div class="stage">
-            <div class="doc">
-              <span class="bar w1"></span><span class="bar w2"></span><span class="bar w3"></span>
-              <p class="landed">Invoice 4021 is due Friday.</p>
-            </div>
-            <div class="panel">
-              <div class="search">
-                <svg viewBox="0 0 16 16"><circle cx="7" cy="7" r="4.25" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="m10.2 10.2 2.8 2.8" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
-                <span class="q"><span class="ph">Search</span><span class="typed">invoice</span></span>
-                <span class="count">1 match</span>
+      <div class="bento">
+        <article class="card w7 rv">
+          <div class="demo light" id="demo-clip" aria-label="Clipboard history opening at the cursor and pasting a link">
+            <div class="doc"><small>Launch notes</small>Here’s the link: <span class="ins" id="cb-ins">jxngrx.com/jerox</span><span class="tcaret"></span></div>
+            <div class="cb" id="cb">
+              <div class="cb-search"><img src="media/app-icon.png" alt=""><span class="ph" id="cb-ph">Search history</span><span id="cb-q"></span></div>
+              <div class="cb-rows">
+                <div class="cb-sel" id="cb-sel" style="top:22px"></div>
+                <div class="cb-label" id="cb-l1" style="top:4px">PINNED</div>
+                <div class="cb-row" data-k="pin" style="top:22px"><span class="n">1</span><span class="g"><span style="width:12px;height:12px;border-radius:3px;background:#0a84ff"></span></span><span class="t">#0A84FF</span></div>
+                <div class="cb-label" id="cb-l2" style="top:58px">HISTORY</div>
+                <div class="cb-row" style="top:76px"><span class="n">2</span><span class="g"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M3 4h10M3 8h7M3 12h9"/></svg></span><span class="t">Meeting moved to 4:30 tomorrow</span></div>
+                <div class="cb-row" style="top:106px"><span class="n">3</span><span class="g"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5.5 4.5 2 8l3.5 3.5M10.5 4.5 14 8l-3.5 3.5"/></svg></span><span class="t" style="font-family:var(--mono);font-size:12px"><span class="tok-kw">const</span> pasteBack = <span class="tok-b">true</span></span></div>
+                <div class="cb-row" id="cb-link" style="top:136px"><span class="n" id="cb-ln">4</span><span class="g"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M7 9.5a3 3 0 0 0 4.2 0l2-2a3 3 0 0 0-4.2-4.2l-.6.6"/><path d="M9 6.5a3 3 0 0 0-4.2 0l-2 2a3 3 0 0 0 4.2 4.2l.6-.6"/></svg></span><span class="t">jxngrx.com/jerox</span></div>
+                <div class="cb-row" style="top:166px"><span class="n">5</span><span class="g"><span style="width:16px;height:12px;border-radius:3px;background:linear-gradient(135deg,#cfd9ee,#8fa3c8)"></span></span><span class="t">Screenshot 09.41</span></div>
               </div>
-              <ul class="rows">
-                <li class="row top sel"><svg class="pin" viewBox="0 0 16 16"><path d="M6 2h4v4l2 2v1H4V8l2-2zM8 9v5" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" stroke-linecap="round"/></svg><span>Studio door code: 4821</span><span class="kind">1</span></li>
-                <li class="row match"><svg class="pin" viewBox="0 0 16 16"><path d="M6 2h4v4l2 2v1H4V8l2-2zM8 9v5" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" stroke-linecap="round"/></svg><span>Invoice 4021 is due Friday.</span><span class="kind">2</span></li>
-                <li class="row"><svg class="pin" viewBox="0 0 16 16"><path d="M6 2h4v4l2 2v1H4V8l2-2zM8 9v5" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" stroke-linecap="round"/></svg><span>jxngrx.com</span><span class="kind">3</span></li>
-                <li class="row"><svg class="pin" viewBox="0 0 16 16"><path d="M6 2h4v4l2 2v1H4V8l2-2zM8 9v5" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" stroke-linecap="round"/></svg><span><i class="swatch"></i> #1D4E89</span><span class="kind">4</span></li>
-                <li class="row"><svg class="pin" viewBox="0 0 16 16"><path d="M6 2h4v4l2 2v1H4V8l2-2zM8 9v5" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" stroke-linecap="round"/></svg><code><span class="kw">let</span> row = items[0]</code><span class="kind">5</span></li>
-              </ul>
+              <div class="cb-foot"><span><span class="k" id="cb-ret">↩</span>paste</span><span><span class="k">⇧</span><span class="k">↩</span>plain</span><span><span class="k">⌘</span><span class="k">P</span>pin</span><span>1–9</span></div>
             </div>
           </div>
-        </div>
-      </div>
-    </div>
-  </section>
+          <div class="card-foot"><div><h3>History at the cursor</h3><p>Everything you copy, newest first. Type to filter, press Return, and it pastes in its original format.</p></div><span class="kbd" aria-label="Control Option Command V"><kbd>⌃</kbd><kbd>⌥</kbd><kbd>⌘</kbd><kbd>V</kbd></span></div>
+        </article>
 
-  <section class="wrap" id="captures" aria-labelledby="cap-title">
-    <h2 class="rise" id="cap-title">What it captures</h2>
-    <p class="lead rise">Copying the same thing again moves that row to the top, instead of adding a duplicate.</p>
-    <table class="sheet" data-stagger style="margin-top: var(--s6)">
-      <caption class="sr-only">Clipboard types Jerox keeps</caption>
-      <tbody>
-        <tr class="stag"><th scope="row">Text</th><td>Newest first. Return pastes it. The keys 1 to 9 paste a row directly.</td></tr>
-        <tr class="stag"><th scope="row">Rich text</th><td>Formatting is preserved on paste. Shift-Return pastes the same row as plain text.</td></tr>
-        <tr class="stag"><th scope="row">Images</th><td>Shown with a preview. Screenshots saved to the Desktop are included.</td></tr>
-        <tr class="stag"><th scope="row">Files</th><td>Kept so you can paste them back into the app you were using.</td></tr>
-        <tr class="stag"><th scope="row">Links</th><td>A web address is kept even when the copied text is a page title.</td></tr>
-        <tr class="stag"><th scope="row">Colors</th><td>Hex and rgb values, stored as a color and pasted as a color.</td></tr>
-        <tr class="stag"><th scope="row">Code</th><td>Detected from the text, with light syntax highlighting.</td></tr>
-        <tr class="stag"><th scope="row">JSON</th><td>A whole object or array is pretty-printed as it is saved.</td></tr>
-      </tbody>
-    </table>
-  </section>
-
-  <section class="wrap" id="rephrase" aria-labelledby="re-title">
-    <div class="grid">
-      <div class="s5">
-        <h2 class="rise" id="re-title">Rephrase</h2>
-        <p class="prose rise">It rewrites text so it sounds like a person wrote it. Three tones: Friendly chat, Professional chat, and Professional mail.</p>
-        <p class="prose rise">In the list, it rewrites the selected row. Anywhere else, select text and press <span class="keys"><kbd>⌘</kbd><kbd>⇧</kbd><kbd>R</kbd></span>. The result is pasted back in place.</p>
-      </div>
-      <div class="s7 rise">
-        <div class="re-demo">
-          <p class="re-label">Before</p>
-          <div class="before"><p>hey so about the thing u sent yesterday. i looked and its kinda broken. the export dies on big files. can u take a look before tmrw, client demo is at 10</p></div>
-          <div class="tones" role="tablist" aria-label="Rephrase tone">
-            <button type="button" role="tab" id="tab-friendly" aria-selected="true" aria-controls="tone-friendly">Friendly chat</button>
-            <button type="button" role="tab" id="tab-prochat" aria-selected="false" aria-controls="tone-prochat" tabindex="-1">Professional chat</button>
-            <button type="button" role="tab" id="tab-promail" aria-selected="false" aria-controls="tone-promail" tabindex="-1">Professional mail</button>
+        <article class="card w5 rv">
+          <div class="demo" id="demo-rp" aria-label="A rough sentence rewritten in place">
+            <div class="rp-line"><span class="rp-old" id="rp-old">hey can u send the deck by tmrw</span><span class="rp-new" id="rp-new">Could you send the deck by tomorrow?</span></div>
+            <div class="rp-tag" id="rp-tag"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" style="width:12px;height:12px;vertical-align:-1px;margin-right:6px"><path d="M12 2l1.8 5.4L19 9l-5.2 1.6L12 16l-1.8-5.4L5 9l5.2-1.6z"/></svg>Professional mail, pasted back</div>
+            <div class="pp" id="pp">
+              <div class="pp-h"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.8 5.4L19 9l-5.2 1.6L12 16l-1.8-5.4L5 9l5.2-1.6z"/></svg>Rephrase with</div>
+              <div class="pp-rows"><div class="pp-sel" id="pp-sel"></div><div class="pp-row"><span class="n">1</span>Friendly chat</div><div class="pp-row"><span class="n">2</span>Professional chat</div><div class="pp-row"><span class="n">3</span>Professional mail</div></div>
+              <div class="pp-f"><span><span class="k" id="pp-ret">↩</span>apply</span><span><span class="k">Esc</span>cancel</span></div>
+            </div>
           </div>
-          <div class="outs">
-            <div class="out is-on" role="tabpanel" id="tone-friendly" aria-labelledby="tab-friendly"><p>Hey. I looked at what you sent yesterday, and the export seems broken. It dies on big files. Could you take a look before tomorrow? The client demo is at 10.</p></div>
-            <div class="out" role="tabpanel" id="tone-prochat" aria-labelledby="tab-prochat" hidden><p>Hi. I reviewed what you sent yesterday. The export fails on large files. Could you look into it before tomorrow? The client demo is at 10.</p></div>
-            <div class="out" role="tabpanel" id="tone-promail" aria-labelledby="tab-promail" hidden><p>Hi,<br><br>I reviewed the file you sent yesterday. The export fails on large files. Could you look into this before tomorrow? We have a client demo at 10.<br><br>Thanks,<br>Sam</p></div>
+          <div class="card-foot"><div><h3>Rewrite in place</h3><p>Select text in any app, pick a tone, and the rewrite replaces it. Your own prompts sit beside the built-in three.</p></div><span class="kbd" aria-label="Command Shift R"><kbd>⌘</kbd><kbd>⇧</kbd><kbd>R</kbd></span></div>
+        </article>
+
+        <article class="card w5 rv">
+          <div class="demo" id="demo-dc" aria-label="The dictation bar writing spoken words">
+            <div class="dc-stage"></div>
+            <div class="dc-chip"><i></i>Whisper Small · runs on this Mac</div>
+            <div class="dc-bar">
+              <div class="dc-text" id="dc-text">Remind me to book the flight before Friday.</div>
+              <div class="dc-ctrl"><span class="dc-rec"></span><div class="dc-bars"><b style="animation-delay:-.1s"></b><b style="animation-delay:-.5s"></b><b style="animation-delay:-.2s"></b><b style="animation-delay:-.8s"></b><b style="animation-delay:-.3s"></b><b style="animation-delay:-.7s"></b><b style="animation-delay:-.15s"></b><b style="animation-delay:-.6s"></b><b style="animation-delay:-.4s"></b></div><span class="dc-clock" id="dc-clock">0:00</span><span class="dc-x"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 2l8 8M10 2 2 10"/></svg></span></div>
+            </div>
           </div>
-        </div>
-        <p class="re-note">Uses your own OpenRouter key, stored in the Keychain. Nothing runs until you ask.</p>
+          <div class="card-foot"><div><h3>Dictate anywhere</h3><p>Apple Speech shows live text. A downloaded Whisper model runs fully offline. Either way it pastes where you are.</p></div><span class="kbd" aria-label="Control Option Command D"><kbd>⌃</kbd><kbd>⌥</kbd><kbd>⌘</kbd><kbd>D</kbd></span></div>
+        </article>
+
+        <article class="card w7 rv">
+          <div class="demo" id="demo-st" aria-label="Text read off a selected part of the screen">
+            <div class="st-shot"><h4>Launch checklist</h4><ul><li><i></i>Record the product film</li><li><i></i>Write the share caption</li><li><i></i>Open the waitlist</li><li><i></i>Ship the first build</li></ul></div>
+            <div class="st-side"><span style="width:80%"></span><span></span><span style="width:60%"></span><span style="width:90%"></span><span style="width:70%"></span></div>
+            <div class="st-dim" id="st-dim"></div>
+            <div class="st-sel" id="st-sel"></div>
+            <div class="st-cap" id="st-cap">Record the product film<br>Write the share caption<small>CLICK TO COPY</small></div>
+          </div>
+          <div class="card-foot"><div><h3>Read the screen</h3><p>Drag over anything you can see, an image, a video frame, a locked PDF, and its text appears right on it. Read on this Mac.</p></div><span class="kbd" aria-label="Control Option Command T"><kbd>⌃</kbd><kbd>⌥</kbd><kbd>⌘</kbd><kbd>T</kbd></span></div>
+        </article>
       </div>
     </div>
   </section>
 
-  <section class="wrap" id="shortcuts" aria-labelledby="sc-title">
-    <h2 class="rise" id="sc-title">Shortcuts</h2>
-    <p class="lead rise">These are the defaults. Each one can be changed in Settings. Show Jerox and Rephrase need a modifier.</p>
-    <table class="sheet" data-stagger style="margin-top: var(--s6)">
-      <caption class="sr-only">Default keyboard shortcuts</caption>
-      <thead class="sr-only"><tr><th>Action</th><th>Keys</th><th>What it does</th></tr></thead>
-      <tbody>
-        <tr class="stag"><th scope="row">Show Jerox</th><td><span class="keys"><kbd>⌃</kbd><kbd>⌥</kbd><kbd>⌘</kbd><kbd>V</kbd></span></td><td>Opens the list at the cursor. Press again, Escape, or click outside to close it.</td></tr>
-        <tr class="stag"><th scope="row">Paste</th><td><span class="keys"><kbd>↩</kbd></span></td><td>Pastes the selected row in its original form.</td></tr>
-        <tr class="stag"><th scope="row">Paste plain</th><td><span class="keys"><kbd>⇧</kbd><kbd>↩</kbd></span></td><td>Pastes the same row as plain text.</td></tr>
-        <tr class="stag"><th scope="row">Paste a row</th><td><span class="keys"><kbd>1</kbd></span> to <span class="keys"><kbd>9</kbd></span></td><td>Pastes that row directly. Any key from 1 to 9.</td></tr>
-        <tr class="stag"><th scope="row">Pin</th><td><span class="keys"><kbd>⌘</kbd><kbd>P</kbd></span></td><td>Pins or unpins the selected row. Pins stay on top.</td></tr>
-        <tr class="stag"><th scope="row">Rephrase</th><td><span class="keys"><kbd>⌘</kbd><kbd>⇧</kbd><kbd>R</kbd></span></td><td>Rewrites the selected row, or selected text in another app, and pastes it back.</td></tr>
-      </tbody>
-    </table>
-  </section>
-
-  <section class="focused wrap band" id="focused" aria-labelledby="fd-title">
-    <h2 class="rise" id="fd-title">Focused by design</h2>
-    <p class="prose rise">Jerox keeps the thing you use many times a day small. The list below is a choice, not a backlog.</p>
-    <ul class="miss">
-      <li class="rise">No OCR.</li>
-      <li class="rise">No snippets or templates.</li>
-      <li class="rise">No per-app exclusions.</li>
-      <li class="rise">No clipboard stack.</li>
-    </ul>
-  </section>
-
-  <section class="wrap" id="faq" aria-labelledby="faq-title">
-    <h2 class="rise" id="faq-title">FAQ</h2>
-    <div class="faq-list">
-      <div class="faq-item">
-        <h3><button type="button" id="q1" aria-expanded="false" aria-controls="a1">Where is history stored? <span class="plus" aria-hidden="true"></span></button></h3>
-        <div class="faq-a" id="a1" role="region" aria-labelledby="q1" inert><div><p>On your Mac, on disk. It is not synced, and it is not sent anywhere. Nothing already on the clipboard at launch is imported.</p></div></div>
+  <!-- Privacy -->
+  <section class="block" id="privacy">
+    <div class="wrap">
+      <div class="block-head rv">
+        <h2>The Mac does the listening.</h2>
+        <p class="lede">Dictation and screen reading run on this Mac. The network is used for one thing only: a rephrase you asked for.</p>
       </div>
-      <div class="faq-item">
-        <h3><button type="button" id="q2" aria-expanded="false" aria-controls="a2">Does it need the internet? <span class="plus" aria-hidden="true"></span></button></h3>
-        <div class="faq-a" id="a2" role="region" aria-labelledby="q2" inert><div><p>No. The only network request is a Rephrase you start, through your own OpenRouter key. The key is stored in the Keychain.</p></div></div>
+      <div class="ledger">
+        <div class="card rv"><div class="pane">
+          <h3><i></i>On this Mac</h3>
+          <dl>
+            <dt>History</dt><dd>Kept on your disk. Pins stay until you unpin them.</dd>
+            <dt>Dictation</dt><dd>Apple Speech on device, or a downloaded Whisper model.</dd>
+            <dt>Screen text</dt><dd>Read with on-device text recognition.</dd>
+            <dt>Rephrase</dt><dd>Apple Intelligence on macOS 26, no key needed.</dd>
+          </dl>
+        </div></div>
+        <div class="card rv"><div class="pane">
+          <h3><i class="off"></i>Only when you ask</h3>
+          <dl>
+            <dt>Rephrase</dt><dd>OpenRouter, OpenAI, Anthropic, or Hugging Face, with your own key.</dd>
+            <dt>Your keys</dt><dd>Stored in the macOS Keychain.</dd>
+            <dt>Speech models</dt><dd>Downloaded once, when you choose one.</dd>
+          </dl>
+        </div></div>
       </div>
-      <div class="faq-item">
-        <h3><button type="button" id="q3" aria-expanded="false" aria-controls="a3">Which version of macOS? <span class="plus" aria-hidden="true"></span></button></h3>
-        <div class="faq-a" id="a3" role="region" aria-labelledby="q3" inert><div><p>macOS 15.1 or later. Jerox is a native app, built with Swift, SwiftUI, and AppKit.</p></div></div>
-      </div>
-      <div class="faq-item">
-        <h3><button type="button" id="q4" aria-expanded="false" aria-controls="a4">Can I change the shortcuts? <span class="plus" aria-hidden="true"></span></button></h3>
-        <div class="faq-a" id="a4" role="region" aria-labelledby="q4" inert><div><p>Yes. Show Jerox, Paste, Paste plain, Pin, and Rephrase can all be changed in Settings. Show Jerox and Rephrase need a modifier. Escape cancels an edit.</p></div></div>
-      </div>
-      <div class="faq-item">
-        <h3><button type="button" id="q5" aria-expanded="false" aria-controls="a5">How long is history kept? <span class="plus" aria-hidden="true"></span></button></h3>
-        <div class="faq-a" id="a5" role="region" aria-labelledby="q5" inert><div><p>You set both limits: up to 5,000 items, and up to 3,650 days. Pins are exempt from both.</p></div></div>
-      </div>
-      <div class="faq-item">
-        <h3><button type="button" id="q6" aria-expanded="false" aria-controls="a6">What does Rephrase need? <span class="plus" aria-hidden="true"></span></button></h3>
-        <div class="faq-a" id="a6" role="region" aria-labelledby="q6" inert><div><p>Your OpenRouter key. To paste a rewrite back into another app, macOS also needs Accessibility access. If that access is missing, the rewrite still goes to the clipboard, and macOS asks once per launch.</p></div></div>
-      </div>
+      <div class="card models rv"><div class="pane">
+        <h3>Offline speech models</h3>
+        <table class="mtable">
+          <thead><tr><th>Model</th><th class="hide-s">Good for</th><th class="num">Size</th></tr></thead>
+          <tbody>
+            <tr><td>Whisper Tiny</td><td class="hide-s">Fastest, rough drafts · 99 languages</td><td class="num">32 MB</td></tr>
+            <tr><td>Whisper Base</td><td class="hide-s">Fast, everyday notes · 99 languages</td><td class="num">60 MB</td></tr>
+            <tr><td>Whisper Small (English)</td><td class="hide-s">Accurate English, light on memory</td><td class="num">190 MB</td></tr>
+            <tr><td>Whisper Small<span class="rec">Recommended</span></td><td class="hide-s">Balanced · 99 languages</td><td class="num">190 MB</td></tr>
+            <tr><td>Whisper Large v3 Turbo<span class="rec">Recommended</span></td><td class="hide-s">Most accurate · 99 languages</td><td class="num">574 MB</td></tr>
+          </tbody>
+        </table>
+        <p class="fine">Each model comes from one pinned revision on Hugging Face and is checked against its SHA-256 before Jerox uses it.</p>
+      </div></div>
     </div>
   </section>
 
-  <section class="cta wrap band" id="download" aria-labelledby="cta-title">
-    <h2 class="rise" id="cta-title">Right where you left it.</h2>
-    <div class="hero-actions rise">
-      <a class="btn" href="#download">Download for macOS</a>
-      <p class="note">Requires macOS 15.1 or later.</p>
+  <!-- Shortcuts -->
+  <section class="block" id="keys">
+    <div class="wrap">
+      <div class="block-head rv">
+        <h2>Six keys to remember.</h2>
+        <p class="lede">These are the defaults. Change any of them in Settings.</p>
+      </div>
+      <div class="card rv"><div class="pane keymap">
+        <div class="km-row"><span class="kbd"><kbd>⌃</kbd><kbd>⌥</kbd><kbd>⌘</kbd><kbd>V</kbd></span><strong>Show history</strong><span class="km-note">Opens at the cursor. Press again to close.</span></div>
+        <div class="km-row"><span class="kbd"><kbd>↩</kbd></span><strong>Paste</strong><span class="km-note">The selected copy, in its original format.</span></div>
+        <div class="km-row"><span class="kbd"><kbd>⇧</kbd><kbd>↩</kbd></span><strong>Paste as plain text</strong><span class="km-note">Same copy, formatting left behind.</span></div>
+        <div class="km-row"><span class="kbd"><kbd>⌘</kbd><kbd>⇧</kbd><kbd>R</kbd></span><strong>Rephrase</strong><span class="km-note">Select text in any app and pick a tone.</span></div>
+        <div class="km-row"><span class="kbd"><kbd>⌃</kbd><kbd>⌥</kbd><kbd>⌘</kbd><kbd>D</kbd></span><strong>Dictate</strong><span class="km-note">Speak. The bar stays bottom center.</span></div>
+        <div class="km-row"><span class="kbd"><kbd>⌃</kbd><kbd>⌥</kbd><kbd>⌘</kbd><kbd>T</kbd></span><strong>Read the screen</strong><span class="km-note">Drag over anything to pull its text.</span></div>
+      </div></div>
     </div>
+  </section>
+
+  <!-- Close -->
+  <section class="close" aria-labelledby="close-h">
+    <div class="haze" aria-hidden="true"></div>
+    <div class="close-in">
+      <h2 id="close-h">Stay in the app you’re in.</h2>
+      <p class="lede">Jerox is in private testing. Leave your email and we’ll send the first build.</p>
+      <form class="join" data-to="hello@jxngrx.com" novalidate>
+        <label for="email2" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Email address</label>
+        <input id="email2" name="email" type="email" inputmode="email" autocomplete="email" placeholder="you@domain.com" required>
+        <button type="submit">Join the waitlist</button>
+      </form>
+      <p class="join-note" aria-live="polite">A menu-bar app · macOS 15.1 or later</p>
+      <div class="giant" aria-hidden="true">Jerox<span>.</span></div>
+    </div>
+    <footer class="foot"><span>© 2026 Jerox</span><span>Made by <a href="https://jxngrx.com">jxngrx.com</a></span></footer>
   </section>
 </main>
 
-<footer class="footer">
-  <div class="wrap">
-    <span>Jerox</span>
-    <span>Developed by <a class="draw" href="https://jxngrx.com" rel="noopener">jxngrx.com</a></span>
-    <span>© 2026 Jerox</span>
-  </div>
-</footer>
-
 <script>
-(() => {
-  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const root = document.documentElement;
+(function () {
+  var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var sleep = function (ms) { return new Promise(function (r) { setTimeout(r, ms); }); };
 
-  const themeBtn = document.getElementById('theme');
-  const themeMeta = document.querySelector('meta[name="theme-color"]');
-  const isDark = () => root.getAttribute('data-theme') === 'dark';
-  const paintTheme = () => {
-    const dark = isDark();
-    themeMeta.content = dark ? '#14160f' : '#f4ead7';
-    themeBtn.setAttribute('aria-label', dark ? 'Switch to light theme' : 'Switch to dark theme');
-    themeBtn.setAttribute('aria-pressed', dark ? 'true' : 'false');
-  };
-  paintTheme();
-  themeBtn.addEventListener('click', () => {
-    root.setAttribute('data-theme', isDark() ? 'light' : 'dark');
-    try { localStorage.setItem('jerox-theme', root.getAttribute('data-theme')); } catch (e) {}
-    paintTheme();
-  });
-  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
-    if (!root.getAttribute('data-theme')) paintTheme();
-  });
+  /* ── reveal on enter ── */
+  var io = new IntersectionObserver(function (es) {
+    es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } });
+  }, { rootMargin: "0px 0px -8% 0px" });
+  document.querySelectorAll(".rv").forEach(function (el, i) { el.style.transitionDelay = (i % 3) * 70 + "ms"; io.observe(el); });
 
-  const nav = document.getElementById('nav');
-  const onScroll = () => nav.classList.toggle('is-scrolled', scrollY > 8);
-  addEventListener('scroll', onScroll, { passive: true });
-  onScroll();
-
-  const mark = (el) => el.classList.add('in');
-  if (reduce) {
-    document.querySelectorAll('.rise, .stag').forEach(mark);
-  } else {
-    const io = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        if (!entry.isIntersecting) return;
-        mark(entry.target);
-        io.unobserve(entry.target);
-      });
-    }, { threshold: 0.15, rootMargin: '0px 0px -8% 0px' });
-    document.querySelectorAll('.rise').forEach((el) => io.observe(el));
-    document.querySelectorAll('[data-stagger]').forEach((group) => {
-      const rows = [...group.querySelectorAll('.stag')];
-      const once = new IntersectionObserver((entries) => {
-        if (!entries.some((e) => e.isIntersecting)) return;
-        once.disconnect();
-        rows.forEach((row, i) => setTimeout(() => mark(row), i * 70));
-      }, { threshold: 0.2 });
-      once.observe(group);
-    });
-  }
-
-  const hero = document.getElementById('heroMock');
-  const typed = document.getElementById('heroTyped');
-  const caret = document.getElementById('heroCaret');
-  if (!reduce) {
-    const rows = [...hero.querySelectorAll('.row')];
-    const wait = (ms) => new Promise((r) => setTimeout(r, ms));
-    (async () => {
-      await wait(500);
-      hero.classList.add('is-open');
-      rows.forEach((row, i) => setTimeout(() => row.classList.add('in'), 280 + i * 70));
-      await wait(280 + rows.length * 70 + 700);
-      hero.classList.add('is-typing');
-      caret.classList.add('on');
-      const word = 'invoice';
-      for (let i = 1; i <= word.length; i++) {
-        typed.textContent = word.slice(0, i);
-        await wait(80);
+  /* ── waitlist: validates, then opens a prefilled email ── */
+  document.querySelectorAll("form.join").forEach(function (form) {
+    var note = form.nextElementSibling, input = form.querySelector("input");
+    form.addEventListener("submit", function (ev) {
+      ev.preventDefault();
+      var v = input.value.trim();
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) {
+        note.dataset.state = "error";
+        note.textContent = v ? "That email looks incomplete. Try you@domain.com." : "Enter your email to join.";
+        input.focus();
+        return;
       }
-      hero.classList.add('is-search');
-      await wait(1600);
-      typed.textContent = '';
-      hero.classList.remove('is-search', 'is-typing');
-      caret.classList.remove('on');
-    })();
-  }
-
-  const howMock = document.getElementById('howMock');
-  const steps = [...document.querySelectorAll('.step')];
-  const setStep = (step) => {
-    howMock.classList.remove('is-search', 'is-paste', 'is-pin');
-    if (step.dataset.state !== 'open') howMock.classList.add('is-' + step.dataset.state);
-    steps.forEach((s) => s.classList.toggle('is-active', s === step));
-  };
-  if ('IntersectionObserver' in window) {
-    const stepIO = new IntersectionObserver((entries) => {
-      const hit = entries.filter((e) => e.isIntersecting).sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
-      if (hit) setStep(hit.target);
-    }, { rootMargin: '-45% 0px -45% 0px', threshold: [0, 0.25, 0.6] });
-    steps.forEach((s) => stepIO.observe(s));
-  }
-
-  document.querySelectorAll('.faq-item').forEach((item) => {
-    const btn = item.querySelector('button');
-    const panel = item.querySelector('.faq-a');
-    btn.addEventListener('click', () => {
-      const open = btn.getAttribute('aria-expanded') !== 'true';
-      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
-      item.classList.toggle('is-open', open);
-      if (open) panel.removeAttribute('inert');
-      else panel.setAttribute('inert', '');
+      note.dataset.state = "ok";
+      note.textContent = "Opening your mail app to confirm…";
+      location.href = "mailto:" + form.dataset.to + "?subject=" + encodeURIComponent("Jerox waitlist") + "&body=" + encodeURIComponent("Please add me to the Jerox waitlist: " + v);
     });
+    input.addEventListener("input", function () { if (note.dataset.state === "error") { note.dataset.state = ""; note.textContent = "A menu-bar app · macOS 15.1 or later"; } });
   });
 
-  const tabs = [...document.querySelectorAll('.tones button')];
-  const panels = [...document.querySelectorAll('.out')];
-  const selectTab = (tab) => {
-    tabs.forEach((t) => {
-      const on = t === tab;
-      t.setAttribute('aria-selected', on ? 'true' : 'false');
-      t.tabIndex = on ? 0 : -1;
+  /* ── Film 02: canvas frames scrubbed by scroll, eased ── */
+  var N = 432, FPS = 24;
+  var film = document.getElementById("film"), canvas = document.getElementById("film-canvas"), ctx = canvas.getContext("2d");
+  var frames = new Array(N), loaded = new Array(N).fill(false);
+  var bounds = [0, 2.12, 5.28, 8.44, 11.06, 13.7, 15.28, 18].map(function (s) { return s / 18; });
+  var caps = document.querySelectorAll("#cap span"), rails = document.querySelectorAll(".rail b");
+  function load(i) {
+    if (frames[i]) return;
+    var img = new Image();
+    img.decoding = "async";
+    img.src = "media/frames/f" + String(i + 1).padStart(3, "0") + ".jpg";
+    img.onload = function () { loaded[i] = true; if (Math.abs(i - Math.round(cur * (N - 1))) < 3) dirty = true; };
+    frames[i] = img;
+  }
+  // Coarse pass first so scrubbing works immediately, then fill in.
+  [24, 8, 4, 2, 1].forEach(function (step) { for (var i = 0; i < N; i += step) load(i); });
+  function nearest(i) {
+    for (var d = 0; d < N; d++) { if (i - d >= 0 && loaded[i - d]) return frames[i - d]; if (i + d < N && loaded[i + d]) return frames[i + d]; }
+    return null;
+  }
+  function size() {
+    var r = canvas.getBoundingClientRect(), dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = Math.round(r.width * dpr); canvas.height = Math.round(r.height * dpr); dirty = true;
+  }
+  var target = 0, cur = 0, dirty = true, last = -1, chapIdx = -1;
+  function progress() {
+    var r = film.getBoundingClientRect(), span = film.offsetHeight - window.innerHeight;
+    return Math.min(1, Math.max(0, -r.top / span));
+  }
+  function draw() {
+    var idx = Math.round(cur * (N - 1)), img = nearest(idx);
+    if (img && (idx !== last || dirty)) {
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      last = idx; dirty = false;
+    }
+    var c = 0; while (c < 6 && cur >= bounds[c + 1]) c++;
+    if (c !== chapIdx) {
+      chapIdx = c;
+      caps.forEach(function (s, k) { s.classList.toggle("on", k === c); });
+    }
+    rails.forEach(function (b, k) {
+      var p = (cur - bounds[k]) / (bounds[k + 1] - bounds[k]);
+      b.style.transform = "scaleX(" + Math.min(1, Math.max(0, p)) + ")";
     });
-    panels.forEach((p) => {
-      const on = p.id === tab.getAttribute('aria-controls');
-      p.classList.toggle('is-on', on);
-      if (on) p.removeAttribute('hidden');
-      else p.setAttribute('hidden', '');
-    });
-  };
-  tabs.forEach((tab) => {
-    tab.addEventListener('click', () => selectTab(tab));
-    tab.addEventListener('keydown', (e) => {
-      const i = tabs.indexOf(tab);
-      if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
-        e.preventDefault();
-        const next = tabs[(i + (e.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length];
-        selectTab(next);
-        next.focus();
-      }
-    });
+  }
+  var running = false;
+  function tick() {
+    target = progress();
+    cur += (target - cur) * (reduce ? 1 : 0.14);
+    if (Math.abs(target - cur) < 0.0004) cur = target;
+    draw();
+    if (running) requestAnimationFrame(tick);
+  }
+  new IntersectionObserver(function (es) {
+    var on = es[0].isIntersecting;
+    if (on && !running) { running = true; requestAnimationFrame(tick); }
+    if (!on) running = false;
+  }, { rootMargin: "200px 0px" }).observe(film);
+  window.addEventListener("resize", size);
+  size();
+
+  /* ── live demos: each loops while on screen ── */
+  function demo(el, run) {
+    var active = false, busy = false;
+    new IntersectionObserver(function (es) {
+      active = es[0].isIntersecting;
+      if (active && !busy) loop();
+    }, { threshold: 0.35 }).observe(el);
+    function loop() {
+      busy = true;
+      run().then(function () { busy = false; if (active && !reduce) loop(); });
+    }
+  }
+
+  // Clipboard
+  var cb = document.getElementById("cb"), q = document.getElementById("cb-q"), ph = document.getElementById("cb-ph"), sel = document.getElementById("cb-sel"), link = document.getElementById("cb-link"), ln = document.getElementById("cb-ln"), ins = document.getElementById("cb-ins"), ret = document.getElementById("cb-ret");
+  var others = Array.prototype.filter.call(document.querySelectorAll("#cb .cb-row"), function (r) { return r !== link; }).concat([document.getElementById("cb-l1"), document.getElementById("cb-l2")]);
+  function clipReset() { cb.classList.remove("out"); q.textContent = ""; ph.style.display = ""; sel.style.transform = ""; link.style.transform = ""; ln.textContent = "4"; ins.classList.remove("on"); others.forEach(function (o) { o.classList.remove("gone"); o.style.opacity = ""; }); }
+  demo(document.getElementById("demo-clip"), async function () {
+    clipReset();
+    if (reduce) return;
+    await sleep(1400);
+    ph.style.display = "none";
+    for (var c of "link") { q.textContent += c; await sleep(140); }
+    await sleep(250);
+    others.forEach(function (o) { o.style.opacity = "0"; });
+    link.style.transform = "translateY(-114px)"; sel.style.transform = "translateY(0)"; ln.textContent = "1";
+    sel.style.top = "22px";
+    await sleep(900);
+    ret.classList.add("press"); await sleep(160); ret.classList.remove("press");
+    cb.classList.add("out"); await sleep(220);
+    ins.classList.add("on");
+    await sleep(2600);
+  });
+
+  // Rephrase
+  var old = document.getElementById("rp-old"), neu = document.getElementById("rp-new"), tag = document.getElementById("rp-tag"), pp = document.getElementById("pp"), ppSel = document.getElementById("pp-sel"), ppRet = document.getElementById("pp-ret");
+  function rpReset() { old.classList.remove("sel", "gone"); neu.classList.remove("on"); tag.classList.remove("on"); pp.classList.add("out"); ppSel.style.transform = ""; }
+  rpReset();
+  if (reduce) { pp.classList.remove("out"); }
+  demo(document.getElementById("demo-rp"), async function () {
+    rpReset();
+    if (reduce) { pp.classList.remove("out"); return; }
+    await sleep(700);
+    old.classList.add("sel"); await sleep(600);
+    pp.classList.remove("out"); await sleep(800);
+    ppSel.style.transform = "translateY(34px)"; await sleep(500);
+    ppSel.style.transform = "translateY(68px)"; await sleep(600);
+    ppRet.classList.add("press"); await sleep(160); ppRet.classList.remove("press");
+    pp.classList.add("out"); await sleep(150);
+    old.classList.add("gone"); await sleep(180);
+    neu.classList.add("on"); await sleep(300);
+    tag.classList.add("on");
+    await sleep(2800);
+  });
+
+  // Dictation
+  var dct = document.getElementById("dc-text"), dclock = document.getElementById("dc-clock");
+  var words = dct.textContent.split(" "); dct.textContent = "";
+  var spans = words.map(function (w) { var s = document.createElement("span"); s.textContent = w + " "; dct.appendChild(s); return s; });
+  demo(document.getElementById("demo-dc"), async function () {
+    spans.forEach(function (s) { s.classList.toggle("on", reduce); });
+    dclock.textContent = "0:00";
+    if (reduce) return;
+    await sleep(600);
+    for (var i = 0; i < spans.length; i++) { spans[i].classList.add("on"); dclock.textContent = "0:0" + Math.min(9, Math.floor(i / 2.5)); await sleep(260); }
+    dclock.textContent = "0:03";
+    await sleep(2600);
+  });
+
+  // Screen text
+  var dim = document.getElementById("st-dim"), ssel = document.getElementById("st-sel"), scap = document.getElementById("st-cap");
+  demo(document.getElementById("demo-st"), async function () {
+    [dim, ssel, scap].forEach(function (e) { e.classList.toggle("on", reduce); });
+    if (reduce) return;
+    await sleep(800);
+    dim.classList.add("on"); await sleep(300);
+    ssel.classList.add("on"); await sleep(800);
+    scap.classList.add("on");
+    await sleep(2800);
   });
 })();
 </script>

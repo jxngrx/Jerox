@@ -100,6 +100,33 @@
         ],
         "createdAt": "2026-09-30T09:43:13.424Z",
         "reason": "User confirmed: the attached poster is cream paper, ink bands, and an orange sun."
+      },
+      {
+        "rule": "overused-font",
+        "value": "inter",
+        "files": [
+          "/Users/shubhamjangra/Work/Jerox/site/index.html"
+        ],
+        "createdAt": "2026-10-02T10:50:39.374Z",
+        "reason": "Claude: Inter is body/UI only, recreating macOS panels; display voice is Cal Sans pinned from the user's rareUI reference"
+      },
+      {
+        "rule": "radial-halo",
+        "value": "*",
+        "files": [
+          "/Users/shubhamjangra/Work/Jerox/site/index.html"
+        ],
+        "createdAt": "2026-10-02T10:50:48.411Z",
+        "reason": "Claude: footer blue haze is named in the direction contract (rareUI-pinned fog under the giant wordmark), the only glow on the page"
+      },
+      {
+        "rule": "tight-leading",
+        "value": "*",
+        "files": [
+          "/Users/shubhamjangra/Work/Jerox/site/index.html"
+        ],
+        "createdAt": "2026-10-02T14:44:07.103Z",
+        "reason": "Claude: live Chrome scan of every element found no text with line-height between 1.15 and 1.3; body 1.55, captions 1.3+, only display type (h1 1.0, h2 1.04, wordmark .78) is tighter, by design"
       }
     ]
   }

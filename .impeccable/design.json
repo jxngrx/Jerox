@@ -1,0 +1,450 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-02T13:06:52+00:00",
+  "title": "Design System: Jerox",
+  "extensions": {
+    "colorMeta": {
+      "jerox-blue": {
+        "role": "primary",
+        "displayName": "Jerox Blue",
+        "canonical": "oklch(62.4% 0.206 255.5)",
+        "tonalRamp": [
+          "oklch(15% 0.206 255.5)",
+          "oklch(26% 0.206 255.5)",
+          "oklch(37% 0.206 255.5)",
+          "oklch(48% 0.206 255.5)",
+          "oklch(59% 0.206 255.5)",
+          "oklch(70% 0.206 255.5)",
+          "oklch(82% 0.206 255.5)",
+          "oklch(95% 0.206 255.5)"
+        ]
+      },
+      "jerox-blue-bright": {
+        "role": "primary",
+        "displayName": "Jerox Blue Bright",
+        "canonical": "oklch(68.7% 0.170 252.1)",
+        "tonalRamp": [
+          "oklch(15% 0.170 252.1)",
+          "oklch(26% 0.170 252.1)",
+          "oklch(37% 0.170 252.1)",
+          "oklch(48% 0.170 252.1)",
+          "oklch(59% 0.170 252.1)",
+          "oklch(70% 0.170 252.1)",
+          "oklch(82% 0.170 252.1)",
+          "oklch(95% 0.170 252.1)"
+        ]
+      },
+      "button-blue": {
+        "role": "primary",
+        "displayName": "Button Blue",
+        "canonical": "oklch(53.4% 0.187 256.7)",
+        "tonalRamp": [
+          "oklch(15% 0.187 256.7)",
+          "oklch(26% 0.187 256.7)",
+          "oklch(37% 0.187 256.7)",
+          "oklch(48% 0.187 256.7)",
+          "oklch(59% 0.187 256.7)",
+          "oklch(70% 0.187 256.7)",
+          "oklch(82% 0.187 256.7)",
+          "oklch(95% 0.187 256.7)"
+        ]
+      },
+      "button-blue-hover": {
+        "role": "primary",
+        "displayName": "Button Blue Hover",
+        "canonical": "oklch(56.3% 0.193 256.2)",
+        "tonalRamp": [
+          "oklch(15% 0.193 256.2)",
+          "oklch(26% 0.193 256.2)",
+          "oklch(37% 0.193 256.2)",
+          "oklch(48% 0.193 256.2)",
+          "oklch(59% 0.193 256.2)",
+          "oklch(70% 0.193 256.2)",
+          "oklch(82% 0.193 256.2)",
+          "oklch(95% 0.193 256.2)"
+        ]
+      },
+      "true-black": {
+        "role": "neutral",
+        "displayName": "True Black",
+        "canonical": "oklch(0.0% 0.000 0.0)",
+        "tonalRamp": [
+          "oklch(15% 0.000 0.0)",
+          "oklch(26% 0.000 0.0)",
+          "oklch(37% 0.000 0.0)",
+          "oklch(48% 0.000 0.0)",
+          "oklch(59% 0.000 0.0)",
+          "oklch(70% 0.000 0.0)",
+          "oklch(82% 0.000 0.0)",
+          "oklch(95% 0.000 0.0)"
+        ]
+      },
+      "stage-black": {
+        "role": "neutral",
+        "displayName": "Stage Black",
+        "canonical": "oklch(15.5% 0.004 285.9)",
+        "tonalRamp": [
+          "oklch(15% 0.004 285.9)",
+          "oklch(26% 0.004 285.9)",
+          "oklch(37% 0.004 285.9)",
+          "oklch(48% 0.004 285.9)",
+          "oklch(59% 0.004 285.9)",
+          "oklch(70% 0.004 285.9)",
+          "oklch(82% 0.004 285.9)",
+          "oklch(95% 0.004 285.9)"
+        ]
+      },
+      "frame-black": {
+        "role": "neutral",
+        "displayName": "Frame Black",
+        "canonical": "oklch(14.6% 0.004 285.9)",
+        "tonalRamp": [
+          "oklch(15% 0.004 285.9)",
+          "oklch(26% 0.004 285.9)",
+          "oklch(37% 0.004 285.9)",
+          "oklch(48% 0.004 285.9)",
+          "oklch(59% 0.004 285.9)",
+          "oklch(70% 0.004 285.9)",
+          "oklch(82% 0.004 285.9)",
+          "oklch(95% 0.004 285.9)"
+        ]
+      },
+      "inner-graphite": {
+        "role": "neutral",
+        "displayName": "Inner Graphite",
+        "canonical": "oklch(18.8% 0.006 285.8)",
+        "tonalRamp": [
+          "oklch(15% 0.006 285.8)",
+          "oklch(26% 0.006 285.8)",
+          "oklch(37% 0.006 285.8)",
+          "oklch(48% 0.006 285.8)",
+          "oklch(59% 0.006 285.8)",
+          "oklch(70% 0.006 285.8)",
+          "oklch(82% 0.006 285.8)",
+          "oklch(95% 0.006 285.8)"
+        ]
+      },
+      "text-primary": {
+        "role": "neutral",
+        "displayName": "Text Primary",
+        "canonical": "oklch(96.7% 0.001 286.4)",
+        "tonalRamp": [
+          "oklch(15% 0.001 286.4)",
+          "oklch(26% 0.001 286.4)",
+          "oklch(37% 0.001 286.4)",
+          "oklch(48% 0.001 286.4)",
+          "oklch(59% 0.001 286.4)",
+          "oklch(70% 0.001 286.4)",
+          "oklch(82% 0.001 286.4)",
+          "oklch(95% 0.001 286.4)"
+        ]
+      },
+      "text-muted": {
+        "role": "neutral",
+        "displayName": "Text Muted",
+        "canonical": "oklch(71.2% 0.013 286.1)",
+        "tonalRamp": [
+          "oklch(15% 0.013 286.1)",
+          "oklch(26% 0.013 286.1)",
+          "oklch(37% 0.013 286.1)",
+          "oklch(48% 0.013 286.1)",
+          "oklch(59% 0.013 286.1)",
+          "oklch(70% 0.013 286.1)",
+          "oklch(82% 0.013 286.1)",
+          "oklch(95% 0.013 286.1)"
+        ]
+      },
+      "text-faint": {
+        "role": "neutral",
+        "displayName": "Text Faint",
+        "canonical": "oklch(60.3% 0.015 285.9)",
+        "tonalRamp": [
+          "oklch(15% 0.015 285.9)",
+          "oklch(26% 0.015 285.9)",
+          "oklch(37% 0.015 285.9)",
+          "oklch(48% 0.015 285.9)",
+          "oklch(59% 0.015 285.9)",
+          "oklch(70% 0.015 285.9)",
+          "oklch(82% 0.015 285.9)",
+          "oklch(95% 0.015 285.9)"
+        ]
+      },
+      "silver": {
+        "role": "neutral",
+        "displayName": "Silver",
+        "canonical": "oklch(95.5% 0.006 264.5)",
+        "tonalRamp": [
+          "oklch(15% 0.006 264.5)",
+          "oklch(26% 0.006 264.5)",
+          "oklch(37% 0.006 264.5)",
+          "oklch(48% 0.006 264.5)",
+          "oklch(59% 0.006 264.5)",
+          "oklch(70% 0.006 264.5)",
+          "oklch(82% 0.006 264.5)",
+          "oklch(95% 0.006 264.5)"
+        ]
+      },
+      "silver-shadow": {
+        "role": "neutral",
+        "displayName": "Silver Shadow",
+        "canonical": "oklch(72.1% 0.023 265.7)",
+        "tonalRamp": [
+          "oklch(15% 0.023 265.7)",
+          "oklch(26% 0.023 265.7)",
+          "oklch(37% 0.023 265.7)",
+          "oklch(48% 0.023 265.7)",
+          "oklch(59% 0.023 265.7)",
+          "oklch(70% 0.023 265.7)",
+          "oklch(82% 0.023 265.7)",
+          "oklch(95% 0.023 265.7)"
+        ]
+      },
+      "graphite": {
+        "role": "neutral",
+        "displayName": "Graphite",
+        "canonical": "oklch(25.6% 0.010 268.3)",
+        "tonalRamp": [
+          "oklch(15% 0.010 268.3)",
+          "oklch(26% 0.010 268.3)",
+          "oklch(37% 0.010 268.3)",
+          "oklch(48% 0.010 268.3)",
+          "oklch(59% 0.010 268.3)",
+          "oklch(70% 0.010 268.3)",
+          "oklch(82% 0.010 268.3)",
+          "oklch(95% 0.010 268.3)"
+        ]
+      },
+      "hairline": {
+        "role": "neutral",
+        "displayName": "Hairline",
+        "canonical": "rgba(255, 255, 255, .08)"
+      },
+      "hairline-strong": {
+        "role": "neutral",
+        "displayName": "Hairline Strong",
+        "canonical": "rgba(255, 255, 255, .14)"
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Hero headline only, ending in the blue dot."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "One sentence per section."
+      },
+      "wordmark": {
+        "displayName": "Wordmark",
+        "purpose": "Footer \"Jerox.\" only."
+      },
+      "caption": {
+        "displayName": "Caption",
+        "purpose": "Film captions."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Card and pane titles."
+      },
+      "lede": {
+        "displayName": "Lede",
+        "purpose": "The sentence under each headline, muted."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Base text."
+      },
+      "label-mono": {
+        "displayName": "Label Mono",
+        "purpose": "macOS note, form status, system text."
+      },
+      "keycap": {
+        "displayName": "Keycap",
+        "purpose": "Modifier glyphs and keys."
+      }
+    },
+    "shadows": [
+      {
+        "name": "float",
+        "value": "0 10px 30px rgba(0, 0, 0, .35)",
+        "purpose": "Nav pills, with backdrop-filter: blur(16px) saturate(140%)."
+      },
+      {
+        "name": "stage-lift",
+        "value": "0 40px 120px rgba(0, 0, 0, .6)",
+        "purpose": "Film frame."
+      },
+      {
+        "name": "popover",
+        "value": "0 24px 60px rgba(0, 0, 0, .5)",
+        "purpose": "Dark product-panel replicas."
+      },
+      {
+        "name": "dot-glow",
+        "value": "0 6px 18px rgba(10, 132, 255, .45)",
+        "purpose": "Hero headline period only."
+      },
+      {
+        "name": "haze",
+        "value": "radial-gradient(42% 62% at 28% 72%, rgba(10,132,255,.85), transparent 70%), radial-gradient(36% 56% at 72% 78%, rgba(61,157,255,.7), transparent 70%), radial-gradient(70% 55% at 50% 105%, rgba(0,98,219,.95), transparent 72%); filter: blur(48px)",
+        "purpose": "Blue haze under the footer wordmark."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease",
+        "value": "cubic-bezier(.16, 1, .3, 1)",
+        "purpose": "The only easing curve."
+      },
+      {
+        "name": "reveal",
+        "value": "opacity .9s, transform 1s (translateY 28px), filter .9s (blur 6px); stagger 70ms",
+        "purpose": "Sections entering view."
+      },
+      {
+        "name": "caption-swap",
+        "value": "opacity .45s, transform .55s (translateY 60%), filter .45s (blur 6px)",
+        "purpose": "Film caption crossfade."
+      },
+      {
+        "name": "state",
+        "value": ".2s",
+        "purpose": "Hover colour changes on buttons and links."
+      },
+      {
+        "name": "film-scrub",
+        "value": "432 frames on a canvas across a 560vh sticky track",
+        "purpose": "Scroll drives the film; never autoplay."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "sm",
+        "value": "560px"
+      },
+      {
+        "name": "footer",
+        "value": "640px"
+      },
+      {
+        "name": "md",
+        "value": "900px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The only filled button: waitlist submit and nav CTA.",
+      "html": "<button class=\"ds-btn\">Join the waitlist</button>",
+      "css": ".ds-btn { height: 46px; padding: 0 22px; border: 0; border-radius: 999px; background: #0068d6; color: #fff; font-family: Inter, system-ui, sans-serif; font-size: 15px; font-weight: 600; cursor: pointer; transition: background .2s, transform .2s cubic-bezier(.16,1,.3,1); } .ds-btn:hover { background: #0071e3; } .ds-btn:active { transform: scale(.97); } .ds-btn:focus-visible { outline: 2px solid #0a84ff; outline-offset: 3px; }"
+    },
+    {
+      "name": "Waitlist Field",
+      "kind": "input",
+      "refersTo": "waitlist-field",
+      "description": "One pill holding the email input and the primary button, with a mono note below.",
+      "html": "<div class=\"ds-wrap\"><form class=\"ds-join\" onsubmit=\"return false\"><input placeholder=\"you@domain.com\" aria-label=\"Email address\"><button>Join the waitlist</button></form><p class=\"ds-note\">A menu-bar app · macOS 15.1 or later</p></div>",
+      "css": ".ds-wrap { background: #000; padding: 24px; display: grid; justify-items: center; gap: 12px; } .ds-join { display: flex; gap: 8px; padding: 6px; border-radius: 999px; background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.14); width: min(480px,100%); transition: border-color .25s; } .ds-join:focus-within { border-color: rgba(10,132,255,.7); } .ds-join input { flex: 1; min-width: 0; background: transparent; border: 0; color: #f4f4f5; font-family: Inter, system-ui, sans-serif; font-size: 16px; padding: 0 16px; caret-color: #0a84ff; outline: none; } .ds-join input::placeholder { color: #80808a; } .ds-join button { height: 46px; padding: 0 22px; border: 0; border-radius: 999px; background: #0068d6; color: #fff; font-family: Inter, system-ui, sans-serif; font-size: 15px; font-weight: 600; cursor: pointer; } .ds-join button:hover { background: #0071e3; } .ds-note { margin: 0; font-family: \"JetBrains Mono\", ui-monospace, monospace; font-size: 12.5px; letter-spacing: .02em; color: #80808a; }"
+    },
+    {
+      "name": "Pill Nav",
+      "kind": "nav",
+      "refersTo": "nav-pill",
+      "description": "Three separate floating glass pills: brand, links, CTA.",
+      "html": "<div class=\"ds-nav\"><a class=\"ds-pill ds-brand\" href=\"#\"><svg viewBox=\"0 0 24 24\" width=\"22\" height=\"22\"><path d=\"M4 9l9-3v11l-9 3z\" fill=\"#eef0f4\"/><path d=\"M11 11l9-3v11l-9 3z\" fill=\"#212328\" stroke=\"#9ea5b4\" stroke-width=\".6\"/></svg>Jerox</a><div class=\"ds-pill ds-links\"><a href=\"#\">Film</a><a href=\"#\">Features</a><a href=\"#\">Privacy</a></div><div class=\"ds-pill ds-cta\"><a href=\"#\">Join waitlist</a></div></div>",
+      "css": ".ds-nav { display: flex; gap: 10px; justify-content: center; padding: 22px; background: #0c0c0e; font-family: Inter, system-ui, sans-serif; } .ds-pill { height: 46px; display: flex; align-items: center; gap: 2px; padding: 0 6px; border-radius: 999px; background: rgba(16,16,19,.78); border: 1px solid rgba(255,255,255,.08); backdrop-filter: blur(16px) saturate(140%); box-shadow: 0 10px 30px rgba(0,0,0,.35); text-decoration: none; } .ds-brand { padding: 0 16px 0 10px; gap: 9px; color: #f4f4f5; font-weight: 600; font-size: 15px; } .ds-links a { position: relative; font-size: 14px; color: #a1a1aa; padding: 0 14px; height: 32px; display: inline-flex; align-items: center; text-decoration: none; transition: color .2s; } .ds-links a + a::before { content: \"\"; position: absolute; left: 0; top: 10px; bottom: 10px; width: 1px; background: rgba(255,255,255,.14); } .ds-links a:hover { color: #f4f4f5; } .ds-cta { padding: 0 5px; } .ds-cta a { height: 36px; padding: 0 16px; border-radius: 999px; background: #0068d6; color: #fff; font-size: 14px; font-weight: 600; display: inline-flex; align-items: center; text-decoration: none; transition: background .2s; } .ds-cta a:hover { background: #0071e3; } .ds-pill a:focus-visible { outline: 2px solid #0a84ff; outline-offset: 3px; }"
+    },
+    {
+      "name": "Double-Framed Card",
+      "kind": "card",
+      "refersTo": "card-frame",
+      "description": "Outer frame, 8px gap, inner panel, then a title/description foot with the shortcut.",
+      "html": "<article class=\"ds-card\"><div class=\"ds-demo\"><span class=\"ds-dot\"></span></div><div class=\"ds-foot\"><div><h3>Dictate anywhere</h3><p>A downloaded Whisper model runs fully offline.</p></div><span class=\"ds-kbd\"><kbd>⌃</kbd><kbd>⌥</kbd><kbd>⌘</kbd><kbd>D</kbd></span></div></article>",
+      "css": ".ds-card { max-width: 520px; padding: 8px; border-radius: 24px; background: #0a0a0c; border: 1px solid rgba(255,255,255,.08); transition: border-color .3s; font-family: Inter, system-ui, sans-serif; } .ds-card:hover { border-color: rgba(255,255,255,.14); } .ds-demo { height: 200px; border-radius: 17px; background: #131316; display: grid; place-items: center; } .ds-dot { width: 12px; height: 12px; border-radius: 50%; background: #0a84ff; } .ds-foot { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; padding: 18px 14px 12px; } .ds-foot h3 { margin: 0; font-size: 18px; font-weight: 600; letter-spacing: -.01em; color: #f4f4f5; } .ds-foot p { margin: 4px 0 0; font-size: 15px; color: #a1a1aa; max-width: 44ch; } .ds-kbd { display: inline-flex; gap: 4px; } .ds-kbd kbd { font-family: \"JetBrains Mono\", ui-monospace, monospace; font-size: 12px; font-weight: 500; min-width: 24px; height: 24px; padding: 0 7px; display: inline-flex; align-items: center; justify-content: center; border-radius: 7px; background: #1c1c21; border: 1px solid #2c2c33; border-bottom-width: 2px; color: #d9d9de; }"
+    },
+    {
+      "name": "Keycap Row",
+      "kind": "custom",
+      "refersTo": "keycap",
+      "description": "Keymap row: physical-looking mono keycaps, action, muted note.",
+      "html": "<div class=\"ds-km\"><span class=\"ds-keys\"><kbd>⌘</kbd><kbd>⇧</kbd><kbd>R</kbd></span><strong>Rephrase</strong><span class=\"ds-n\">Select text in any app and pick a tone.</span></div>",
+      "css": ".ds-km { display: grid; grid-template-columns: 170px 160px 1fr; align-items: center; gap: 20px; padding: 18px 30px; background: #131316; border-radius: 17px; color: #f4f4f5; font-family: Inter, system-ui, sans-serif; font-size: 17px; } .ds-km strong { font-weight: 500; } .ds-n { color: #a1a1aa; font-size: 15px; } .ds-keys { display: inline-flex; gap: 4px; } .ds-keys kbd { font-family: \"JetBrains Mono\", ui-monospace, monospace; font-size: 14px; font-weight: 500; min-width: 32px; height: 32px; padding: 0 7px; display: inline-flex; align-items: center; justify-content: center; border-radius: 9px; background: #1c1c21; border: 1px solid #2c2c33; border-bottom-width: 2px; color: #d9d9de; }"
+    },
+    {
+      "name": "Live-State Chip",
+      "kind": "chip",
+      "refersTo": "status-chip",
+      "description": "Hairline pill with a blue dot marking something live or on-device.",
+      "html": "<span class=\"ds-chip\"><i></i>Whisper Small · runs on this Mac</span>",
+      "css": ".ds-chip { display: inline-flex; align-items: center; gap: 8px; padding: 7px 14px; border-radius: 999px; border: 1px solid rgba(255,255,255,.14); background: rgba(255,255,255,.04); font-size: 13px; color: #d4d4d8; font-family: Inter, system-ui, sans-serif; } .ds-chip i { width: 7px; height: 7px; border-radius: 50%; background: #0a84ff; }"
+    },
+    {
+      "name": "Dot Headline",
+      "kind": "custom",
+      "refersTo": "display",
+      "description": "Display headline whose period is the glowing Jerox Blue dot.",
+      "html": "<div class=\"ds-hero\"><h1>It works where you already are<span class=\"ds-cd\"></span></h1></div>",
+      "css": ".ds-hero { background: linear-gradient(180deg,#121215,#09090b); border: 1px solid rgba(255,255,255,.08); border-radius: 28px; padding: 56px 24px; text-align: center; } .ds-hero h1 { margin: 0 auto; max-width: 12ch; font-family: Inter, system-ui, sans-serif; font-optical-sizing: auto; font-weight: 600; font-size: 64px; line-height: 1; letter-spacing: -.035em; color: #f4f4f5; text-wrap: balance; } .ds-cd { display: inline-block; width: .19em; height: .19em; border-radius: 50%; background: #0a84ff; margin-left: .04em; box-shadow: 0 6px 18px rgba(10,132,255,.45); }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Lit Stage",
+    "overview": "A true-black room with one framed stage in it. Everything the visitor needs to believe is on that stage: the Mac app's own panels, rebuilt in the page and running, and a film that plays as they scroll. The page itself stays quiet so the product can perform. Surfaces are graphite on black, separated by hairlines rather than shadows; the only colour with a voice is one blue, and it is almost always a dot.\n\nThe grammar is a modern component showcase: floating pill nav, a rounded hairline stage, double-framed bento cards (an outer frame, an 8px gap, an inner panel). The stacked-panels mark lives as a vast, barely-lit silhouette behind the hero headline, and the footer ends on a giant wordmark whose period is the blue dot over a blue haze. The dot is the system's signature: hero period, film cursor, live-state indicator, recording chip, wordmark period.\n\nThe world rejects the cream editorial page, the otter mascot, and the centered gradient SaaS hero. It carries no price, logos, testimonials, or invented numbers; proof is the working product.",
+    "keyCharacteristics": [
+      "True black page; one framed, rounded stage per act (hero, close).",
+      "One accent, Jerox blue, rationed to the action, the dot, and live state.",
+      "Double frames: outer frame, 8px gap, inner panel.",
+      "Hairline borders (8% and 14% white), never heavy rules.",
+      "Inter with optical sizing for everything human; JetBrains Mono only for keys, sizes, and system notes.",
+      "Real product panels as illustration; no stock imagery, no invented UI."
+    ],
+    "rules": [
+      {
+        "name": "The One Dot Rule",
+        "body": "Jerox Blue appears only on the primary action, the dot, and live state. If a blue element is not one of those three, it is wrong.",
+        "section": "colors"
+      },
+      {
+        "name": "The Legible Button Rule",
+        "body": "Filled buttons use Button Blue, never Jerox Blue, so white text reads.",
+        "section": "colors"
+      },
+      {
+        "name": "The Sentence Headline Rule",
+        "body": "Headlines are plain sentences ending in a period, sentence case, no labels above them.",
+        "section": "typography"
+      },
+      {
+        "name": "The Machine Text Rule",
+        "body": "Mono is for keys, file sizes, and system notes. Never for headlines or prose.",
+        "section": "typography"
+      },
+      {
+        "name": "The Hairline Not Shadow Rule",
+        "body": "Cards separate by border and tone; a card never gets a drop shadow at rest.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do keep the page true black (#000000) and put content on framed stages and double-framed cards.",
+      "Do ration Jerox Blue to the primary action, the dot, and live state.",
+      "Do use Button Blue for filled buttons so white text stays legible.",
+      "Do nest radii concentrically: 28px stage, 24px frame, 17px inner panel, pills for anything you press.",
+      "Do separate surfaces with 8% and 14% white hairlines and the black tonal ladder.",
+      "Do show the product with rebuilt, working panels whose shortcuts and data match the app.",
+      "Do write headlines as short sentences ending in a period.",
+      "Do use JetBrains Mono only for keys, sizes, and system notes."
+    ],
+    "donts": [
+      "Don't use a cream or paper page background, an otter or mascot, or a centered gradient hero.",
+      "Don't add a second accent colour or use blue as decoration.",
+      "Don't put drop shadows on cards at rest.",
+      "Don't add a second display typeface; Inter's optical sizing is the display cut.",
+      "Don't put small uppercase labels above headlines.",
+      "Don't invent prices, logos, testimonials, or numbers."
+    ]
+  }
+}

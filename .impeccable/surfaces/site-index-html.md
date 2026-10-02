@@ -9,22 +9,22 @@ related_targets: []
 
 Mode: Persuade.
 
-Someone at a Mac, mid-copy, should understand that Jerox is a menu-bar clipboard: history opens at the cursor, pins stay put, and a rewrite pastes back. Proof is one drawn list, labeled as a drawing. No price, no logo cloud, no invented quotes. Download for macOS stays on-page; there is no public file.
+Someone at a Mac, mid-task, should understand in one viewport that Jerox brings clipboard history, rewrite, and dictation to the app they are already in, then join the waitlist. Proof is the product's own panels rebuilt live in the page and Film 02 scrubbed by scroll. No price, no logo cloud, no testimonials, no invented numbers. There is no public download; the primary action is a waitlist email.
 
-Memorable moment: the list settles, a query types itself, and one row remains.
+Memorable moment: scrolling drives Film 02 frame by frame; the blue dot becomes the caret, the words, the panels, and the period of Jerox.
 
-Unresolved: no public download URL.
+Unresolved: real waitlist destination address (placeholder in the form's data attribute); public download URL.
 
 ## Direction contract
 
-THESIS: A daylight product page set in type, with one drawn clipboard list as proof. It refuses the otter, the dark cinematic HUD, and the centered SaaS hero.
+THESIS: A black, framed product stage in the grammar of a modern component showcase, where the product's real panels run live and the film is the scrollbar. It refuses the cream editorial page, the otter, and the centered gradient SaaS hero.
 
-OWN-WORLD: Warm off-white and near-black ink, one ink-blue for links, focus, and a single word. Hairline rules, an 8px scale, a 12-column grid. Schibsted Grotesk, Source Sans 3, JetBrains Mono. No mascot, no illustration, no grain, no glow.
+OWN-WORLD: True black page, one framed hero stage (rounded, hairline border), the stacked-panels mark as a vast soft silhouette behind the headline. One accent, Jerox blue, only on the primary action, the dot, and live state. Silver-to-graphite panels from the logo. Segmented pill nav. Double-framed bento cards. Inter Display weights for headlines, JetBrains Mono for keys and labels. Footer: giant wordmark over a blue haze.
 
-STORY: They read the line, see the list open at the cursor, believe the history stays on their disk, and choose Download for macOS.
+STORY: They read "It works where you already are", watch the film resolve into the logo as they scroll, try each panel, and leave an email.
 
-FIRST VIEWPORT: Left-aligned headline, two lines, one word in blue. One sentence. A black Download button and the macOS 15.1 note. Below, a hairline Mac menu bar and the clipboard list. No eyebrow, no mascot.
+FIRST VIEWPORT: Framed stage. Pill nav top. Centered two-line headline, one sentence, waitlist field plus blue button, macOS 15.1 note, the mark silhouette behind. Primary action above the fold.
 
-FORM: User-pinned canon. They named Linear, Things, and Apple and specified the system, so no roll. Brief-pinned 2026-09-30.
+FORM: User-pinned (rareUI grammar, Film 02 scroll-scrub); roll ccb7ba43 run, pin wins.
 
 FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance

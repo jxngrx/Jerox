@@ -52,7 +52,7 @@ The name is Jerox. The menu-bar icon is the stacked-panels mark (silver over gra
 
 The running app is the source of truth: `Jerox/JeroxApp.swift` and `Jerox/History.swift`.
 
-`jerox-app.md` is behind the app. It still says screen-text reading is absent and that rephrase is OpenRouter-only. Do not treat that file as the current product.
+`docs/jerox-app.md` is behind the app. It still says screen-text reading is absent and that rephrase is OpenRouter-only. Do not treat that file as the current product.
 
 No testimonials, pricing, press, or case studies. Do not invent them.
 

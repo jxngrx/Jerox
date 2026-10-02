@@ -1,5 +1,26 @@
+# macOS / Xcode
 .DS_Store
 build/
 DerivedData/
 xcuserdata/
 *.xcuserstate
+
+# Launch films: brag/Hyperframes outputs, renders, compositions
+launch/
+brag-output*/
+
+# Inspiration and third-party references (reference videos, Handy clone)
+reference/
+
+# Local design-tool state (impeccable): screenshots, comps, caches
+.impeccable/review/
+.impeccable/mocks/
+.impeccable/build/
+.impeccable/questions/
+.impeccable/hook.cache.json
+.impeccable/config.local.json
+.impeccable/decision-payload.json
+
+# Tooling
+node_modules/
+*.log
