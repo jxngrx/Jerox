@@ -107,6 +107,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
 
     func applicationWillTerminate(_ notification: Notification) {
         WhisperEngine.shared.shutdown()
+        LlamaEngine.shared.shutdown()
     }
 
     func installEditMenu() {

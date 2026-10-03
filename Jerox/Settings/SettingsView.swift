@@ -63,6 +63,7 @@ struct SettingsView: View {
     @AppStorage("hotkey.read.mods") private var readMods = ShortcutDefaults.readMods
     @AppStorage("speechEngine") private var speechEngine = SpeechCatalog.apple
     private let modelStore = ModelStore.shared
+    @AppStorage("localModel") private var localModel = ""
     @AppStorage("aiProvider") private var providerRaw = AIService.openrouter.rawValue
     @AppStorage("dictateRephrase") private var dictateRephrase = true
     @AppStorage("dictateRephrasePrompt") private var dictateRephrasePrompt = "friendly"
@@ -233,15 +234,20 @@ struct SettingsView: View {
                 }
                 ForEach(SpeechCatalog.models) { model in speechModelRow(model) }
             }
-            group("Rephrase", hint: "Bring your own key. OpenRouter defaults to a free model, so rephrase works before you add one.") {
+            group("Rephrase", hint: "Pick an offline model below, or bring your own key. OpenRouter defaults to a free model.") {
                 row("Rephrase after dictate") { switchToggle($dictateRephrase) }
-                ForEach(AIService.allCases, id: \.self) { service in
+                ForEach(AIService.allCases.filter { $0 != .local }, id: \.self) { service in
                     choice(service.title, detail: service == .openrouter ? "Online · free model by default" : "Online · API key", selected: providerRaw == service.rawValue) {
                         selectProvider(service)
                     }
                 }
-                line { field("API key", text: $apiKey, secure: true) }
-                line { field("Model", text: $modelName, secure: false) }
+                if providerRaw != AIService.local.rawValue {
+                    line { field("API key", text: $apiKey, secure: true) }
+                    line { field("Model", text: $modelName, secure: false) }
+                }
+            }
+            group("Offline rephrase", hint: "Qwen runs on this Mac. After the download there is no key and no network. Tap the circle to use one.") {
+                ForEach(SpeechCatalog.rephraseModels) { model in speechModelRow(model) }
             }
             group("After dictation", hint: "Friendly chat is the default.") {
                 if dictateRephrase {
@@ -513,6 +519,19 @@ struct SettingsView: View {
             .frame(width: 26)
     }
 
+    private func isChosen(_ model: SpeechModel) -> Bool {
+        model.rephrase ? providerRaw == AIService.local.rawValue && localModel == model.id : speechEngine == model.id
+    }
+
+    private func choose(_ model: SpeechModel) {
+        guard model.rephrase else {
+            speechEngine = model.id
+            return
+        }
+        localModel = model.id
+        providerRaw = AIService.local.rawValue
+    }
+
     private func speechModelRow(_ model: SpeechModel) -> some View {
         let phase = modelStore.phase(model)
         let size = ByteCountFormatter.string(fromByteCount: model.bytes, countStyle: .file)
@@ -522,7 +541,7 @@ struct SettingsView: View {
             HStack(spacing: 12) {
                 titled(model.name, badge: model.recommended, detail: caption)
                     .contentShape(Rectangle())
-                    .onTapGesture { if phase == .ready { speechEngine = model.id } }
+                    .onTapGesture { if phase == .ready { choose(model) } }
                 switch phase {
                 case .idle, .failed:
                     Button { modelStore.download(model) } label: {
@@ -543,7 +562,7 @@ struct SettingsView: View {
                     Text("Verifying").font(.caption).foregroundStyle(.secondary)
                 case .ready:
                     iconButton("trash", help: "Delete", role: .destructive) { modelStore.delete(model) }
-                    Button { speechEngine = model.id } label: { radio(speechEngine == model.id) }
+                    Button { choose(model) } label: { radio(isChosen(model)) }
                         .buttonStyle(.plain)
                 }
             }

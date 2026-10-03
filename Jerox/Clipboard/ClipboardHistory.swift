@@ -422,6 +422,9 @@ struct ClipboardHistory {
         let openai = aiCall(service: "openai", model: "", key: "k", instruction: "Clean", text: "Hello")
         let openaiBody = (try? JSONSerialization.jsonObject(with: openai?.body ?? Data())) as? [String: Any]
         req(openai?.url.contains("api.openai.com") == true && openaiBody?["provider"] == nil && openaiBody?["model"] as? String == "gpt-4o-mini", "openai")
+        req(cleanAPIKey(" Bearer sk-or-1\n") == "sk-or-1", "clean key")
+        let spaced = aiCall(service: "openrouter", model: " m ", key: "k \n", instruction: "Clean", text: "Hello")
+        req(spaced?.headers["Authorization"] == "Bearer k", "key trimmed in header")
         let hugging = aiCall(service: "huggingface", model: "org/m", key: "k", instruction: "Clean", text: "Hi")
         req(hugging?.url.contains("router.huggingface.co") == true, "huggingface")
         let anthropic = aiCall(service: "anthropic", model: "claude", key: "secret", instruction: "Clean", text: "Hi")

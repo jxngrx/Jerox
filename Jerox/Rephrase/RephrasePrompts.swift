@@ -49,7 +49,7 @@ enum RephrasePromptStore {
 }
 
 enum AIService: String, CaseIterable {
-    case openrouter, openai, anthropic, huggingface
+    case openrouter, openai, anthropic, huggingface, local
 
     var title: String {
         switch self {
@@ -57,6 +57,7 @@ enum AIService: String, CaseIterable {
         case .openai: "OpenAI"
         case .anthropic: "Anthropic"
         case .huggingface: "Hugging Face"
+        case .local: "On this Mac"
         }
     }
 
@@ -67,6 +68,7 @@ enum AIService: String, CaseIterable {
         case .openai: "gpt-4o-mini"
         case .anthropic: "claude-3-5-haiku-20241022"
         case .huggingface: "meta-llama/Llama-3.2-3B-Instruct"
+        case .local: ""
         }
     }
 }

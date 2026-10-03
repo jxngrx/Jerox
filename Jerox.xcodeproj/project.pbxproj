@@ -11,6 +11,8 @@
 		A10000000000000000000024 /* Vendor/whisper.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = A10000000000000000000023 /* Vendor/whisper.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		A10000000000000000000040 /* Vendor/Sparkle.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = A10000000000000000000044 /* Vendor/Sparkle.xcframework */; };
 		A10000000000000000000041 /* Vendor/Sparkle.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = A10000000000000000000044 /* Vendor/Sparkle.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		A10000000000000000000060 /* Vendor/llama.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = A10000000000000000000062 /* Vendor/llama.xcframework */; };
+		A10000000000000000000061 /* Vendor/llama.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = A10000000000000000000062 /* Vendor/llama.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -21,6 +23,7 @@
 			dstSubfolderSpec = 10;
 			files = (
 				A10000000000000000000024 /* Vendor/whisper.xcframework in Embed Frameworks */,
+				A10000000000000000000061 /* Vendor/llama.xcframework in Embed Frameworks */,
 				A10000000000000000000041 /* Vendor/Sparkle.xcframework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
@@ -33,6 +36,7 @@
 		A10000000000000000000023 /* Vendor/whisper.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = Vendor/whisper.xcframework; sourceTree = SOURCE_ROOT; };
 		A10000000000000000000032 /* Config/Base.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Config/Base.xcconfig; sourceTree = SOURCE_ROOT; };
 		A10000000000000000000044 /* Vendor/Sparkle.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = Vendor/Sparkle.xcframework; sourceTree = SOURCE_ROOT; };
+		A10000000000000000000062 /* Vendor/llama.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = Vendor/llama.xcframework; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -62,6 +66,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A10000000000000000000022 /* Vendor/whisper.xcframework in Frameworks */,
+				A10000000000000000000060 /* Vendor/llama.xcframework in Frameworks */,
 				A10000000000000000000040 /* Vendor/Sparkle.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -99,6 +104,7 @@
 			isa = PBXGroup;
 			children = (
 				A10000000000000000000023 /* Vendor/whisper.xcframework */,
+				A10000000000000000000062 /* Vendor/llama.xcframework */,
 				A10000000000000000000044 /* Vendor/Sparkle.xcframework */,
 			);
 			name = Vendor;
@@ -199,8 +205,9 @@
 				);
 				MACOSX_DEPLOYMENT_TARGET = 15.1;
 				MARKETING_VERSION = 0.1;
-								PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
+				SWIFT_OBJC_BRIDGING_HEADER = Jerox/Rephrase/Jerox-Bridging-Header.h;
 				SWIFT_VERSION = 5.0;
 			};
 			name = Debug;
@@ -223,8 +230,9 @@
 				);
 				MACOSX_DEPLOYMENT_TARGET = 15.1;
 				MARKETING_VERSION = 0.1;
-								PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
+				SWIFT_OBJC_BRIDGING_HEADER = Jerox/Rephrase/Jerox-Bridging-Header.h;
 				SWIFT_VERSION = 5.0;
 			};
 			name = Release;

@@ -29,6 +29,7 @@ enum APIKey {
     static func write(_ account: String, _ value: String) {
         let query = query(account)
         SecItemDelete(query as CFDictionary)
+        let value = cleanAPIKey(value)
         guard !value.isEmpty, let data = value.data(using: .utf8) else { return }
         var add = query
         add[kSecValueData as String] = data
