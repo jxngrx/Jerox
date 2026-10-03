@@ -19,7 +19,7 @@ extension AppDelegate {
             previousApp = front
         }
         let askMic = {
-            AVAudioApplication.requestRecordPermission { ok in
+            AVCaptureDevice.requestAccess(for: .audio) { ok in
                 DispatchQueue.main.async {
                     self.dictateStarting = false
                     guard ok else {

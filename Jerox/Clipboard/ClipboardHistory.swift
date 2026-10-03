@@ -429,7 +429,6 @@ struct ClipboardHistory {
         req(anthropic?.url.contains("api.anthropic.com") == true && anthropic?.headers["x-api-key"] == "secret" && anthropicBody?["system"] as? String == "Clean", "anthropic")
         req(aiReply(service: "openai", data: Data("{\"choices\":[{\"message\":{\"content\":\" OK \"}}]}".utf8)) == "OK", "chat reply")
         req(aiReply(service: "anthropic", data: Data("{\"content\":[{\"text\":\" Hi \"}]}".utf8)) == "Hi", "anthropic reply")
-        req(aiCall(service: "apple", model: "", key: "", instruction: "Clean", text: "Hi") == nil, "apple is local")
         let quiet = waveBars(Array(repeating: 0, count: 10), count: 5)
         let loud = waveBars(Array(repeating: 0.4, count: 10), count: 5)
         req(quiet.allSatisfy { $0 == 0 } && loud.allSatisfy { $0 > 0.5 }, "wave bars")

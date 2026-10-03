@@ -27,7 +27,7 @@ Jerox is a menu-bar app. It has no Dock icon while you work.
 
 You can change every shortcut in Settings.
 
-**Privacy.** History stays on your disk. Dictation and screen reading run on your Mac. The network is used only for a rephrase you ask for: either Apple Intelligence on device (macOS 26) or OpenRouter, OpenAI, Anthropic, or Hugging Face with your own key, which is stored in the Keychain.
+**Privacy.** History stays on your disk. Dictation and screen reading run on your Mac. The network is used only for a rephrase you ask for, through OpenRouter, OpenAI, Anthropic, or Hugging Face with your own key, which is stored in the Keychain. OpenRouter defaults to a free model, so rephrase works before you add a key.
 
 ## Install
 

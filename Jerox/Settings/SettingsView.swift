@@ -181,8 +181,20 @@ struct SettingsView: View {
         decodeDictateNotes(Data(notesJSON.utf8))
     }
 
+    /// Hindi's locale handles Hinglish (code-mixed Hindi/English) speech well, so label it
+    /// that way and, for a user in India, put it (then English-India) ahead of the rest.
     private var speechLocales: [Locale] {
-        SFSpeechRecognizer.supportedLocales().sorted { $0.identifier < $1.identifier }
+        let all = SFSpeechRecognizer.supportedLocales().sorted { $0.identifier < $1.identifier }
+        guard Locale.current.region?.identifier == "IN" else { return all }
+        let priority = ["hi_IN", "en_IN"]
+        let first = priority.compactMap { id in all.first { $0.identifier == id } }
+        let rest = all.filter { !priority.contains($0.identifier) }
+        return first + rest
+    }
+
+    private func speechLocaleLabel(_ locale: Locale) -> String {
+        if locale.identifier == "hi_IN" { return "Hinglish (Hindi + English)" }
+        return locale.localizedString(forIdentifier: locale.identifier) ?? locale.identifier
     }
 
     @ViewBuilder private var pageBody: some View {
@@ -221,24 +233,15 @@ struct SettingsView: View {
                 }
                 ForEach(SpeechCatalog.models) { model in speechModelRow(model) }
             }
-            group("Rephrase", hint: "Apple Intelligence runs on this Mac with no key. Online services use your key, kept in the Keychain.") {
+            group("Rephrase", hint: "Bring your own key. OpenRouter defaults to a free model, so rephrase works before you add one.") {
                 row("Rephrase after dictate") { switchToggle($dictateRephrase) }
-                if appleIntelligenceReady() {
-                    choice("Apple Intelligence", detail: "On this Mac · no key", selected: providerRaw == AIService.apple.rawValue) {
-                        selectProvider(.apple)
-                    }
-                }
-                ForEach(AIService.allCases.filter { $0 != .apple }, id: \.self) { service in
-                    choice(service.title, detail: "Online · API key", selected: providerRaw == service.rawValue) {
+                ForEach(AIService.allCases, id: \.self) { service in
+                    choice(service.title, detail: service == .openrouter ? "Online · free model by default" : "Online · API key", selected: providerRaw == service.rawValue) {
                         selectProvider(service)
                     }
                 }
-                if providerRaw == AIService.apple.rawValue {
-                    line { Text("Rephrase runs on this Mac. No key.").foregroundStyle(.secondary) }
-                } else {
-                    line { field("API key", text: $apiKey, secure: true) }
-                    line { field("Model", text: $modelName, secure: false) }
-                }
+                line { field("API key", text: $apiKey, secure: true) }
+                line { field("Model", text: $modelName, secure: false) }
             }
             group("After dictation", hint: "Friendly chat is the default.") {
                 if dictateRephrase {
@@ -320,7 +323,7 @@ struct SettingsView: View {
                     "Microphone", detail: "Dictation",
                     granted: AppDelegate.shared?.micGranted() ?? false,
                     anchor: "Privacy_Microphone"
-                ) { AVAudioApplication.requestRecordPermission { _ in permissionsTick += 1 } }
+                ) { AVCaptureDevice.requestAccess(for: .audio) { _ in DispatchQueue.main.async { permissionsTick += 1 } } }
                 permissionRow(
                     "Speech Recognition", detail: "Dictation",
                     granted: AppDelegate.shared?.speechGranted() ?? false,
@@ -401,7 +404,7 @@ struct SettingsView: View {
                     Picker("", selection: $speechLocale) {
                         Text("System").tag("")
                         ForEach(speechLocales, id: \.identifier) { locale in
-                            Text(locale.localizedString(forIdentifier: locale.identifier) ?? locale.identifier).tag(locale.identifier)
+                            Text(speechLocaleLabel(locale)).tag(locale.identifier)
                         }
                     }
                     .labelsHidden()
@@ -605,9 +608,6 @@ struct SettingsView: View {
     }
 
     private func loadProvider() {
-        if providerRaw == AIService.apple.rawValue, !appleIntelligenceReady() {
-            providerRaw = AIService.openrouter.rawValue
-        }
         keyReady = false
         apiKey = APIKey.read(providerRaw)
         modelName = savedAIModel(service: providerRaw)
