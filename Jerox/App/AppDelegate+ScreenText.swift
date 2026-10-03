@@ -36,8 +36,8 @@ extension AppDelegate {
 
     func screenCaptureAllowed() -> Bool {
         if CGPreflightScreenCaptureAccess() { return true }
-        CGRequestScreenCaptureAccess()
-        flashDictation("Allow Screen Recording for Jerox in System Settings, then try again.")
+        requestScreen()
+        flashDictation("Allow Screen Recording for Jerox, then try again.")
         return false
     }
 
@@ -47,7 +47,7 @@ extension AppDelegate {
         endGrabEscape()
         Task {
             guard let image = await screenImage(screen, crop: rect) else {
-                await MainActor.run { self.flashDictation("Could not capture the screen.") }
+                await MainActor.run { self.flashDictation("Could not capture the screen. Check Screen Recording in Settings → Permissions.") }
                 return
             }
             let text = readText(image)

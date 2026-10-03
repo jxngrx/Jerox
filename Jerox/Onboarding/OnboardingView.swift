@@ -202,17 +202,15 @@ private struct PermissionList: View {
     var body: some View {
         VStack(spacing: 0) {
             item("Accessibility", "Paste back into the app you were using", ax) {
-                let key = kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String
-                if !AXIsProcessTrustedWithOptions([key: true] as CFDictionary) { open("Privacy_Accessibility") }
+                AppDelegate.shared?.requestAccessibility()
             }
             item("Microphone & Speech", "Dictation, transcribed on this Mac", mic) {
-                AVCaptureDevice.requestAccess(for: .audio) { granted in
-                    SFSpeechRecognizer.requestAuthorization { _ in DispatchQueue.main.async { refresh() } }
-                    if !granted { DispatchQueue.main.async { open("Privacy_Microphone") } }
+                AppDelegate.shared?.requestMic { _ in
+                    AppDelegate.shared?.requestSpeech { _ in refresh() }
                 }
             }
             item("Screen Recording", "Read text you select on screen", screen) {
-                if !CGRequestScreenCaptureAccess() { open("Privacy_ScreenCapture") }
+                AppDelegate.shared?.requestScreen()
             }
         }
         .frame(width: 440)
@@ -251,9 +249,6 @@ private struct PermissionList: View {
         screen = CGPreflightScreenCaptureAccess()
     }
 
-    private func open(_ pane: String) {
-        if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?\(pane)") { NSWorkspace.shared.open(url) }
-    }
 }
 
 /// One small animated drawing per page, in the app's own visual language.
