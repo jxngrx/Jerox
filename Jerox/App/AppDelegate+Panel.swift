@@ -167,6 +167,7 @@ extension AppDelegate {
         let target = previousApp
         closePanel()
         guard AXIsProcessTrusted() else {
+            showToast("Copied. Turn on Accessibility for Jerox (Settings → Permissions) to paste automatically.")
             promptAccessibility()
             return
         }
