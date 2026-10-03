@@ -1,9 +1,10 @@
+```yaml
 name: Release
 
-# Push a tag like v0.2.0 to build Jerox-0.2.0.dmg/.pkg/.zip, appcast.xml, and publish a GitHub Release.
 on:
   push:
-    tags: ["v*"]
+    tags:
+      - "v*"
 
 permissions:
   contents: write
@@ -11,14 +12,18 @@ permissions:
 jobs:
   release:
     runs-on: macos-26
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # full history: the build number is the commit count
+          fetch-depth: 0
 
       - name: Self-checks
         run: make test
 
+      # Import Developer ID Application and optional
+      # Developer ID Installer certificates.
       - name: Import signing certificates
         env:
           BUILD_CERTIFICATE_BASE64: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
@@ -26,29 +31,48 @@ jobs:
           KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
           INSTALLER_CERTIFICATE_BASE64: ${{ secrets.INSTALLER_CERTIFICATE_BASE64 }}
           INSTALLER_P12_PASSWORD: ${{ secrets.INSTALLER_P12_PASSWORD }}
+          SIGN_IDENTITY: ${{ secrets.SIGN_IDENTITY }}
+          INSTALLER_IDENTITY: ${{ secrets.INSTALLER_IDENTITY }}
+        shell: bash
         run: |
+          set -euo pipefail
+
           if [ -z "${BUILD_CERTIFICATE_BASE64:-}" ]; then
-            echo "No BUILD_CERTIFICATE_BASE64; release.sh signs ad hoc."
-            exit 0
+            echo "::error::Missing BUILD_CERTIFICATE_BASE64."
+            exit 1
           fi
 
           CERT="$RUNNER_TEMP/build_certificate.p12"
           KEYCHAIN="$RUNNER_TEMP/app-signing.keychain-db"
 
           echo -n "$BUILD_CERTIFICATE_BASE64" | base64 --decode > "$CERT"
+
           security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
           security set-keychain-settings -lut 21600 "$KEYCHAIN"
           security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
 
-          security import "$CERT" -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k "$KEYCHAIN"
+          security import "$CERT" \
+            -P "$P12_PASSWORD" \
+            -A -t cert -f pkcs12 \
+            -k "$KEYCHAIN"
 
           if [ -n "${INSTALLER_CERTIFICATE_BASE64:-}" ]; then
             INSTALLER_CERT="$RUNNER_TEMP/installer_certificate.p12"
-            echo -n "$INSTALLER_CERTIFICATE_BASE64" | base64 --decode > "$INSTALLER_CERT"
-            security import "$INSTALLER_CERT" -P "${INSTALLER_P12_PASSWORD:-$P12_PASSWORD}" -A -t cert -f pkcs12 -k "$KEYCHAIN"
+
+            echo -n "$INSTALLER_CERTIFICATE_BASE64" \
+              | base64 --decode > "$INSTALLER_CERT"
+
+            security import "$INSTALLER_CERT" \
+              -P "${INSTALLER_P12_PASSWORD:-$P12_PASSWORD}" \
+              -A -t cert -f pkcs12 \
+              -k "$KEYCHAIN"
           fi
 
-          security set-key-partition-list -S apple-tool:,apple: -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
+          security set-key-partition-list \
+            -S apple-tool:,apple: \
+            -k "$KEYCHAIN_PASSWORD" \
+            "$KEYCHAIN"
+
           security list-keychain -d user -s "$KEYCHAIN"
 
           echo "=== Available code-signing identities ==="
@@ -57,21 +81,106 @@ jobs:
           echo "=== Available installer identities ==="
           security find-identity -v -p basic "$KEYCHAIN"
 
-          if [ -n "${INSTALLER_CERTIFICATE_BASE64:-}" ] && [ -n "${INSTALLER_IDENTITY:-}" ]; then
-            if ! security find-identity -v -p basic "$KEYCHAIN" | grep -Fq "$INSTALLER_IDENTITY"; then
-              echo "::error::INSTALLER_IDENTITY was not found in the CI keychain. Check INSTALLER_CERTIFICATE_BASE64, INSTALLER_P12_PASSWORD, and the exact INSTALLER_IDENTITY value."
+          if [ -n "${SIGN_IDENTITY:-}" ]; then
+            if ! security find-identity -v -p codesigning "$KEYCHAIN" \
+              | grep -Fq "$SIGN_IDENTITY"; then
+              echo "::error::SIGN_IDENTITY not found in the CI keychain."
               exit 1
             fi
           fi
 
-      - name: Build DMG, installer, Sparkle zip
+          if [ -n "${INSTALLER_IDENTITY:-}" ]; then
+            if ! security find-identity -v -p basic "$KEYCHAIN" \
+              | grep -Fq "$INSTALLER_IDENTITY"; then
+              echo "::error::INSTALLER_IDENTITY not found in the CI keychain."
+              exit 1
+            fi
+          fi
+
+      - name: Build DMG, installer, and Sparkle ZIP
         env:
           SIGN_IDENTITY: ${{ secrets.SIGN_IDENTITY }}
           INSTALLER_IDENTITY: ${{ secrets.INSTALLER_IDENTITY }}
           SPARKLE_PRIVATE_ED_KEY: ${{ secrets.SPARKLE_PRIVATE_ED_KEY }}
-        run: scripts/release.sh "${GITHUB_REF_NAME#v}"
+        shell: bash
+        run: |
+          set -euo pipefail
+          scripts/release.sh "${GITHUB_REF_NAME#v}"
+
+      # Submit the release artifacts to Apple's notarization service.
+      # GitHub Release publication will not run if notarization fails.
+      - name: Notarize release artifacts
+        env:
+          NOTARY_KEY_ID: ${{ secrets.NOTARY_KEY_ID }}
+          NOTARY_ISSUER_ID: ${{ secrets.NOTARY_ISSUER_ID }}
+          NOTARY_KEY_BASE64: ${{ secrets.NOTARY_KEY_BASE64 }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          : "${NOTARY_KEY_ID:?Missing NOTARY_KEY_ID secret}"
+          : "${NOTARY_ISSUER_ID:?Missing NOTARY_ISSUER_ID secret}"
+          : "${NOTARY_KEY_BASE64:?Missing NOTARY_KEY_BASE64 secret}"
+
+          KEY_FILE="$RUNNER_TEMP/AuthKey.p8"
+
+          printf '%s' "$NOTARY_KEY_BASE64" \
+            | base64 --decode > "$KEY_FILE"
+
+          chmod 600 "$KEY_FILE"
+          trap 'rm -f "$KEY_FILE"' EXIT
+
+          shopt -s nullglob
+          FILES=(dist/*.dmg dist/*.pkg dist/*.zip)
+
+          if [ "${#FILES[@]}" -eq 0 ]; then
+            echo "::error::No DMG, PKG, or ZIP artifacts found in dist/."
+            exit 1
+          fi
+
+          for FILE in "${FILES[@]}"; do
+            echo "Submitting $(basename "$FILE") to Apple..."
+
+            xcrun notarytool submit "$FILE" \
+              --key "$KEY_FILE" \
+              --key-id "$NOTARY_KEY_ID" \
+              --issuer "$NOTARY_ISSUER_ID" \
+              --wait
+
+            echo "Notarization accepted: $(basename "$FILE")"
+          done
+
+          # Staple and validate formats that support stapling.
+          for FILE in dist/*.dmg dist/*.pkg; do
+            [ -f "$FILE" ] || continue
+
+            echo "Stapling $(basename "$FILE")..."
+
+            xcrun stapler staple "$FILE"
+            xcrun stapler validate "$FILE"
+          done
+
+      - name: Verify release artifacts
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          for FILE in dist/*.dmg; do
+            [ -f "$FILE" ] || continue
+
+            echo "Checking $(basename "$FILE")..."
+            spctl -a -t open --context context:primary-signature \
+              -vv "$FILE"
+          done
 
       - name: Publish release
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "$GITHUB_REF_NAME" dist/* --title "Jerox ${GITHUB_REF_NAME#v}" --generate-notes
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          gh release create "$GITHUB_REF_NAME" dist/* \
+            --title "Jerox ${GITHUB_REF_NAME#v}" \
+            --generate-notes
+```
