@@ -353,6 +353,21 @@ struct SettingsView: View {
                     granted: AppDelegate.shared?.screenGranted() ?? false
                 ) { AppDelegate.shared?.requestScreen() }
             }
+            group("Still showing Allow?", hint: "If Jerox is already switched on in System Settings, macOS may be holding a grant from an older build. Reset clears it so the dialogs can ask again. Screen Recording also needs a restart after you switch it on.") {
+                row("Reset Jerox permissions") {
+                    Button("Reset") {
+                        AppDelegate.shared?.resetPermissions { ok in
+                            permissionsTick += 1
+                            AppDelegate.shared?.showToast(ok ? "Permissions reset. Click Allow on each one." : "Could not reset. Remove Jerox in System Settings → Privacy, then click Allow.")
+                        }
+                    }
+                    .controlSize(.small)
+                }
+                row("Restart Jerox") {
+                    Button("Restart") { AppDelegate.shared?.relaunch() }
+                        .controlSize(.small)
+                }
+            }
         case .advanced:
             group("Updates", hint: "Sparkle checks GitHub Releases, verifies the EdDSA signature, then installs and relaunches.") {
                 if let version = updater.availableVersion {

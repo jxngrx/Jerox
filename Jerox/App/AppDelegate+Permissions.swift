@@ -60,4 +60,32 @@ extension AppDelegate {
             CGRequestScreenCaptureAccess()
         }
     }
+
+    /// Clears every macOS permission entry for Jerox. A grant is tied to the app's code signature, so an
+    /// entry left by an older or differently signed build shows "on" in System Settings but does not apply.
+    func resetPermissions(_ done: @escaping (Bool) -> Void) {
+        let id = Bundle.main.bundleIdentifier ?? "com.jxngrx.jerox"
+        DispatchQueue.global(qos: .userInitiated).async {
+            let task = Process()
+            task.executableURL = URL(fileURLWithPath: "/usr/bin/tccutil")
+            task.arguments = ["reset", "All", id]
+            task.standardError = FileHandle.nullDevice
+            task.standardOutput = FileHandle.nullDevice
+            let ok = (try? task.run()) != nil && { task.waitUntilExit(); return task.terminationStatus == 0 }()
+            DispatchQueue.main.async {
+                UserDefaults.standard.removeObject(forKey: "askedScreenCapture")
+                self.didPromptAX = false
+                done(ok)
+            }
+        }
+    }
+
+    /// Screen Recording only applies to a process started after it was switched on.
+    func relaunch() {
+        let config = NSWorkspace.OpenConfiguration()
+        config.createsNewApplicationInstance = true
+        NSWorkspace.shared.openApplication(at: Bundle.main.bundleURL, configuration: config) { _, _ in
+            DispatchQueue.main.async { NSApp.terminate(nil) }
+        }
+    }
 }
