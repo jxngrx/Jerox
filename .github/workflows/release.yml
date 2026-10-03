@@ -1,4 +1,3 @@
-```yaml
 name: Release
 
 on:
@@ -183,4 +182,3 @@ jobs:
           gh release create "$GITHUB_REF_NAME" dist/* \
             --title "Jerox ${GITHUB_REF_NAME#v}" \
             --generate-notes
-```
