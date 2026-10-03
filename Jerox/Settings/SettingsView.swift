@@ -376,6 +376,400 @@ struct SettingsView: View {
             }
         case .permissions:
             let _ = permissionsTick
+            group("macOS permissions", hint: "Jerox checks these live. Already switched on in System Settings but still showing Allow? Reset permissions clears the old grant so macOS asks again. Screen Recording also needs a restart after you switch it on.") {
+                permissionRow(
+                    "Accessibility", detail: "Pasting back into the previous app",
+                    granted: AppDelegate.shared?.accessibilityGranted() ?? false
+                ) { AppDelegate.shared?.requestAccessibility() }
+                permissionRow(
+                    "Microphone", detail: "Dictation",
+                    granted: AppDelegate.shared?.micGranted() ?? false
+                ) { AppDelegate.shared?.requestMic { _ in permissionsTick += 1 } }
+                permissionRow(
+                    "Speech Recognition", detail: "Dictation",
+                    granted: AppDelegate.shared?.speechGranted() ?? false
+                ) { AppDelegate.shared?.requestSpeech { _ in permissionsTick += 1 } }
+                permissionRow(
+                    "Screen Recording", detail: "Reading text off the screen",
+                    granted: AppDelegate.shared?.screenGranted() ?? false
+                ) { AppDelegate.shared?.requestScreen() }
+            }
+            HStack(spacing: 10) {
+                Button {
+                    AppDelegate.shared?.resetPermissions { ok in
+                        permissionsTick += 1
+                        AppDelegate.shared?.showToast(ok ? "Permissions reset. Click Allow on each one." : "Could not reset. Remove Jerox in System Settings → Privacy, then click Allow.")
+                    }
+                } label: {
+                    Label("Reset permissions", systemImage: "arrow.counterclockwise")
+                }
+                Button {
+                    AppDelegate.shared?.relaunch()
+                } label: {
+                    Label("Restart Jerox", systemImage: "power")
+                }
+            }
+            .padding(.horizontal, 4)
+        case .advanced: "Advanced"
+            }
+        }
+        var symbol: String {
+            switch self {
+            case .general: "waveform"
+            case .history: "clock"
+            case .models: "cpu"
+            case .permissions: "lock.shield"
+            case .advanced: "gearshape"
+            }
+        }
+    }
+
+    var onRetention: () -> Void
+    private var appVersion: String {
+        let info = Bundle.main.infoDictionary
+        return "Version \(info?["CFBundleShortVersionString"] as? String ?? "?") (\(info?["CFBundleVersion"] as? String ?? "?"))"
+    }
+    var onHotkey: () -> Void
+    @State private var page: Page? = .general
+    @AppStorage("micUID") private var micUID = ""
+    @AppStorage("speechLocale") private var speechLocale = ""
+    @AppStorage("showDictateOverlay") private var showOverlay = true
+    @AppStorage("theme") private var theme = "system"
+    @AppStorage("loginItem") private var loginItem = false
+    @AppStorage("dictateNotes") private var notesJSON = "[]"
+    @State private var mics: [(uid: String, name: String)] = []
+    @AppStorage("prettyJSON") private var prettyJSON = false
+    @AppStorage("historyLimit") private var limit = 200
+    @AppStorage("historyDays") private var days = 14
+    @AppStorage("hotkey.show.code") private var showCode = ShortcutDefaults.showCode
+    @AppStorage("hotkey.show.mods") private var showMods = ShortcutDefaults.showMods
+    @AppStorage("hotkey.paste.code") private var pasteCode = ShortcutDefaults.pasteCode
+    @AppStorage("hotkey.paste.mods") private var pasteMods = ShortcutDefaults.pasteMods
+    @AppStorage("hotkey.plain.code") private var plainCode = ShortcutDefaults.plainCode
+    @AppStorage("hotkey.plain.mods") private var plainMods = ShortcutDefaults.plainMods
+    @AppStorage("hotkey.pin.code") private var pinCode = ShortcutDefaults.pinCode
+    @AppStorage("hotkey.pin.mods") private var pinMods = ShortcutDefaults.pinMods
+    @AppStorage("hotkey.rephrase.code") private var rephraseCode = ShortcutDefaults.rephraseCode
+    @AppStorage("hotkey.rephrase.mods") private var rephraseMods = ShortcutDefaults.rephraseMods
+    @AppStorage("hotkey.dictate.code") private var dictateCode = ShortcutDefaults.dictateCode
+    @AppStorage("hotkey.dictate.mods") private var dictateMods = ShortcutDefaults.dictateMods
+    @AppStorage("hotkey.read.code") private var readCode = ShortcutDefaults.readCode
+    @AppStorage("hotkey.read.mods") private var readMods = ShortcutDefaults.readMods
+    @AppStorage("speechEngine") private var speechEngine = SpeechCatalog.apple
+    private let modelStore = ModelStore.shared
+    @AppStorage("localModel") private var localModel = ""
+    @AppStorage("aiProvider") private var providerRaw = AIService.openrouter.rawValue
+    @AppStorage("dictateRephrase") private var dictateRephrase = true
+    @AppStorage("dictateRephrasePrompt") private var dictateRephrasePrompt = "friendly"
+    @State private var customPrompts = RephrasePromptStore.load()
+    @State private var promptName = ""
+    @State private var promptInstruction = ""
+    @State private var editingPrompt: String?
+    @State private var apiKey = ""
+    @State private var modelName = ""
+    @State private var keyReady = false
+    @State private var permissionsTick = 0
+    @State private var hfQuery = ""
+    @State private var hfResults: [HFRepo] = []
+    @State private var hfFiles: [HFFile] = []
+    @State private var hfOpen: String?
+    @State private var hfBusy = false
+    @State private var hfNote = ""
+    @State private var testing = false
+    @State private var testOK = false
+    @State private var testNote = ""
+    private let updater = JeroxUpdater.shared
+
+    var body: some View {
+        HStack(spacing: 0) {
+            VStack(spacing: 4) {
+                mascot
+                    .padding(.bottom, 8)
+                ForEach(Page.allCases) { item in
+                    Button {
+                        page = item
+                    } label: {
+                        Label(item.title, systemImage: item.symbol)
+                            .font(.system(size: 13, weight: .medium))
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 7)
+                            .foregroundStyle(page == item ? JeroxInk.accent : .primary.opacity(0.85))
+                            .background(page == item ? JeroxInk.accent.opacity(0.16) : Color.clear, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+                            .contentShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                    }
+                    .buttonStyle(.plain)
+                }
+                Spacer()
+                if let version = updater.availableVersion {
+                    Button("Update to \(version)") { updater.checkForUpdates(nil) }
+                        .buttonStyle(.plain)
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundStyle(JeroxInk.accent)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal, 8)
+                        .padding(.bottom, 8)
+                }
+                Text(appVersion)
+                    .font(.caption.monospacedDigit())
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, 8)
+                    .textSelection(.enabled)
+            }
+            .padding(.horizontal, 8)
+            .padding(.top, 28)
+            .padding(.bottom, 12)
+            .frame(width: 168)
+            .background(JeroxInk.sidebar)
+            .overlay(alignment: .trailing) { Rectangle().fill(Color.primary.opacity(0.1)).frame(width: 1) }
+
+            ScrollView {
+                VStack(alignment: .leading, spacing: 22) {
+                    Text(page?.title ?? "")
+                        .font(.system(size: 22, weight: .bold))
+                        .padding(.horizontal, 4)
+                    pageBody
+                }
+                .padding(.horizontal, 24)
+                .padding(.top, 28)
+                .padding(.bottom, 24)
+                .frame(maxWidth: 520)
+                .frame(maxWidth: .infinity)
+            }
+        }
+        .frame(minWidth: 640, minHeight: 420)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(JeroxInk.canvas)
+        .tint(JeroxInk.accent)
+        .onAppear {
+            loadProvider()
+            applyTheme(theme)
+            mics = micDevices().map { ($0.uid, $0.name) }
+        }
+        .onChange(of: theme) { _, value in applyTheme(value) }
+        .onChange(of: loginItem) { _, value in setOpenAtLogin(value) }
+        .onChange(of: apiKey) { _, value in
+            if keyReady { APIKey.write(providerRaw, value) }
+        }
+        .onChange(of: modelName) { _, value in
+            UserDefaults.standard.set(value, forKey: "aiModel.\(providerRaw)")
+        }
+        .onChange(of: limit) { _, _ in onRetention() }
+        .onChange(of: days) { _, _ in onRetention() }
+        .onChange(of: hotkeyToken) { _, _ in onHotkey() }
+        .onChange(of: page) { _, _ in permissionsTick += 1 }
+        .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
+            permissionsTick += 1
+        }
+    }
+
+    private var hotkeyToken: String {
+        [showCode, showMods, rephraseCode, rephraseMods, dictateCode, dictateMods, readCode, readMods]
+            .map(String.init).joined(separator: ",")
+    }
+
+    private var mascot: some View {
+        HStack(spacing: 8) {
+            JeroxLogo(size: 40)
+            VStack(alignment: .leading, spacing: 0) {
+                Text("Jerox").font(.system(size: 15, weight: .semibold))
+                Text("Settings").font(.caption).foregroundStyle(.secondary)
+            }
+            Spacer(minLength: 0)
+        }
+        .padding(.horizontal, 4)
+    }
+
+    private var dictateNotes: [DictateNote] {
+        decodeDictateNotes(Data(notesJSON.utf8))
+    }
+
+    /// Hindi's locale handles Hinglish (code-mixed Hindi/English) speech well, so label it
+    /// that way and, for a user in India, put it (then English-India) ahead of the rest.
+    private var speechLocales: [Locale] {
+        let all = SFSpeechRecognizer.supportedLocales().sorted { $0.identifier < $1.identifier }
+        guard Locale.current.region?.identifier == "IN" else { return all }
+        let priority = ["hi_IN", "en_IN"]
+        let first = priority.compactMap { id in all.first { $0.identifier == id } }
+        let rest = all.filter { !priority.contains($0.identifier) }
+        return first + rest
+    }
+
+    private func speechLocaleLabel(_ locale: Locale) -> String {
+        if locale.identifier == "hi_IN" { return "Hinglish (Hindi + English)" }
+        return locale.localizedString(forIdentifier: locale.identifier) ?? locale.identifier
+    }
+
+    @ViewBuilder private var pageBody: some View {
+        switch page {
+        case .history:
+            group("Transcriptions", hint: "The last 50 dictations. Copy puts one back on the clipboard.") {
+                if dictateNotes.isEmpty {
+                    line { Text("No transcriptions yet.").foregroundStyle(.secondary) }
+                }
+                ForEach(dictateNotes) { note in
+                    line {
+                        HStack(alignment: .center, spacing: 12) {
+                            VStack(alignment: .leading, spacing: 3) {
+                                Text(note.text).lineLimit(2)
+                                Text(note.at.formatted(date: .abbreviated, time: .shortened))
+                                    .font(.caption)
+                                    .foregroundStyle(.tertiary)
+                            }
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            iconButton("doc.on.doc", help: "Copy") {
+                                NSPasteboard.general.clearContents()
+                                NSPasteboard.general.setString(note.text, forType: .string)
+                            }
+                            iconButton("trash", help: "Delete", role: .destructive) {
+                                let left = dictateNotes.filter { $0.id != note.id }
+                                notesJSON = String(data: encodeDictateNotes(left), encoding: .utf8) ?? "[]"
+                            }
+                        }
+                    }
+                }
+            }
+        case .models:
+            group("Speech to text", hint: "Apple Speech shows live text as you talk. A downloaded model runs fully offline and types when you stop.") {
+                choice("Apple Speech", detail: "Built in · live text", selected: speechEngine == SpeechCatalog.apple || SpeechCatalog.active == nil) {
+                    speechEngine = SpeechCatalog.apple
+                }
+                ForEach(SpeechCatalog.models) { model in speechModelRow(model) }
+            }
+            group("Rephrase", hint: "Pick an offline model below, or bring your own key. OpenRouter defaults to a free model.") {
+                row("Rephrase after dictate") { switchToggle($dictateRephrase) }
+                ForEach(AIService.allCases.filter { $0 != .local }, id: \.self) { service in
+                    choice(service.title, detail: service == .openrouter ? "Online · free model by default" : "Online · API key", selected: providerRaw == service.rawValue) {
+                        selectProvider(service)
+                    }
+                }
+                if providerRaw != AIService.local.rawValue {
+                    line { field("API key", text: $apiKey, secure: true) }
+                    line { field("Model", text: $modelName, secure: false) }
+                }
+                line {
+                    HStack(spacing: 10) {
+                        Button("Test rephrase", action: testRephrase)
+                            .controlSize(.small)
+                            .disabled(testing)
+                        if testing { ProgressView().controlSize(.small) }
+                        Text(testNote)
+                            .font(.caption)
+                            .foregroundStyle(testOK ? JeroxInk.accent : JeroxInk.danger)
+                            .lineLimit(3)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                }
+            }
+            group("Search Hugging Face", hint: "Any text model in GGUF format. Pick a Q4_K_M file for the best balance of size and quality. It needs about as much free memory as its file size.") {
+                line {
+                    HStack(spacing: 10) {
+                        TextField("", text: $hfQuery, prompt: Text("Search models, e.g. gemma, llama, phi").foregroundStyle(.tertiary))
+                            .textFieldStyle(.plain)
+                            .onSubmit(searchHuggingFace)
+                        if hfBusy { ProgressView().controlSize(.small) }
+                        Button("Search", action: searchHuggingFace)
+                            .controlSize(.small)
+                            .disabled(hfBusy || hfQuery.trimmingCharacters(in: .whitespaces).isEmpty)
+                    }
+                }
+                if !hfNote.isEmpty { line { Text(hfNote).font(.caption).foregroundStyle(JeroxInk.danger) } }
+                ForEach(hfResults) { repo in
+                    line {
+                        Button { openHuggingFaceRepo(repo) } label: {
+                            HStack {
+                                Text(repo.id).lineLimit(1)
+                                Spacer()
+                                Text("\(repo.downloads.formatted(.number.notation(.compactName))) downloads")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                Image(systemName: hfOpen == repo.id ? "chevron.up" : "chevron.down")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                            .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                    }
+                    if hfOpen == repo.id {
+                        ForEach(hfFiles) { file in hfFileRow(file, repo: repo.id) }
+                    }
+                }
+            }
+            group("Offline rephrase", hint: "Qwen runs on this Mac. After the download there is no key and no network. Tap the circle to use one.") {
+                ForEach(modelStore.rephraseModels) { model in speechModelRow(model) }
+            }
+            group("After dictation", hint: "Friendly chat is the default.") {
+                if dictateRephrase {
+                    ForEach(rephrasePromptList(custom: customPrompts)) { prompt in
+                        line {
+                            Button { dictateRephrasePrompt = prompt.id } label: {
+                                HStack {
+                                    Text(prompt.name)
+                                    Spacer()
+                                    if dictateRephrasePrompt == prompt.id {
+                                        Image(systemName: "checkmark").foregroundStyle(JeroxInk.accent)
+                                    }
+                                }
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .contentShape(Rectangle())
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                } else {
+                    line { Text("Online rephrase is off.").foregroundStyle(.secondary) }
+                }
+            }
+            group("Your prompts", hint: "Built-ins are 1–3. Yours start at 4.") {
+                ForEach(customPrompts) { prompt in
+                    line {
+                        HStack {
+                            Text(prompt.name).lineLimit(1)
+                            Spacer()
+                            iconButton("pencil", help: "Edit") {
+                                editingPrompt = prompt.id
+                                promptName = prompt.name
+                                promptInstruction = prompt.instruction
+                            }
+                            iconButton("trash", help: "Delete", role: .destructive) {
+                                customPrompts.removeAll { $0.id == prompt.id }
+                                if editingPrompt == prompt.id {
+                                    editingPrompt = nil
+                                    promptName = ""
+                                    promptInstruction = ""
+                                }
+                                RephrasePromptStore.save(customPrompts)
+                            }
+                        }
+                    }
+                }
+                line { field("Name", text: $promptName, secure: false) }
+                line {
+                    ZStack(alignment: .topLeading) {
+                        if promptInstruction.isEmpty {
+                            Text("How to rewrite")
+                                .foregroundStyle(.tertiary)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 10)
+                                .allowsHitTesting(false)
+                        }
+                        TextEditor(text: $promptInstruction)
+                            .font(.body)
+                            .scrollContentBackground(.hidden)
+                            .padding(4)
+                    }
+                    .frame(height: 72)
+                }
+                line {
+                    Button(editingPrompt == nil ? "Add prompt" : "Save prompt", action: savePrompt)
+                        .buttonStyle(.plain)
+                        .foregroundStyle(JeroxInk.accent)
+                }
+            }
+        case .permissions:
+            let _ = permissionsTick
             group("macOS permissions", hint: "Jerox checks these live. Flip one on in System Settings, then come back here.") {
                 permissionRow(
                     "Accessibility", detail: "Pasting back into the previous app",
