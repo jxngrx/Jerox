@@ -1,4 +1,6 @@
 import AppKit
+import AVFoundation
+import CoreGraphics
 import Foundation
 import ServiceManagement
 import Speech
@@ -6,13 +8,14 @@ import SwiftUI
 
 struct SettingsView: View {
     private enum Page: String, CaseIterable, Identifiable {
-        case general, history, models, advanced
+        case general, history, models, permissions, advanced
         var id: String { rawValue }
         var title: String {
             switch self {
             case .general: "General"
             case .history: "History"
             case .models: "Models"
+            case .permissions: "Permissions"
             case .advanced: "Advanced"
             }
         }
@@ -21,6 +24,7 @@ struct SettingsView: View {
             case .general: "waveform"
             case .history: "clock"
             case .models: "cpu"
+            case .permissions: "lock.shield"
             case .advanced: "gearshape"
             }
         }
@@ -69,6 +73,7 @@ struct SettingsView: View {
     @State private var apiKey = ""
     @State private var modelName = ""
     @State private var keyReady = false
+    @State private var permissionsTick = 0
     private let updater = JeroxUpdater.shared
 
     var body: some View {
@@ -149,6 +154,10 @@ struct SettingsView: View {
         .onChange(of: limit) { _, _ in onRetention() }
         .onChange(of: days) { _, _ in onRetention() }
         .onChange(of: hotkeyToken) { _, _ in onHotkey() }
+        .onChange(of: page) { _, _ in permissionsTick += 1 }
+        .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
+            permissionsTick += 1
+        }
     }
 
     private var hotkeyToken: String {
@@ -299,6 +308,30 @@ struct SettingsView: View {
                         .foregroundStyle(JeroxInk.accent)
                 }
             }
+        case .permissions:
+            let _ = permissionsTick
+            group("macOS permissions", hint: "Jerox checks these live. Flip one on in System Settings, then come back here.") {
+                permissionRow(
+                    "Accessibility", detail: "Pasting back into the previous app",
+                    granted: AppDelegate.shared?.accessibilityGranted() ?? false,
+                    anchor: "Privacy_Accessibility"
+                ) { AppDelegate.shared?.promptAccessibility() }
+                permissionRow(
+                    "Microphone", detail: "Dictation",
+                    granted: AppDelegate.shared?.micGranted() ?? false,
+                    anchor: "Privacy_Microphone"
+                ) { AVAudioApplication.requestRecordPermission { _ in permissionsTick += 1 } }
+                permissionRow(
+                    "Speech Recognition", detail: "Dictation",
+                    granted: AppDelegate.shared?.speechGranted() ?? false,
+                    anchor: "Privacy_SpeechRecognition"
+                ) { SFSpeechRecognizer.requestAuthorization { _ in DispatchQueue.main.async { permissionsTick += 1 } } }
+                permissionRow(
+                    "Screen Recording", detail: "Reading text off the screen",
+                    granted: AppDelegate.shared?.screenGranted() ?? false,
+                    anchor: "Privacy_ScreenCapture"
+                ) { CGRequestScreenCaptureAccess() }
+            }
         case .advanced:
             group("Updates", hint: "Sparkle checks GitHub Releases, verifies the EdDSA signature, then installs and relaunches.") {
                 if let version = updater.availableVersion {
@@ -398,6 +431,31 @@ struct SettingsView: View {
                 .background(JeroxInk.card, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
                 .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous).stroke(Color.primary.opacity(0.1), lineWidth: 1))
                 .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+        }
+    }
+
+    private func permissionRow(_ title: String, detail: String, granted: Bool, anchor: String, request: @escaping () -> Void) -> some View {
+        line {
+            HStack(spacing: 12) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(title)
+                    Text(detail).font(.caption).foregroundStyle(.secondary)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                if granted {
+                    Label("Allowed", systemImage: "checkmark.circle.fill")
+                        .font(.caption.weight(.medium))
+                        .foregroundStyle(.green)
+                } else {
+                    Button("Allow…") {
+                        request()
+                        if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?\(anchor)") {
+                            NSWorkspace.shared.open(url)
+                        }
+                    }
+                    .controlSize(.small)
+                }
+            }
         }
     }
 
