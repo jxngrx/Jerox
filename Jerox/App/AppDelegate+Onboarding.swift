@@ -22,7 +22,10 @@ extension AppDelegate {
         }
         #endif
         if ProcessInfo.processInfo.environment["JEROX_SKIP_WELCOME"] == "1" { return }
-        guard !UserDefaults.standard.bool(forKey: "didShowWelcome") else { return }
+        // A reinstall keeps this Mac's old preferences (moving the app to the
+        // Trash does not clear them), so re-check live permission status
+        // instead of trusting the stored flag alone.
+        guard !UserDefaults.standard.bool(forKey: "didShowWelcome") || !allPermissionsGranted() else { return }
         showOnboarding()
     }
 
