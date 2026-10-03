@@ -75,6 +75,9 @@ struct SettingsView: View {
     @State private var modelName = ""
     @State private var keyReady = false
     @State private var permissionsTick = 0
+    @State private var testing = false
+    @State private var testOK = false
+    @State private var testNote = ""
     private let updater = JeroxUpdater.shared
 
     var body: some View {
@@ -244,6 +247,19 @@ struct SettingsView: View {
                 if providerRaw != AIService.local.rawValue {
                     line { field("API key", text: $apiKey, secure: true) }
                     line { field("Model", text: $modelName, secure: false) }
+                }
+                line {
+                    HStack(spacing: 10) {
+                        Button("Test rephrase", action: testRephrase)
+                            .controlSize(.small)
+                            .disabled(testing)
+                        if testing { ProgressView().controlSize(.small) }
+                        Text(testNote)
+                            .font(.caption)
+                            .foregroundStyle(testOK ? JeroxInk.accent : JeroxInk.danger)
+                            .lineLimit(3)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
                 }
             }
             group("Offline rephrase", hint: "Qwen runs on this Mac. After the download there is no key and no network. Tap the circle to use one.") {
@@ -614,6 +630,22 @@ struct SettingsView: View {
             else { try SMAppService.mainApp.unregister() }
         } catch {
             loginItem = false
+        }
+    }
+
+    private func testRephrase() {
+        testing = true
+        testNote = ""
+        Task { @MainActor in
+            do {
+                _ = try await requestAI(instruction: "Repeat the text exactly.", text: "Hello")
+                testOK = true
+                testNote = "Rephrase works."
+            } catch {
+                testOK = false
+                testNote = error.localizedDescription
+            }
+            testing = false
         }
     }
 

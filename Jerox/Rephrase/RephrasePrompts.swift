@@ -64,7 +64,7 @@ enum AIService: String, CaseIterable {
     /// OpenRouter's default is a free model so rephrase works before anyone has a paid key.
     var defaultModel: String {
         switch self {
-        case .openrouter: "deepseek/deepseek-chat-v3.1:free"
+        case .openrouter: "google/gemma-4-31b-it:free"
         case .openai: "gpt-4o-mini"
         case .anthropic: "claude-3-5-haiku-20241022"
         case .huggingface: "meta-llama/Llama-3.2-3B-Instruct"

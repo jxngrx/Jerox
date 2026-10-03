@@ -425,6 +425,7 @@ struct ClipboardHistory {
         req(cleanAPIKey(" Bearer sk-or-1\n") == "sk-or-1", "clean key")
         let spaced = aiCall(service: "openrouter", model: " m ", key: "k \n", instruction: "Clean", text: "Hello")
         req(spaced?.headers["Authorization"] == "Bearer k", "key trimmed in header")
+        req(aiErrorMessage(data: Data("{\"error\":{\"message\":\"Missing Authentication header\"}}".utf8), status: 401, service: "openrouter").contains("rejected the API key"), "401 is a key problem")
         let hugging = aiCall(service: "huggingface", model: "org/m", key: "k", instruction: "Clean", text: "Hi")
         req(hugging?.url.contains("router.huggingface.co") == true, "huggingface")
         let anthropic = aiCall(service: "anthropic", model: "claude", key: "secret", instruction: "Clean", text: "Hi")

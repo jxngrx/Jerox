@@ -42,17 +42,18 @@ enum SpeechCatalog {
                     bytes: 574_041_195, sha256: "394221709cd5ad1f40c46e6031ca61bce88931e6e088c188294c6d5a55ffa7e2", recommended: true),
     ]
 
-    /// Offline rewrite models. Qwen 2.5 Instruct at Q4_K_M: small, fast on Apple Silicon, good at tone edits.
+    /// Offline rewrite models, picked by running the same grammar-fix test on each. Gemma 3 4B fixed every
+    /// error without changing the meaning; Qwen 2.5 kept "Me and him went" and "since two months".
     static let rephraseModels: [SpeechModel] = [
-        SpeechModel(id: "qwen2.5-0.5b-instruct-q4_k_m.gguf", name: "Qwen 2.5 0.5B", detail: "Fastest · light rewrites",
-                    bytes: 491_400_032, sha256: "74a4da8c9fdbcd15bd1f6d01d621410d31c6fc00986f5eb687824e7b93d7a9db",
-                    repo: "Qwen/Qwen2.5-0.5B-Instruct-GGUF", revision: "9217f5db79a29953eb74d5343926648285ec7e67", rephrase: true),
-        SpeechModel(id: "qwen2.5-1.5b-instruct-q4_k_m.gguf", name: "Qwen 2.5 1.5B", detail: "Best balance · fast and clean",
+        SpeechModel(id: "gemma-3-4b-it-Q4_K_M.gguf", name: "Gemma 3 4B", detail: "Best grammar and rewriting · wants 8 GB of memory",
+                    bytes: 2_489_894_016, sha256: "04a43a22e8d2003deda5acc262f68ec1005fa76c735a9962a8c77042a74a7d19",
+                    recommended: true, repo: "unsloth/gemma-3-4b-it-GGUF", revision: "5a3566e716d80f709ed7b79817eaf7733d2a1fce", rephrase: true),
+        SpeechModel(id: "gemma-2-2b-it-Q4_K_M.gguf", name: "Gemma 2 2B", detail: "Very good grammar · lighter and faster",
+                    bytes: 1_708_582_752, sha256: "e0aee85060f168f0f2d8473d7ea41ce2f3230c1bc1374847505ea599288a7787",
+                    repo: "bartowski/gemma-2-2b-it-GGUF", revision: "855f67caed130e1befc571b52bd181be2e858883", rephrase: true),
+        SpeechModel(id: "qwen2.5-1.5b-instruct-q4_k_m.gguf", name: "Qwen 2.5 1.5B", detail: "Smallest · light edits, misses some grammar",
                     bytes: 1_117_320_736, sha256: "6a1a2eb6d15622bf3c96857206351ba97e1af16c30d7a74ee38970e434e9407e",
-                    recommended: true, repo: "Qwen/Qwen2.5-1.5B-Instruct-GGUF", revision: "91cad51170dc346986eccefdc2dd33a9da36ead9", rephrase: true),
-        SpeechModel(id: "qwen2.5-3b-instruct-q4_k_m.gguf", name: "Qwen 2.5 3B", detail: "Most accurate · wants 8 GB of memory",
-                    bytes: 2_104_932_768, sha256: "626b4a6678b86442240e33df819e00132d3ba7dddfe1cdc4fbb18e0a9615c62d",
-                    repo: "Qwen/Qwen2.5-3B-Instruct-GGUF", revision: "7dabda4d13d513e3e842b20f0d435c732f172cbe", rephrase: true),
+                    repo: "Qwen/Qwen2.5-1.5B-Instruct-GGUF", revision: "91cad51170dc346986eccefdc2dd33a9da36ead9", rephrase: true),
     ]
 
     /// The downloaded model offline rephrase uses, when "On this Mac" is the chosen provider.
