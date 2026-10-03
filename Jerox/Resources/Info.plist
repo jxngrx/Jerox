@@ -10,5 +10,11 @@
 	<string>Jerox reads text from the part of the screen you choose.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
 	<string>Jerox turns your speech into text on this Mac. The audio stays on this Mac.</string>
+	<key>SUFeedURL</key>
+	<string>https://github.com/jxngrx/Jerox/releases/latest/download/appcast.xml</string>
+	<key>SUPublicEDKey</key>
+	<string>3TPgqxGT9v3/cSZ3x6OPz3i2vLgU/MCJK4xXe8veZgc=</string>
+	<key>SUEnableAutomaticChecks</key>
+	<true/>
 </dict>
 </plist>

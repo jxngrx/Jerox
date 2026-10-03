@@ -8,6 +8,10 @@ All notable changes to Jerox are listed here. The format follows [Keep a Changel
 - First-run onboarding: one page per job (history, rewrite, dictate, read the screen) and a permissions page with live status. Debug builds can reopen it from Settings → Advanced → Developer.
 - Versioned releases: `scripts/release.sh` builds a `.dmg` and a `.pkg` installer; pushing a `v*` tag publishes a GitHub Release.
 - Settings shows the app version and build number.
+- Sparkle 2 in-app updates from GitHub Releases (Check for Updates…, Settings → Advanced). Settings and the clipboard list are resizable.
+
+### Fixed
+- Sparkle's Swift Package embed phase resolved to the wrong build product and failed every build (`error: The file “Sparkle” couldn’t be opened`). Vendored `Sparkle.xcframework` under `Vendor/` instead, the same way `whisper.xcframework` is already embedded.
 
 ## [0.1.0]
 

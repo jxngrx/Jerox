@@ -21,6 +21,7 @@ A release is a git tag. CI does the rest.
 3. The **Release** workflow runs `make test`, builds with `scripts/release.sh`, and publishes a GitHub Release with:
    - `Jerox-0.2.0.dmg`: open it and drag Jerox into Applications.
    - `Jerox-0.2.0.pkg`: the macOS Installer; installs to `/Applications`.
+   - `Jerox-0.2.0.zip` and `appcast.xml`: Sparkle in-app updates. See [AUTO_UPDATES.md](AUTO_UPDATES.md).
    - `Jerox-0.2.0.sha256`: checksums.
 
 ## Build a release locally

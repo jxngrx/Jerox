@@ -65,7 +65,8 @@ struct PickerView: View {
                 .padding(.top, 7)
                 .padding(.bottom, 11)
         }
-        .frame(width: PickerMetrics.width, height: PickerMetrics.height)
+        .frame(minWidth: PickerMetrics.minWidth, minHeight: PickerMetrics.minHeight)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .jeroxPanel()
         .onAppear { searchFocused = true }
         .onChange(of: model.reveal) { _, _ in searchFocused = true }

@@ -2,6 +2,8 @@
 # Builds a versioned Jerox release into dist/:
 #   Jerox-<version>.dmg     drag-to-Applications disk image
 #   Jerox-<version>.pkg     macOS Installer package (installs to /Applications)
+#   Jerox-<version>.zip     Sparkle update archive
+#   appcast.xml             Sparkle feed (needs SPARKLE_PRIVATE_ED_KEY)
 #   Jerox-<version>.sha256  checksums
 #
 # Usage: scripts/release.sh [version]        version defaults to the latest v* git tag
@@ -95,6 +97,40 @@ if [[ -n "${NOTARY_PROFILE:-}" ]]; then
   done
 fi
 
-( cd "$DIST" && shasum -a 256 "$NAME.dmg" "$NAME.pkg" > "$NAME.sha256" )
+step "Sparkle archive"
+ditto -c -k --sequesterRsrc --keepParent "$APP" "$DIST/$NAME.zip"
+
+if [[ -n "${SPARKLE_PRIVATE_ED_KEY:-}" ]]; then
+  SPARKLE_TOOLS=build/sparkle-2.10.0
+  if [[ ! -x "$SPARKLE_TOOLS/bin/sign_update" ]]; then
+    curl -fsSL -o build/Sparkle-2.10.0.tar.xz https://github.com/sparkle-project/Sparkle/releases/download/2.10.0/Sparkle-2.10.0.tar.xz
+    mkdir -p "$SPARKLE_TOOLS"
+    tar -xJf build/Sparkle-2.10.0.tar.xz -C "$SPARKLE_TOOLS"
+  fi
+  SIG_LINE="$(printf '%s\n' "$SPARKLE_PRIVATE_ED_KEY" | "$SPARKLE_TOOLS/bin/sign_update" --ed-key-file - "$DIST/$NAME.zip" | tr -d '\n')"
+  DATE="$(date -u +"%a, %d %b %Y %H:%M:%S +0000")"
+  cat > "$DIST/appcast.xml" <<EOF
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+  <channel>
+    <title>Jerox</title>
+    <item>
+      <title>Jerox $VERSION</title>
+      <pubDate>$DATE</pubDate>
+      <sparkle:version>$BUILD</sparkle:version>
+      <sparkle:shortVersionString>$VERSION</sparkle:shortVersionString>
+      <sparkle:minimumSystemVersion>15.1</sparkle:minimumSystemVersion>
+      <enclosure url="https://github.com/jxngrx/Jerox/releases/download/v$VERSION/$NAME.zip" $SIG_LINE type="application/octet-stream"/>
+    </item>
+  </channel>
+</rss>
+EOF
+else
+  echo "warning: SPARKLE_PRIVATE_ED_KEY unset; wrote $NAME.zip but skipped appcast.xml" >&2
+fi
+
+HASHES=("$NAME.dmg" "$NAME.pkg" "$NAME.zip")
+[[ -f "$DIST/appcast.xml" ]] && HASHES+=("appcast.xml")
+( cd "$DIST" && shasum -a 256 "${HASHES[@]}" > "$NAME.sha256" )
 step "Done"
-ls -lh "$DIST/$NAME".*
+ls -lh "$DIST"
