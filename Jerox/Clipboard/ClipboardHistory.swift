@@ -503,6 +503,7 @@ func req(_ ok: Bool, _ message: String) {
 struct HistoryCheckMain {
     static func main() {
         ClipboardHistory.selfCheck()
+        HuggingFaceCheck.run()
     }
 }
 #endif

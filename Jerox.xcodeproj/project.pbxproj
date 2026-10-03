@@ -207,7 +207,7 @@
 				MARKETING_VERSION = 0.1;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
-				SWIFT_OBJC_BRIDGING_HEADER = Jerox/Rephrase/Jerox-Bridging-Header.h;
+				SWIFT_OBJC_BRIDGING_HEADER = "Jerox/Rephrase/Jerox-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 			};
 			name = Debug;
@@ -232,7 +232,7 @@
 				MARKETING_VERSION = 0.1;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
-				SWIFT_OBJC_BRIDGING_HEADER = Jerox/Rephrase/Jerox-Bridging-Header.h;
+				SWIFT_OBJC_BRIDGING_HEADER = "Jerox/Rephrase/Jerox-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 			};
 			name = Release;

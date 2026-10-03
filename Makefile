@@ -6,6 +6,7 @@ XCODE   := xcodebuild -project Jerox.xcodeproj -scheme Jerox -configuration Debu
 LOGIC := Jerox/Clipboard/Clip.swift Jerox/Clipboard/ClipboardHistory.swift \
          Jerox/Clipboard/PasteTransforms.swift Jerox/Clipboard/ClipClassifier.swift \
          Jerox/Rephrase/RephrasePrompts.swift Jerox/Rephrase/AIProviders.swift \
+         Jerox/Rephrase/HuggingFace.swift Jerox/Rephrase/APIKey.swift \
          Jerox/Dictation/DictationText.swift Jerox/ScreenText/ScreenTextLayout.swift
 
 .PHONY: build run test ci dmg clean

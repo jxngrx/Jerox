@@ -75,6 +75,12 @@ struct SettingsView: View {
     @State private var modelName = ""
     @State private var keyReady = false
     @State private var permissionsTick = 0
+    @State private var hfQuery = ""
+    @State private var hfResults: [HFRepo] = []
+    @State private var hfFiles: [HFFile] = []
+    @State private var hfOpen: String?
+    @State private var hfBusy = false
+    @State private var hfNote = ""
     @State private var testing = false
     @State private var testOK = false
     @State private var testNote = ""
@@ -262,8 +268,43 @@ struct SettingsView: View {
                     }
                 }
             }
+            group("Search Hugging Face", hint: "Any text model in GGUF format. Pick a Q4_K_M file for the best balance of size and quality. It needs about as much free memory as its file size.") {
+                line {
+                    HStack(spacing: 10) {
+                        TextField("", text: $hfQuery, prompt: Text("Search models, e.g. gemma, llama, phi").foregroundStyle(.tertiary))
+                            .textFieldStyle(.plain)
+                            .onSubmit(searchHuggingFace)
+                        if hfBusy { ProgressView().controlSize(.small) }
+                        Button("Search", action: searchHuggingFace)
+                            .controlSize(.small)
+                            .disabled(hfBusy || hfQuery.trimmingCharacters(in: .whitespaces).isEmpty)
+                    }
+                }
+                if !hfNote.isEmpty { line { Text(hfNote).font(.caption).foregroundStyle(JeroxInk.danger) } }
+                ForEach(hfResults) { repo in
+                    line {
+                        Button { openHuggingFaceRepo(repo) } label: {
+                            HStack {
+                                Text(repo.id).lineLimit(1)
+                                Spacer()
+                                Text("\(repo.downloads.formatted(.number.notation(.compactName))) downloads")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                Image(systemName: hfOpen == repo.id ? "chevron.up" : "chevron.down")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                            .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                    }
+                    if hfOpen == repo.id {
+                        ForEach(hfFiles) { file in hfFileRow(file, repo: repo.id) }
+                    }
+                }
+            }
             group("Offline rephrase", hint: "Qwen runs on this Mac. After the download there is no key and no network. Tap the circle to use one.") {
-                ForEach(SpeechCatalog.rephraseModels) { model in speechModelRow(model) }
+                ForEach(modelStore.rephraseModels) { model in speechModelRow(model) }
             }
             group("After dictation", hint: "Friendly chat is the default.") {
                 if dictateRephrase {
@@ -568,6 +609,9 @@ struct SettingsView: View {
         let size = ByteCountFormatter.string(fromByteCount: model.bytes, countStyle: .file)
         var caption = Text("\(model.detail) · \(size)").foregroundStyle(.secondary)
         if case .failed(let message) = phase { caption = Text(message).foregroundStyle(JeroxInk.danger) }
+        if case .downloading = phase, let live = modelStore.status[model.id] { caption = Text(live).foregroundStyle(.secondary) }
+        let tooBig = model.rephrase && Double(model.bytes) > Double(ProcessInfo.processInfo.physicalMemory) * 0.6
+        if tooBig, phase == .idle { caption = Text("Too big for this Mac's memory").foregroundStyle(JeroxInk.danger) }
         return line {
             HStack(spacing: 12) {
                 titled(model.name, badge: model.recommended, detail: caption)
@@ -581,6 +625,8 @@ struct SettingsView: View {
                     }
                     .buttonStyle(.plain)
                     .foregroundStyle(JeroxInk.accent)
+                    .disabled(tooBig)
+                    if model.custom { iconButton("xmark", help: "Remove from the list") { modelStore.delete(model) } }
                 case .downloading(let done):
                     ProgressView(value: done).frame(width: 80)
                     Text("\(Int(done * 100))%")
@@ -645,6 +691,72 @@ struct SettingsView: View {
             else { try SMAppService.mainApp.unregister() }
         } catch {
             loginItem = false
+        }
+    }
+
+    private func searchHuggingFace() {
+        let query = hfQuery.trimmingCharacters(in: .whitespaces)
+        guard !query.isEmpty, !hfBusy else { return }
+        hfBusy = true
+        hfNote = ""
+        hfOpen = nil
+        Task { @MainActor in
+            do {
+                hfResults = try await HuggingFace.search(query)
+                if hfResults.isEmpty { hfNote = "No GGUF text models found for that search." }
+            } catch {
+                hfResults = []
+                hfNote = error.localizedDescription
+            }
+            hfBusy = false
+        }
+    }
+
+    private func openHuggingFaceRepo(_ repo: HFRepo) {
+        if hfOpen == repo.id {
+            hfOpen = nil
+            return
+        }
+        hfOpen = repo.id
+        hfFiles = []
+        hfNote = ""
+        hfBusy = true
+        Task { @MainActor in
+            do {
+                let files = try await HuggingFace.files(repo: repo.id)
+                guard hfOpen == repo.id else { return }
+                hfFiles = files
+                if files.isEmpty { hfNote = "This repo has no single-file GGUF models." }
+            } catch {
+                hfNote = error.localizedDescription
+            }
+            hfBusy = false
+        }
+    }
+
+    private func hfFileRow(_ file: HFFile, repo: String) -> some View {
+        let size = ByteCountFormatter.string(fromByteCount: file.bytes, countStyle: .file)
+        let tooBig = Double(file.bytes) > Double(ProcessInfo.processInfo.physicalMemory) * 0.6
+        let added = modelStore.rephraseModels.contains { $0.id == file.name }
+        return line {
+            HStack(spacing: 12) {
+                Text(file.name).font(.system(size: 12)).lineLimit(1).truncationMode(.middle)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                Text(tooBig ? "\(size) · too big" : size)
+                    .font(.caption.monospacedDigit())
+                    .foregroundStyle(tooBig ? JeroxInk.danger : .secondary)
+                if added {
+                    Text("Added").font(.caption).foregroundStyle(.secondary)
+                } else {
+                    Button { modelStore.addAndDownload(file, repo: repo) } label: {
+                        Label("Download", systemImage: "arrow.down.circle").font(.system(size: 12, weight: .medium))
+                    }
+                    .buttonStyle(.plain)
+                    .foregroundStyle(JeroxInk.accent)
+                    .disabled(tooBig)
+                }
+            }
+            .padding(.leading, 12)
         }
     }
 

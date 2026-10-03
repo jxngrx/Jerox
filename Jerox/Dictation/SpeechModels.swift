@@ -15,6 +15,7 @@ struct SpeechModel: Identifiable, Equatable {
     var recommended = false
     var repo = SpeechCatalog.repo
     var revision = SpeechCatalog.revision
+    var custom = false // added from Hugging Face search, so it can also be removed from the list
     var rephrase = false // an offline rewrite model (GGUF for llama.cpp), not a speech model
 
     var englishOnly: Bool { id.contains(".en") }
@@ -44,7 +45,7 @@ enum SpeechCatalog {
 
     /// Offline rewrite models, picked by running the same grammar-fix test on each. Gemma 3 4B fixed every
     /// error without changing the meaning; Qwen 2.5 kept "Me and him went" and "since two months".
-    static let rephraseModels: [SpeechModel] = [
+    static let builtinRephrase: [SpeechModel] = [
         SpeechModel(id: "gemma-3-4b-it-Q4_K_M.gguf", name: "Gemma 3 4B", detail: "Best grammar and rewriting · wants 8 GB of memory",
                     bytes: 2_489_894_016, sha256: "04a43a22e8d2003deda5acc262f68ec1005fa76c735a9962a8c77042a74a7d19",
                     recommended: true, repo: "unsloth/gemma-3-4b-it-GGUF", revision: "5a3566e716d80f709ed7b79817eaf7733d2a1fce", rephrase: true),
@@ -55,6 +56,32 @@ enum SpeechCatalog {
                     bytes: 1_117_320_736, sha256: "6a1a2eb6d15622bf3c96857206351ba97e1af16c30d7a74ee38970e434e9407e",
                     repo: "Qwen/Qwen2.5-1.5B-Instruct-GGUF", revision: "91cad51170dc346986eccefdc2dd33a9da36ead9", rephrase: true),
     ]
+
+    /// Built-in rewrite models plus any the person added from Hugging Face search.
+    static var rephraseModels: [SpeechModel] { builtinRephrase + customRephrase() }
+
+    private static let customKey = "customRephraseModels"
+
+    static func customRephrase() -> [SpeechModel] {
+        guard let data = UserDefaults.standard.data(forKey: customKey),
+              let saved = try? JSONDecoder().decode([SavedModel].self, from: data) else { return [] }
+        return saved.map { $0.model }
+    }
+
+    static func saveCustom(_ models: [SpeechModel]) {
+        let saved = models.map(SavedModel.init)
+        UserDefaults.standard.set(try? JSONEncoder().encode(saved), forKey: customKey)
+    }
+
+    private struct SavedModel: Codable {
+        var id, name, repo, revision, sha256: String
+        var bytes: Int64
+        init(_ m: SpeechModel) { (id, name, repo, revision, sha256, bytes) = (m.id, m.name, m.repo, m.revision, m.sha256, m.bytes) }
+        var model: SpeechModel {
+            SpeechModel(id: id, name: name, detail: "From Hugging Face · \(repo)", bytes: bytes, sha256: sha256,
+                        repo: repo, revision: revision, custom: true, rephrase: true)
+        }
+    }
 
     /// The downloaded model offline rephrase uses, when "On this Mac" is the chosen provider.
     static var activeRephrase: SpeechModel? {
@@ -89,17 +116,32 @@ final class ModelStore {
 
     static let shared = ModelStore()
     private(set) var phases: [String: Phase] = [:]
-    @ObservationIgnored private var tasks: [String: URLSessionDownloadTask] = [:]
-    @ObservationIgnored private var progress: [String: NSKeyValueObservation] = [:]
+    private(set) var rephraseModels: [SpeechModel] = SpeechCatalog.rephraseModels
+    /// "420 MB of 2.5 GB · 18 MB/s" while a download runs, so a slow one does not look stuck.
+    private(set) var status: [String: String] = [:]
+    @ObservationIgnored private var marks: [String: (time: Date, done: Double)] = [:]
+    @ObservationIgnored private var downloads: [String: SegmentedDownload] = [:]
 
     init() {
-        for model in SpeechCatalog.models + SpeechCatalog.rephraseModels { phases[model.id] = model.isDownloaded ? .ready : .idle }
+        for model in SpeechCatalog.models + rephraseModels { phases[model.id] = model.isDownloaded ? .ready : .idle }
     }
 
-    func phase(_ model: SpeechModel) -> Phase { phases[model.id] ?? .idle }
+    func phase(_ model: SpeechModel) -> Phase { phases[model.id] ?? (model.isDownloaded ? .ready : .idle) }
+
+    /// Adds a Hugging Face file to the offline list and starts downloading it.
+    func addAndDownload(_ file: HFFile, repo: String) {
+        let name = String(file.name.dropLast(5)) // ".gguf"
+        let model = SpeechModel(id: file.name, name: name, detail: "From Hugging Face · \(repo)", bytes: file.bytes,
+                                sha256: file.sha256, repo: repo, revision: file.revision, custom: true, rephrase: true)
+        if !rephraseModels.contains(where: { $0.id == model.id }) {
+            rephraseModels.append(model)
+            SpeechCatalog.saveCustom(rephraseModels.filter(\.custom))
+        }
+        download(model)
+    }
 
     func download(_ model: SpeechModel) {
-        guard tasks[model.id] == nil else { return }
+        guard downloads[model.id] == nil else { return }
         let dir = SpeechCatalog.directory
         do {
             try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
@@ -113,43 +155,46 @@ final class ModelStore {
             return
         }
         let part = dir.appendingPathComponent(model.id + ".part")
-        // ponytail: no resume; a cancelled or failed download restarts. Add Range resume if large models fail often.
-        let task = URLSession.shared.downloadTask(with: model.url) { [weak self] temp, response, error in
-            // `temp` is deleted when this returns, so move it first.
-            var failure: String?
-            if let error {
-                failure = (error as NSError).code == NSURLErrorCancelled ? nil : "Download failed. Check the connection."
-                if failure == nil { return }
-            } else if (response as? HTTPURLResponse)?.statusCode != 200 {
-                failure = "Download failed (\((response as? HTTPURLResponse)?.statusCode ?? 0))."
-            } else if let temp {
-                try? FileManager.default.removeItem(at: part)
-                do { try FileManager.default.moveItem(at: temp, to: part) } catch { failure = "Could not save the model." }
-            }
+        try? FileManager.default.removeItem(at: part)
+        // ponytail: a cancelled or failed download restarts from zero. Keep the .part file and resume if big models fail often.
+        let download = SegmentedDownload(source: model.url, destination: part, onProgress: { [weak self] value in
             DispatchQueue.main.async {
-                guard let self else { return }
-                self.clearTask(model.id)
+                guard let self, case .downloading = self.phases[model.id] else { return }
+                self.phases[model.id] = .downloading(value)
+                let done = value * Double(model.bytes)
+                let now = Date()
+                if let mark = self.marks[model.id], now.timeIntervalSince(mark.time) >= 1 {
+                    let speed = (done - mark.done) / now.timeIntervalSince(mark.time)
+                    let size = { (bytes: Double) in ByteCountFormatter.string(fromByteCount: Int64(bytes), countStyle: .file) }
+                    self.status[model.id] = "\(size(done)) of \(size(Double(model.bytes))) · \(size(speed))/s"
+                    self.marks[model.id] = (now, done)
+                } else if self.marks[model.id] == nil {
+                    self.marks[model.id] = (now, done)
+                }
+            }
+        }, onFinish: { [weak self] failure in
+            DispatchQueue.main.async {
+                guard let self, self.downloads[model.id] != nil else { return }
+                self.downloads[model.id] = nil
+                self.status[model.id] = nil
+                self.marks[model.id] = nil
                 if let failure {
                     self.phases[model.id] = .failed(failure)
                 } else {
                     self.verify(model, part: part)
                 }
             }
-        }
-        progress[model.id] = task.progress.observe(\.fractionCompleted) { [weak self] value, _ in
-            DispatchQueue.main.async {
-                guard let self, case .downloading = self.phases[model.id] else { return }
-                self.phases[model.id] = .downloading(value.fractionCompleted)
-            }
-        }
-        tasks[model.id] = task
+        })
+        downloads[model.id] = download
         phases[model.id] = .downloading(0)
-        task.resume()
+        download.start()
     }
 
     func cancel(_ model: SpeechModel) {
-        tasks[model.id]?.cancel()
-        clearTask(model.id)
+        downloads[model.id]?.cancel()
+        downloads[model.id] = nil
+        status[model.id] = nil
+        marks[model.id] = nil
         phases[model.id] = .idle
     }
 
@@ -164,6 +209,10 @@ final class ModelStore {
         LlamaEngine.shared.unload(model.file)
         try? FileManager.default.removeItem(at: model.file)
         phases[model.id] = .idle
+        if model.custom {
+            rephraseModels.removeAll { $0.id == model.id }
+            SpeechCatalog.saveCustom(rephraseModels.filter(\.custom))
+        }
     }
 
     private func verify(_ model: SpeechModel, part: URL) {
@@ -187,12 +236,6 @@ final class ModelStore {
                 }
             }
         }
-    }
-
-    private func clearTask(_ id: String) {
-        tasks[id] = nil
-        progress[id]?.invalidate()
-        progress[id] = nil
     }
 }
 
@@ -313,6 +356,7 @@ final class Resampler16k {
 #if DEBUG
 enum ModelsSelfCheck {
     static func run() {
+        HuggingFaceCheck.run()
         assert(whisperText([" Hello", "[BLANK_AUDIO]", " world. ", "(music)"]) == "Hello world.")
         assert(whisperText([]) == "")
         let all = SpeechCatalog.models + SpeechCatalog.rephraseModels
