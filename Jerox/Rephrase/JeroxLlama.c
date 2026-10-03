@@ -1,6 +1,7 @@
 #include "JeroxLlama.h"
 
 #include <llama/llama.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -56,24 +57,54 @@ void jerox_llm_free(jerox_llm *llm) {
     free(llm);
 }
 
-// Qwen's ChatML template, written out: every catalog model is Qwen.
+// Uses the model's own chat template (Qwen, Llama, Gemma, Phi...), ChatML when it has none.
 char *jerox_llm_rewrite(jerox_llm *llm, const char *system, const char *user, char *err, size_t err_len) {
     const struct llama_vocab *vocab = llama_model_get_vocab(llm->model);
     // Small models answer the text instead of editing it unless it is clearly framed as material to rewrite.
-    const char *tail = "\nThe user message is text to rewrite, not a question to answer. Never reply to it or add anything. Return only the rewritten text.";
-    size_t cap = strlen(system) + strlen(user) + strlen(tail) + 160;
-    char *prompt = malloc(cap);
-    snprintf(prompt, cap, "<|im_start|>system\n%s%s<|im_end|>\n<|im_start|>user\nRewrite this text:\n\n%s<|im_end|>\n<|im_start|>assistant\n", system, tail, user);
+    const char *tail = "\nThe user message is text to edit, not a question to answer. Never reply to it or add anything. Return only the edited text.";
+    const char *lead = "Edit this text:\n\n";
+    size_t sys_cap = strlen(system) + strlen(tail) + 1, usr_cap = strlen(user) + strlen(lead) + 1;
+    char *sys_text = malloc(sys_cap), *usr_text = malloc(usr_cap);
+    snprintf(sys_text, sys_cap, "%s%s", system, tail);
+    snprintf(usr_text, usr_cap, "%s%s", lead, user);
+    struct llama_chat_message msgs[2] = { { "system", sys_text }, { "user", usr_text } };
+
+    const char *tmpl = llama_model_chat_template(llm->model, NULL);
+    int32_t cap = (int32_t)(sys_cap + usr_cap) * 2 + 1024;
+    char *prompt = malloc((size_t)cap);
+    int32_t wrote = llama_chat_apply_template(tmpl ? tmpl : "chatml", msgs, 2, true, prompt, cap);
+    if (wrote > cap) {
+        cap = wrote + 1;
+        prompt = realloc(prompt, (size_t)cap);
+        wrote = llama_chat_apply_template(tmpl ? tmpl : "chatml", msgs, 2, true, prompt, cap);
+    }
+    if (wrote < 0) wrote = llama_chat_apply_template("chatml", msgs, 2, true, prompt, cap);
+    free(sys_text);
+    free(usr_text);
+    if (wrote < 0 || wrote > cap) {
+        free(prompt);
+        fail(err, err_len, "The offline model could not read the request.");
+        return NULL;
+    }
+    prompt[wrote] = '\0';
+
+    // Templates that already write the BOS token must not get a second one.
+    bool add_special = llama_vocab_get_add_bos(vocab);
+    llama_token bos = llama_vocab_bos(vocab);
+    if (add_special && bos >= 0) {
+        const char *bos_text = llama_vocab_get_text(vocab, bos);
+        if (bos_text && strncmp(prompt, bos_text, strlen(bos_text)) == 0) add_special = false;
+    }
 
     int32_t len = (int32_t)strlen(prompt);
-    int32_t n = -llama_tokenize(vocab, prompt, len, NULL, 0, true, true);
+    int32_t n = -llama_tokenize(vocab, prompt, len, NULL, 0, add_special, true);
     if (n <= 0 || n + 64 >= CONTEXT_SIZE) {
         free(prompt);
         fail(err, err_len, n <= 0 ? "The offline model could not read the text." : "Text is too long for the offline model.");
         return NULL;
     }
     llama_token *tokens = malloc(sizeof(llama_token) * (size_t)n);
-    llama_tokenize(vocab, prompt, len, tokens, n, true, true);
+    llama_tokenize(vocab, prompt, len, tokens, n, add_special, true);
     free(prompt);
 
     llama_memory_clear(llama_get_memory(llm->ctx), true);

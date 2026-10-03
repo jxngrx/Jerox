@@ -67,12 +67,17 @@ func aiReply(service: String, data: Data) -> String? {
 }
 
 func aiErrorMessage(data: Data, status: Int, service: String) -> String {
+    let name = AIService(rawValue: service)?.title ?? "AI"
+    // OpenRouter answers a wrong or revoked key with "Missing Authentication header", which points at the
+    // wrong problem: the header is sent, the key is what gets refused.
+    if status == 401 || status == 403 {
+        return "\(name) rejected the API key. Copy it again from your \(name) account into Settings → Models."
+    }
     let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any]
     if let error = json?["error"] as? [String: Any], let message = error["message"] as? String, !message.isEmpty {
         return message
     }
     if let error = json?["error"] as? String, !error.isEmpty { return error }
-    let name = AIService(rawValue: service)?.title ?? "AI"
     return "\(name) failed (\(status))."
 }
 

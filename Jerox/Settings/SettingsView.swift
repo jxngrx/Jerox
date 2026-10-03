@@ -75,6 +75,9 @@ struct SettingsView: View {
     @State private var modelName = ""
     @State private var keyReady = false
     @State private var permissionsTick = 0
+    @State private var testing = false
+    @State private var testOK = false
+    @State private var testNote = ""
     private let updater = JeroxUpdater.shared
 
     var body: some View {
@@ -245,6 +248,19 @@ struct SettingsView: View {
                     line { field("API key", text: $apiKey, secure: true) }
                     line { field("Model", text: $modelName, secure: false) }
                 }
+                line {
+                    HStack(spacing: 10) {
+                        Button("Test rephrase", action: testRephrase)
+                            .controlSize(.small)
+                            .disabled(testing)
+                        if testing { ProgressView().controlSize(.small) }
+                        Text(testNote)
+                            .font(.caption)
+                            .foregroundStyle(testOK ? JeroxInk.accent : JeroxInk.danger)
+                            .lineLimit(3)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                }
             }
             group("Offline rephrase", hint: "Qwen runs on this Mac. After the download there is no key and no network. Tap the circle to use one.") {
                 ForEach(SpeechCatalog.rephraseModels) { model in speechModelRow(model) }
@@ -336,6 +352,21 @@ struct SettingsView: View {
                     "Screen Recording", detail: "Reading text off the screen",
                     granted: AppDelegate.shared?.screenGranted() ?? false
                 ) { AppDelegate.shared?.requestScreen() }
+            }
+            group("Still showing Allow?", hint: "If Jerox is already switched on in System Settings, macOS may be holding a grant from an older build. Reset clears it so the dialogs can ask again. Screen Recording also needs a restart after you switch it on.") {
+                row("Reset Jerox permissions") {
+                    Button("Reset") {
+                        AppDelegate.shared?.resetPermissions { ok in
+                            permissionsTick += 1
+                            AppDelegate.shared?.showToast(ok ? "Permissions reset. Click Allow on each one." : "Could not reset. Remove Jerox in System Settings → Privacy, then click Allow.")
+                        }
+                    }
+                    .controlSize(.small)
+                }
+                row("Restart Jerox") {
+                    Button("Restart") { AppDelegate.shared?.relaunch() }
+                        .controlSize(.small)
+                }
             }
         case .advanced:
             group("Updates", hint: "Sparkle checks GitHub Releases, verifies the EdDSA signature, then installs and relaunches.") {
@@ -614,6 +645,22 @@ struct SettingsView: View {
             else { try SMAppService.mainApp.unregister() }
         } catch {
             loginItem = false
+        }
+    }
+
+    private func testRephrase() {
+        testing = true
+        testNote = ""
+        Task { @MainActor in
+            do {
+                _ = try await requestAI(instruction: "Repeat the text exactly.", text: "Hello")
+                testOK = true
+                testNote = "Rephrase works."
+            } catch {
+                testOK = false
+                testNote = error.localizedDescription
+            }
+            testing = false
         }
     }
 

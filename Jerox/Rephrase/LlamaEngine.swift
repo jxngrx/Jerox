@@ -1,8 +1,8 @@
 import Foundation
 
 /// Offline rephrase with a downloaded Qwen GGUF, through the C shim in JeroxLlama.c.
-/// One serial queue; the model loads on first use and is freed after a few idle minutes.
-final class LlamaEngine {
+/// One serial queue guards all state (hence @unchecked Sendable); the model loads on first use and is freed after a few idle minutes.
+final class LlamaEngine: @unchecked Sendable {
     static let shared = LlamaEngine()
     private let queue = DispatchQueue(label: "com.jxngrx.jerox.llama", qos: .userInitiated)
     private var llm: OpaquePointer?
