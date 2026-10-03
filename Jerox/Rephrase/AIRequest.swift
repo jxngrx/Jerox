@@ -2,6 +2,13 @@ import Foundation
 
 func requestAI(instruction: String, text: String) async throws -> String {
     let service = UserDefaults.standard.string(forKey: "aiProvider") ?? AIService.openrouter.rawValue
+    if service == AIService.local.rawValue {
+        guard let model = SpeechCatalog.activeRephrase else {
+            throw AIError(message: "Download an offline model in Settings → Models.")
+        }
+        guard text.count <= 8_000 else { throw AIError(message: "Text is too long for the offline model.") }
+        return try await LlamaEngine.shared.rewrite(instruction: instruction, text: text, model: model.file)
+    }
     let title = AIService(rawValue: service)?.title ?? "AI"
     let key = APIKey.read(service)
     guard !key.isEmpty else { throw AIError(message: "Add a \(title) key in Settings.") }

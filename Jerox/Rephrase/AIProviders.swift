@@ -6,9 +6,19 @@ struct AICall {
     var body: Data
 }
 
+func cleanAPIKey(_ raw: String) -> String {
+    var key = raw.components(separatedBy: .whitespacesAndNewlines).joined()
+    if key.lowercased().hasPrefix("bearer") { key = String(key.dropFirst(6)) }
+    return key
+}
+
 func aiCall(service: String, model: String, key: String, instruction: String, text: String) -> AICall? {
     let service = AIService(rawValue: service) ?? .openrouter
-    let model = model.isEmpty ? service.defaultModel : model
+    if service == .local { return nil }
+    // A pasted key often carries a newline or space; URLSession drops such a header value
+    // silently, and the server then reports "authentication header is missing".
+    let key = cleanAPIKey(key)
+    let model = cleanAPIKey(model).isEmpty ? service.defaultModel : cleanAPIKey(model)
     if service == .anthropic {
         let body: [String: Any] = [
             "model": model,

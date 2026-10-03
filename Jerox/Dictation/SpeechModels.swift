@@ -13,10 +13,13 @@ struct SpeechModel: Identifiable, Equatable {
     let bytes: Int64
     let sha256: String
     var recommended = false
+    var repo = SpeechCatalog.repo
+    var revision = SpeechCatalog.revision
+    var rephrase = false // an offline rewrite model (GGUF for llama.cpp), not a speech model
 
     var englishOnly: Bool { id.contains(".en") }
     var file: URL { SpeechCatalog.directory.appendingPathComponent(id) }
-    var url: URL { URL(string: "https://huggingface.co/\(SpeechCatalog.repo)/resolve/\(SpeechCatalog.revision)/\(id)")! }
+    var url: URL { URL(string: "https://huggingface.co/\(repo)/resolve/\(revision)/\(id)")! }
     var isDownloaded: Bool { FileManager.default.fileExists(atPath: file.path) }
 }
 
@@ -38,6 +41,26 @@ enum SpeechCatalog {
         SpeechModel(id: "ggml-large-v3-turbo-q5_0.bin", name: "Whisper Large v3 Turbo", detail: "Most accurate · 99 languages",
                     bytes: 574_041_195, sha256: "394221709cd5ad1f40c46e6031ca61bce88931e6e088c188294c6d5a55ffa7e2", recommended: true),
     ]
+
+    /// Offline rewrite models. Qwen 2.5 Instruct at Q4_K_M: small, fast on Apple Silicon, good at tone edits.
+    static let rephraseModels: [SpeechModel] = [
+        SpeechModel(id: "qwen2.5-0.5b-instruct-q4_k_m.gguf", name: "Qwen 2.5 0.5B", detail: "Fastest · light rewrites",
+                    bytes: 491_400_032, sha256: "74a4da8c9fdbcd15bd1f6d01d621410d31c6fc00986f5eb687824e7b93d7a9db",
+                    repo: "Qwen/Qwen2.5-0.5B-Instruct-GGUF", revision: "9217f5db79a29953eb74d5343926648285ec7e67", rephrase: true),
+        SpeechModel(id: "qwen2.5-1.5b-instruct-q4_k_m.gguf", name: "Qwen 2.5 1.5B", detail: "Best balance · fast and clean",
+                    bytes: 1_117_320_736, sha256: "6a1a2eb6d15622bf3c96857206351ba97e1af16c30d7a74ee38970e434e9407e",
+                    recommended: true, repo: "Qwen/Qwen2.5-1.5B-Instruct-GGUF", revision: "91cad51170dc346986eccefdc2dd33a9da36ead9", rephrase: true),
+        SpeechModel(id: "qwen2.5-3b-instruct-q4_k_m.gguf", name: "Qwen 2.5 3B", detail: "Most accurate · wants 8 GB of memory",
+                    bytes: 2_104_932_768, sha256: "626b4a6678b86442240e33df819e00132d3ba7dddfe1cdc4fbb18e0a9615c62d",
+                    repo: "Qwen/Qwen2.5-3B-Instruct-GGUF", revision: "7dabda4d13d513e3e842b20f0d435c732f172cbe", rephrase: true),
+    ]
+
+    /// The downloaded model offline rephrase uses, when "On this Mac" is the chosen provider.
+    static var activeRephrase: SpeechModel? {
+        guard UserDefaults.standard.string(forKey: "aiProvider") == AIService.local.rawValue else { return nil }
+        let id = UserDefaults.standard.string(forKey: "localModel") ?? ""
+        return rephraseModels.first { $0.id == id && $0.isDownloaded }
+    }
 
     static var directory: URL { ClipboardHistory.supportURL.appendingPathComponent("Models", isDirectory: true) }
 
@@ -69,7 +92,7 @@ final class ModelStore {
     @ObservationIgnored private var progress: [String: NSKeyValueObservation] = [:]
 
     init() {
-        for model in SpeechCatalog.models { phases[model.id] = model.isDownloaded ? .ready : .idle }
+        for model in SpeechCatalog.models + SpeechCatalog.rephraseModels { phases[model.id] = model.isDownloaded ? .ready : .idle }
     }
 
     func phase(_ model: SpeechModel) -> Phase { phases[model.id] ?? .idle }
@@ -133,7 +156,11 @@ final class ModelStore {
         if UserDefaults.standard.string(forKey: "speechEngine") == model.id {
             UserDefaults.standard.set(SpeechCatalog.apple, forKey: "speechEngine")
         }
+        if model.rephrase, UserDefaults.standard.string(forKey: "localModel") == model.id {
+            UserDefaults.standard.set(AIService.openrouter.rawValue, forKey: "aiProvider")
+        }
         WhisperEngine.shared.unload(model.file)
+        LlamaEngine.shared.unload(model.file)
         try? FileManager.default.removeItem(at: model.file)
         phases[model.id] = .idle
     }
@@ -150,7 +177,13 @@ final class ModelStore {
             if !ok { try? FileManager.default.removeItem(at: part) }
             DispatchQueue.main.async {
                 self.phases[model.id] = ok ? .ready : .failed("The download did not match. Try again.")
-                if ok { UserDefaults.standard.set(model.id, forKey: "speechEngine") }
+                guard ok else { return }
+                if model.rephrase {
+                    UserDefaults.standard.set(model.id, forKey: "localModel")
+                    UserDefaults.standard.set(AIService.local.rawValue, forKey: "aiProvider")
+                } else {
+                    UserDefaults.standard.set(model.id, forKey: "speechEngine")
+                }
             }
         }
     }
@@ -281,8 +314,9 @@ enum ModelsSelfCheck {
     static func run() {
         assert(whisperText([" Hello", "[BLANK_AUDIO]", " world. ", "(music)"]) == "Hello world.")
         assert(whisperText([]) == "")
-        assert(SpeechCatalog.models.allSatisfy { $0.sha256.count == 64 && $0.bytes > 0 })
-        assert(Set(SpeechCatalog.models.map(\.id)).count == SpeechCatalog.models.count)
+        let all = SpeechCatalog.models + SpeechCatalog.rephraseModels
+        assert(all.allSatisfy { $0.sha256.count == 64 && $0.bytes > 0 })
+        assert(Set(all.map(\.id)).count == all.count)
         assert(SpeechCatalog.models.first { $0.id == "ggml-small.en-q5_1.bin" }!.englishOnly)
     }
 }
