@@ -52,7 +52,9 @@ if [[ -n "${SIGN_IDENTITY:-}" ]]; then
     | while IFS= read -r -d '' FW; do
         codesign --force --sign "$SIGN_IDENTITY" --options runtime --timestamp "$FW"
       done
-  codesign --force --deep --sign "$SIGN_IDENTITY" --options runtime --timestamp "$APP"
+  # Re-signing the app drops its entitlements unless they are passed again; without
+  # audio-input the hardened runtime blocks the microphone and no prompt ever appears.
+  codesign --force --sign "$SIGN_IDENTITY" --options runtime --timestamp --entitlements Config/Jerox.entitlements "$APP"
 fi
 
 codesign --verify --deep --strict "$APP"

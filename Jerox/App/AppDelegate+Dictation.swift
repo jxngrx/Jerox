@@ -19,30 +19,26 @@ extension AppDelegate {
             previousApp = front
         }
         let askMic = {
-            AVCaptureDevice.requestAccess(for: .audio) { ok in
-                DispatchQueue.main.async {
-                    self.dictateStarting = false
-                    guard ok else {
-                        self.flashDictation("Allow the microphone for Jerox in System Settings.")
-                        return
-                    }
-                    self.beginDictation()
+            self.requestMic { ok in
+                self.dictateStarting = false
+                guard ok else {
+                    self.flashDictation("Allow the microphone for Jerox in System Settings.")
+                    return
                 }
+                self.beginDictation()
             }
         }
         if SpeechCatalog.active != nil {
             askMic()
             return
         }
-        SFSpeechRecognizer.requestAuthorization { status in
-            DispatchQueue.main.async {
-                guard status == .authorized else {
-                    self.dictateStarting = false
-                    self.flashDictation("Allow speech recognition for Jerox in System Settings.")
-                    return
-                }
-                askMic()
+        requestSpeech { ok in
+            guard ok else {
+                self.dictateStarting = false
+                self.flashDictation("Allow speech recognition for Jerox in System Settings.")
+                return
             }
+            askMic()
         }
     }
 
@@ -62,7 +58,7 @@ extension AppDelegate {
             }
         }
         guard !micDevices().isEmpty else {
-            showToast("Error: no microphone detected")
+            flashDictation("No microphone detected.")
             return
         }
         let engine = AVAudioEngine()
@@ -70,12 +66,12 @@ extension AppDelegate {
         let input = engine.inputNode
         let format = input.outputFormat(forBus: 0)
         guard format.sampleRate > 0, format.channelCount > 0 else {
-            showToast("Error: no microphone detected")
+            flashDictation("No microphone detected.")
             return
         }
         let resampler = whisper == nil ? nil : Resampler16k(from: format)
         if whisper != nil, resampler == nil {
-            showToast("Error: this microphone format is not supported")
+            flashDictation("This microphone format is not supported.")
             return
         }
         audioLock.lock()
@@ -250,7 +246,7 @@ extension AppDelegate {
                 guard let self, paste == self.dictatePaste, self.dictateStopRequested else { return }
                 guard let text else {
                     self.cancelDictation()
-                    self.showToast("Error: \(model.name) could not transcribe")
+                    self.flashDictation("\(model.name) could not transcribe. Try again.")
                     return
                 }
                 self.dictateText = text
@@ -291,6 +287,7 @@ extension AppDelegate {
         guard !text.isEmpty else {
             disarmCancelKey()
             hideDictatePanel()
+            flashDictation("No speech detected.")
             return
         }
         ignoreClipboard = true
@@ -300,7 +297,12 @@ extension AppDelegate {
             let prompts = rephrasePromptList(custom: RephrasePromptStore.load())
             let instruction = prompts.first { $0.id == id }?.instruction ?? builtInRephrasePrompts[0].instruction
             Task { @MainActor in
-                let rewritten = spokenList((try? await requestAI(instruction: instruction, text: text)) ?? text)
+                var rewritten = text
+                do {
+                    rewritten = spokenList(try await requestAI(instruction: instruction, text: text))
+                } catch {
+                    self.showToast("Rephrase failed: \(error.localizedDescription)")
+                }
                 guard paste == self.dictatePaste else { return }
                 self.disarmCancelKey()
                 self.pasteDictated(rewritten.isEmpty ? text : rewritten)
@@ -391,7 +393,10 @@ extension AppDelegate {
             ignoreClipboard = false
             hideLoader()
             hideDictatePanel()
-            if !AXIsProcessTrusted() { promptAccessibility() }
+            if !AXIsProcessTrusted() {
+                showToast("Copied. Allow Accessibility so Jerox can paste.")
+                promptAccessibility()
+            }
             return
         }
         target.activate()

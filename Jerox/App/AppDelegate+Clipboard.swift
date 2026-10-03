@@ -31,9 +31,8 @@ extension AppDelegate {
     }
 
     func flashDictation(_ message: String) {
-        loaderState.label = message
-        showLoader(at: NSEvent.mouseLocation)
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.6) { self.hideLoader() }
+        hideLoader()
+        showToast(message)
     }
 
     func publish(_ text: String) {

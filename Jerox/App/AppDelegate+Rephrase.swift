@@ -159,8 +159,7 @@ extension AppDelegate {
                 }
             } else {
                 self.restoreClipboard(saved)
-                self.loaderState.label = self.model.aiNote.isEmpty ? "Rephrase failed" : self.model.aiNote
-                DispatchQueue.main.asyncAfter(deadline: .now() + 1.6) { self.hideLoader() }
+                self.flashDictation(self.model.aiNote.isEmpty ? "Rephrase failed." : self.model.aiNote)
                 self.ignoreClipboard = false
             }
         }

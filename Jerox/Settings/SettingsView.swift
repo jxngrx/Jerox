@@ -316,24 +316,20 @@ struct SettingsView: View {
             group("macOS permissions", hint: "Jerox checks these live. Flip one on in System Settings, then come back here.") {
                 permissionRow(
                     "Accessibility", detail: "Pasting back into the previous app",
-                    granted: AppDelegate.shared?.accessibilityGranted() ?? false,
-                    anchor: "Privacy_Accessibility"
-                ) { AppDelegate.shared?.promptAccessibility() }
+                    granted: AppDelegate.shared?.accessibilityGranted() ?? false
+                ) { AppDelegate.shared?.requestAccessibility() }
                 permissionRow(
                     "Microphone", detail: "Dictation",
-                    granted: AppDelegate.shared?.micGranted() ?? false,
-                    anchor: "Privacy_Microphone"
-                ) { AVCaptureDevice.requestAccess(for: .audio) { _ in DispatchQueue.main.async { permissionsTick += 1 } } }
+                    granted: AppDelegate.shared?.micGranted() ?? false
+                ) { AppDelegate.shared?.requestMic { _ in permissionsTick += 1 } }
                 permissionRow(
                     "Speech Recognition", detail: "Dictation",
-                    granted: AppDelegate.shared?.speechGranted() ?? false,
-                    anchor: "Privacy_SpeechRecognition"
-                ) { SFSpeechRecognizer.requestAuthorization { _ in DispatchQueue.main.async { permissionsTick += 1 } } }
+                    granted: AppDelegate.shared?.speechGranted() ?? false
+                ) { AppDelegate.shared?.requestSpeech { _ in permissionsTick += 1 } }
                 permissionRow(
                     "Screen Recording", detail: "Reading text off the screen",
-                    granted: AppDelegate.shared?.screenGranted() ?? false,
-                    anchor: "Privacy_ScreenCapture"
-                ) { CGRequestScreenCaptureAccess() }
+                    granted: AppDelegate.shared?.screenGranted() ?? false
+                ) { AppDelegate.shared?.requestScreen() }
             }
         case .advanced:
             group("Updates", hint: "Sparkle checks GitHub Releases, verifies the EdDSA signature, then installs and relaunches.") {
@@ -437,7 +433,7 @@ struct SettingsView: View {
         }
     }
 
-    private func permissionRow(_ title: String, detail: String, granted: Bool, anchor: String, request: @escaping () -> Void) -> some View {
+    private func permissionRow(_ title: String, detail: String, granted: Bool, request: @escaping () -> Void) -> some View {
         line {
             HStack(spacing: 12) {
                 VStack(alignment: .leading, spacing: 2) {
@@ -450,12 +446,7 @@ struct SettingsView: View {
                         .font(.caption.weight(.medium))
                         .foregroundStyle(.green)
                 } else {
-                    Button("Allow…") {
-                        request()
-                        if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?\(anchor)") {
-                            NSWorkspace.shared.open(url)
-                        }
-                    }
+                    Button("Allow…", action: request)
                     .controlSize(.small)
                 }
             }
