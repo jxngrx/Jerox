@@ -376,7 +376,7 @@ struct SettingsView: View {
             }
         case .permissions:
             let _ = permissionsTick
-            group("macOS permissions", hint: "Jerox checks these live. Flip one on in System Settings, then come back here.") {
+            group("macOS permissions", hint: "Jerox checks these live. Already switched on in System Settings but still showing Allow? Reset permissions clears the old grant so macOS asks again. Screen Recording also needs a restart after you switch it on.") {
                 permissionRow(
                     "Accessibility", detail: "Pasting back into the previous app",
                     granted: AppDelegate.shared?.accessibilityGranted() ?? false
@@ -394,21 +394,22 @@ struct SettingsView: View {
                     granted: AppDelegate.shared?.screenGranted() ?? false
                 ) { AppDelegate.shared?.requestScreen() }
             }
-            group("Still showing Allow?", hint: "If Jerox is already switched on in System Settings, macOS may be holding a grant from an older build. Reset clears it so the dialogs can ask again. Screen Recording also needs a restart after you switch it on.") {
-                row("Reset Jerox permissions") {
-                    Button("Reset") {
-                        AppDelegate.shared?.resetPermissions { ok in
-                            permissionsTick += 1
-                            AppDelegate.shared?.showToast(ok ? "Permissions reset. Click Allow on each one." : "Could not reset. Remove Jerox in System Settings → Privacy, then click Allow.")
-                        }
+            HStack(spacing: 10) {
+                Button {
+                    AppDelegate.shared?.resetPermissions { ok in
+                        permissionsTick += 1
+                        AppDelegate.shared?.showToast(ok ? "Permissions reset. Click Allow on each one." : "Could not reset. Remove Jerox in System Settings → Privacy, then click Allow.")
                     }
-                    .controlSize(.small)
+                } label: {
+                    Label("Reset permissions", systemImage: "arrow.counterclockwise")
                 }
-                row("Restart Jerox") {
-                    Button("Restart") { AppDelegate.shared?.relaunch() }
-                        .controlSize(.small)
+                Button {
+                    AppDelegate.shared?.relaunch()
+                } label: {
+                    Label("Restart Jerox", systemImage: "power")
                 }
             }
+            .padding(.horizontal, 4)
         case .advanced:
             group("Updates", hint: "Sparkle checks GitHub Releases, verifies the EdDSA signature, then installs and relaunches.") {
                 if let version = updater.availableVersion {
