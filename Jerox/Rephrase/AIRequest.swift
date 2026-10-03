@@ -1,28 +1,7 @@
 import Foundation
-import FoundationModels
-
-func appleIntelligenceReady() -> Bool {
-    guard #available(macOS 26, *) else { return false }
-    return SystemLanguageModel.default.isAvailable
-}
-
-func appleRewrite(instruction: String, text: String) async throws -> String {
-    guard #available(macOS 26, *) else { throw AIError(message: "Apple Intelligence needs macOS 26.") }
-    guard SystemLanguageModel.default.isAvailable else {
-        throw AIError(message: "Turn on Apple Intelligence in System Settings.")
-    }
-    let session = LanguageModelSession(instructions: instruction)
-    let cleaned = try await session.respond(to: text).content.trimmingCharacters(in: .whitespacesAndNewlines)
-    guard !cleaned.isEmpty else { throw AIError(message: "Apple Intelligence returned nothing.") }
-    return cleaned
-}
 
 func requestAI(instruction: String, text: String) async throws -> String {
     let service = UserDefaults.standard.string(forKey: "aiProvider") ?? AIService.openrouter.rawValue
-    if service == AIService.apple.rawValue {
-        guard text.count <= 20_000 else { throw AIError(message: "Text is too long.") }
-        return try await appleRewrite(instruction: instruction, text: text)
-    }
     let title = AIService(rawValue: service)?.title ?? "AI"
     let key = APIKey.read(service)
     guard !key.isEmpty else { throw AIError(message: "Add a \(title) key in Settings.") }

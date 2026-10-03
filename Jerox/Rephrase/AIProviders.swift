@@ -8,7 +8,6 @@ struct AICall {
 
 func aiCall(service: String, model: String, key: String, instruction: String, text: String) -> AICall? {
     let service = AIService(rawValue: service) ?? .openrouter
-    if service == .apple { return nil }
     let model = model.isEmpty ? service.defaultModel : model
     if service == .anthropic {
         let body: [String: Any] = [

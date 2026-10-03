@@ -49,7 +49,7 @@ enum RephrasePromptStore {
 }
 
 enum AIService: String, CaseIterable {
-    case openrouter, openai, anthropic, huggingface, apple
+    case openrouter, openai, anthropic, huggingface
 
     var title: String {
         switch self {
@@ -57,17 +57,16 @@ enum AIService: String, CaseIterable {
         case .openai: "OpenAI"
         case .anthropic: "Anthropic"
         case .huggingface: "Hugging Face"
-        case .apple: "Apple Intelligence"
         }
     }
 
+    /// OpenRouter's default is a free model so rephrase works before anyone has a paid key.
     var defaultModel: String {
         switch self {
-        case .openrouter: "openai/gpt-4o-mini"
+        case .openrouter: "deepseek/deepseek-chat-v3.1:free"
         case .openai: "gpt-4o-mini"
         case .anthropic: "claude-3-5-haiku-20241022"
         case .huggingface: "meta-llama/Llama-3.2-3B-Instruct"
-        case .apple: "On this Mac"
         }
     }
 }

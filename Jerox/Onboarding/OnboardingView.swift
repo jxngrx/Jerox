@@ -19,7 +19,7 @@ struct OnboardingView: View {
              body: "Press the shortcut in any app. Type to filter, then Return pastes it back in its original format.",
              keys: ("hotkey.show.code", "hotkey.show.mods", ShortcutDefaults.showCode, ShortcutDefaults.showMods)),
         Page(kicker: "REWRITE", line1: "Select any text.", line2: "Pick a tone.",
-             body: "Jerox rewrites the selection and pastes it back in place. Use Apple Intelligence on this Mac, or your own key.",
+             body: "Jerox rewrites the selection and pastes it back in place. Bring your own API key to use any model you want.",
              keys: ("hotkey.rephrase.code", "hotkey.rephrase.mods", ShortcutDefaults.rephraseCode, ShortcutDefaults.rephraseMods)),
         Page(kicker: "DICTATE", line1: "Just speak.", line2: "It types for you.",
              body: "Apple Speech shows live text. Download a Whisper model in Settings to work fully offline.",
@@ -206,7 +206,7 @@ private struct PermissionList: View {
                 if !AXIsProcessTrustedWithOptions([key: true] as CFDictionary) { open("Privacy_Accessibility") }
             }
             item("Microphone & Speech", "Dictation, transcribed on this Mac", mic) {
-                AVAudioApplication.requestRecordPermission { granted in
+                AVCaptureDevice.requestAccess(for: .audio) { granted in
                     SFSpeechRecognizer.requestAuthorization { _ in DispatchQueue.main.async { refresh() } }
                     if !granted { DispatchQueue.main.async { open("Privacy_Microphone") } }
                 }
@@ -247,7 +247,7 @@ private struct PermissionList: View {
 
     private func refresh() {
         ax = AXIsProcessTrusted()
-        mic = AVAudioApplication.shared.recordPermission == .granted && SFSpeechRecognizer.authorizationStatus() == .authorized
+        mic = AVCaptureDevice.authorizationStatus(for: .audio) == .authorized && SFSpeechRecognizer.authorizationStatus() == .authorized
         screen = CGPreflightScreenCaptureAccess()
     }
 
