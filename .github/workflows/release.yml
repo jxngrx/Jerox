@@ -140,11 +140,22 @@ jobs:
           for FILE in "${FILES[@]}"; do
             echo "Submitting $(basename "$FILE") to Apple..."
 
-            xcrun notarytool submit "$FILE" \
+            SUBMIT_OUT="$(xcrun notarytool submit "$FILE" \
               --key "$KEY_FILE" \
               --key-id "$NOTARY_KEY_ID" \
               --issuer "$NOTARY_ISSUER_ID" \
-              --wait
+              --wait)"
+            echo "$SUBMIT_OUT"
+
+            if ! grep -q "status: Accepted" <<< "$SUBMIT_OUT"; then
+              SUBMISSION_ID="$(grep -m1 '^  id:' <<< "$SUBMIT_OUT" | awk '{print $2}')"
+              echo "::error::Notarization rejected for $(basename "$FILE")"
+              xcrun notarytool log "$SUBMISSION_ID" \
+                --key "$KEY_FILE" \
+                --key-id "$NOTARY_KEY_ID" \
+                --issuer "$NOTARY_ISSUER_ID"
+              exit 1
+            fi
 
             echo "Notarization accepted: $(basename "$FILE")"
           done
