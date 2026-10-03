@@ -21,8 +21,9 @@ extension AppDelegate {
         view.autoresizingMask = [.width, .height]
         view.onDone = { [weak self] rect in self?.recognize(screen: screen, rect: rect) }
         view.onCancel = { [weak self] in self?.cancelRead() }
-        let window = GrabWindow(contentRect: screen.frame, styleMask: [.borderless], backing: .buffered, defer: false)
+        let window = GrabWindow(contentRect: screen.frame, styleMask: [.borderless, .nonactivatingPanel], backing: .buffered, defer: false)
         window.level = .screenSaver
+        window.hidesOnDeactivate = false // an NSPanel hides itself while its app is inactive, and this app stays inactive on purpose
         window.isOpaque = false
         window.backgroundColor = .clear
         window.hasShadow = false
@@ -30,6 +31,7 @@ extension AppDelegate {
         window.contentView = view
         window.setFrame(screen.frame, display: true)
         window.makeKeyAndOrderFront(nil)
+        window.makeFirstResponder(view)
         grabWindow = window
         watchGrabEscape()
     }
@@ -60,19 +62,23 @@ extension AppDelegate {
         let displayID = CGDirectDisplayID(number.uint32Value)
         guard let content = try? await SCShareableContent.excludingDesktopWindows(false, onScreenWindowsOnly: true),
               let display = content.displays.first(where: { $0.displayID == displayID }) else { return nil }
-        let filter = SCContentFilter(display: display, excludingWindows: [])
+        // Leave Jerox's own overlay out of the picture, and ask for real pixels: SCDisplay.width is in points,
+        // so a point-sized capture cropped with Retina pixel coordinates lands on the wrong part of the screen.
+        let ours = content.applications.filter { $0.bundleIdentifier == Bundle.main.bundleIdentifier }
+        let filter = SCContentFilter(display: display, excludingApplications: ours, exceptingWindows: [])
         let config = SCStreamConfiguration()
-        config.width = display.width
-        config.height = display.height
+        config.width = Int(Double(display.width) * Double(filter.pointPixelScale))
+        config.height = Int(Double(display.height) * Double(filter.pointPixelScale))
         config.showsCursor = false
         guard let full = try? await SCScreenshotManager.captureImage(contentFilter: filter, configuration: config) else { return nil }
         guard let crop else { return full }
-        let scale = screen.backingScaleFactor
+        let sx = CGFloat(full.width) / screen.frame.width
+        let sy = CGFloat(full.height) / screen.frame.height
         let pixel = CGRect(
-            x: (crop.minX - screen.frame.minX) * scale,
-            y: (screen.frame.height - (crop.minY - screen.frame.minY) - crop.height) * scale,
-            width: crop.width * scale,
-            height: crop.height * scale
+            x: (crop.minX - screen.frame.minX) * sx,
+            y: (screen.frame.height - (crop.minY - screen.frame.minY) - crop.height) * sy,
+            width: crop.width * sx,
+            height: crop.height * sy
         ).integral.intersection(CGRect(x: 0, y: 0, width: CGFloat(full.width), height: CGFloat(full.height)))
         guard pixel.width > 2, pixel.height > 2 else { return nil }
         return full.cropping(to: pixel)
@@ -91,7 +97,8 @@ extension AppDelegate {
                 self.publish(self.ocrState.text)
             }))
             host.sizingOptions = []
-            let panel = OcrWindow(contentRect: frame, styleMask: [.borderless], backing: .buffered, defer: false)
+            let panel = OcrWindow(contentRect: frame, styleMask: [.borderless, .nonactivatingPanel], backing: .buffered, defer: false)
+            panel.hidesOnDeactivate = false
             panel.level = .floating
             panel.isOpaque = false
             panel.backgroundColor = .clear

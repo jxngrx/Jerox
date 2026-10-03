@@ -28,12 +28,13 @@ struct OcrMark: View {
     }
 }
 
-final class OcrWindow: NSWindow {
+final class OcrWindow: NSPanel {
     override var canBecomeKey: Bool { true }
     override var canBecomeMain: Bool { false }
 }
 
-final class GrabWindow: NSWindow {
+/// Non-activating, so the app you were using stays active while you drag out the area.
+final class GrabWindow: NSPanel {
     override var canBecomeKey: Bool { true }
     override var canBecomeMain: Bool { false }
 }
