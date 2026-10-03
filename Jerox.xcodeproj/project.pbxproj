@@ -7,8 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		A10000000000000000000022 /* whisper.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = A10000000000000000000023 /* whisper.xcframework */; };
-		A10000000000000000000024 /* whisper.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = A10000000000000000000023 /* whisper.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		A10000000000000000000022 /* Vendor/whisper.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = A10000000000000000000023 /* Vendor/whisper.xcframework */; };
+		A10000000000000000000024 /* Vendor/whisper.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = A10000000000000000000023 /* Vendor/whisper.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		A10000000000000000000040 /* Vendor/Sparkle.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = A10000000000000000000044 /* Vendor/Sparkle.xcframework */; };
+		A10000000000000000000041 /* Vendor/Sparkle.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = A10000000000000000000044 /* Vendor/Sparkle.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -18,7 +20,8 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				A10000000000000000000024 /* whisper.xcframework in Embed Frameworks */,
+				A10000000000000000000024 /* Vendor/whisper.xcframework in Embed Frameworks */,
+				A10000000000000000000041 /* Vendor/Sparkle.xcframework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -27,8 +30,9 @@
 
 /* Begin PBXFileReference section */
 		A10000000000000000000005 /* Jerox.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Jerox.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		A10000000000000000000023 /* whisper.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = Vendor/whisper.xcframework; sourceTree = SOURCE_ROOT; };
-		A10000000000000000000032 /* Base.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Config/Base.xcconfig; sourceTree = SOURCE_ROOT; };
+		A10000000000000000000023 /* Vendor/whisper.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = Vendor/whisper.xcframework; sourceTree = SOURCE_ROOT; };
+		A10000000000000000000032 /* Config/Base.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Config/Base.xcconfig; sourceTree = SOURCE_ROOT; };
+		A10000000000000000000044 /* Vendor/Sparkle.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = Vendor/Sparkle.xcframework; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -57,7 +61,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A10000000000000000000022 /* whisper.xcframework in Frameworks */,
+				A10000000000000000000022 /* Vendor/whisper.xcframework in Frameworks */,
+				A10000000000000000000040 /* Vendor/Sparkle.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -85,7 +90,7 @@
 		A10000000000000000000033 /* Config */ = {
 			isa = PBXGroup;
 			children = (
-				A10000000000000000000032 /* Base.xcconfig */,
+				A10000000000000000000032 /* Config/Base.xcconfig */,
 			);
 			name = Config;
 			sourceTree = "<group>";
@@ -93,7 +98,8 @@
 		A10000000000000000000034 /* Vendor */ = {
 			isa = PBXGroup;
 			children = (
-				A10000000000000000000023 /* whisper.xcframework */,
+				A10000000000000000000023 /* Vendor/whisper.xcframework */,
+				A10000000000000000000044 /* Vendor/Sparkle.xcframework */,
 			);
 			name = Vendor;
 			sourceTree = "<group>";
@@ -178,10 +184,11 @@
 /* Begin XCBuildConfiguration section */
 		A1000000000000000000000E /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = A10000000000000000000032 /* Base.xcconfig */;
+			baseConfigurationReference = A10000000000000000000032 /* Config/Base.xcconfig */;
 			buildSettings = {
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 7Z2MHSX7M9;
 				ENABLE_HARDENED_RUNTIME = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Jerox/Resources/Info.plist;
@@ -205,10 +212,12 @@
 		};
 		A1000000000000000000000F /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = A10000000000000000000032 /* Base.xcconfig */;
+			baseConfigurationReference = A10000000000000000000032 /* Config/Base.xcconfig */;
 			buildSettings = {
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 7Z2MHSX7M9;
 				ENABLE_HARDENED_RUNTIME = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Jerox/Resources/Info.plist;

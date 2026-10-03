@@ -31,7 +31,9 @@ You can change every shortcut in Settings.
 
 ## Install
 
-Download the latest `Jerox-<version>.dmg` from [Releases](https://github.com/jxngrx/Jerox/releases), open it, and drag Jerox into Applications. Prefer the macOS Installer? Use the `.pkg` from the same release. On first launch, onboarding walks you through the shortcuts and the three permissions.
+Download the latest `.dmg` from [Releases](https://github.com/jxngrx/Jerox/releases), open it, and drag Jerox into Applications. Prefer the macOS Installer? Use the `.pkg` from the same release. On first launch, onboarding walks you through the shortcuts and the three permissions.
+
+Sparkle-enabled builds (after the first tagged release that includes `appcast.xml`) check GitHub for updates from **Check for Updates…**. Installs of **v0.0.1** need that first Sparkle build by hand. See [docs/AUTO_UPDATES.md](docs/AUTO_UPDATES.md).
 
 Builds that are not notarized need one extra step the first time: Control-click Jerox in Applications and choose **Open**.
 

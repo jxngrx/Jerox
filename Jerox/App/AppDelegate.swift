@@ -101,6 +101,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         installHotkey()
         startPolling()
         watchScreenshotDirectoryIfNeeded()
+        _ = JeroxUpdater.shared
         DispatchQueue.main.async { self.showWelcomeIfNeeded() }
     }
 
@@ -116,11 +117,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         edit.addItem(withTitle: "Select All", action: #selector(NSText.selectAll(_:)), keyEquivalent: "a")
         let app = NSMenu(title: "Jerox")
         app.addItem(withTitle: "Settings…", action: #selector(showSettings(_:)), keyEquivalent: ",").target = self
+        let updates = NSMenuItem(title: "Check for Updates…", action: #selector(JeroxUpdater.checkForUpdates(_:)), keyEquivalent: "")
+        updates.target = JeroxUpdater.shared
+        app.addItem(updates)
         app.addItem(.separator())
         app.addItem(withTitle: "Quit Jerox", action: #selector(quit(_:)), keyEquivalent: "q").target = self
         let window = NSMenu(title: "Window")
         window.addItem(withTitle: "Close", action: #selector(NSWindow.performClose(_:)), keyEquivalent: "w")
         window.addItem(withTitle: "Minimize", action: #selector(NSWindow.performMiniaturize(_:)), keyEquivalent: "m")
+        window.addItem(withTitle: "Zoom", action: #selector(NSWindow.performZoom(_:)), keyEquivalent: "")
         let main = NSMenu()
         for menu in [app, edit, window] {
             let item = NSMenuItem()
@@ -159,6 +164,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         let settings = NSMenuItem(title: "Settings…", action: #selector(showSettings(_:)), keyEquivalent: ",")
         settings.target = self
         menu.addItem(settings)
+        if let version = JeroxUpdater.shared.availableVersion {
+            let update = NSMenuItem(title: "Update to \(version)…", action: #selector(JeroxUpdater.checkForUpdates(_:)), keyEquivalent: "")
+            update.target = JeroxUpdater.shared
+            menu.addItem(update)
+        } else {
+            let check = NSMenuItem(title: "Check for Updates…", action: #selector(JeroxUpdater.checkForUpdates(_:)), keyEquivalent: "")
+            check.target = JeroxUpdater.shared
+            menu.addItem(check)
+        }
         let item = NSMenuItem(title: "Quit Jerox", action: #selector(quit(_:)), keyEquivalent: "q")
         item.target = self
         menu.addItem(item)
@@ -174,9 +188,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
                 onHotkey: { [weak self] in self?.registerHotkey() }
             ))
             host.sizingOptions = []
+            host.autoresizingMask = [.width, .height]
             let window = NSWindow(
                 contentRect: NSRect(x: 0, y: 0, width: 760, height: 540),
-                styleMask: [.titled, .closable, .miniaturizable, .fullSizeContentView],
+                styleMask: [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView],
                 backing: .buffered,
                 defer: false
             )
@@ -184,20 +199,29 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
             window.titleVisibility = .hidden
             window.titlebarAppearsTransparent = true
             window.isMovableByWindowBackground = true
+            window.minSize = NSSize(width: 640, height: 420)
             window.backgroundColor = .windowBackgroundColor
             window.contentView = host
             window.isReleasedWhenClosed = false
             window.delegate = self
-            window.center()
+            if !window.setFrameUsingName("JeroxSettings") {
+                window.center()
+            }
+            window.setFrameAutosaveName("JeroxSettings")
             settingsWindow = window
             return window
         }()
-        window.setContentSize(NSSize(width: 760, height: 540))
         NSApp.setActivationPolicy(.regular)
         applyAppIcon()
         NSApp.activate()
         window.makeKeyAndOrderFront(nil)
         DispatchQueue.main.async { self.applyAppIcon() }
+    }
+
+    func windowDidResize(_ notification: Notification) {
+        guard let win = notification.object as? NSWindow, win === panel else { return }
+        UserDefaults.standard.set(Double(win.frame.width), forKey: "picker.width")
+        UserDefaults.standard.set(Double(win.frame.height), forKey: "picker.height")
     }
 
     func windowWillClose(_ notification: Notification) {

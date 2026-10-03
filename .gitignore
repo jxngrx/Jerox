@@ -8,6 +8,7 @@ xcuserdata/
 
 # Personal signing (copy Config/Local.xcconfig.example)
 Config/Local.xcconfig
+Config/sparkle_eddsa_private.key
 
 # Personal agent/editor hook configs (absolute local paths)
 .claude/settings.local.json

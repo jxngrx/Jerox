@@ -19,7 +19,7 @@ extension AppDelegate {
         model.history.setQuery("")
         model.reveal += 1
         let panel = ensurePanel()
-        let size = PickerMetrics.size
+        let size = panel.frame.size.width >= PickerMetrics.minWidth ? panel.frame.size : PickerMetrics.saved
         let origin = origin(for: anchor, size: size)
         panel.setFrame(NSRect(origin: origin, size: size), display: true)
         installPanelMonitors()
@@ -30,15 +30,16 @@ extension AppDelegate {
     func ensurePanel() -> KeyPanel {
         if let panel { return panel }
         let panel = KeyPanel(
-            contentRect: NSRect(origin: .zero, size: PickerMetrics.size),
-            styleMask: [.borderless, .nonactivatingPanel],
+            contentRect: NSRect(origin: .zero, size: PickerMetrics.saved),
+            styleMask: [.borderless, .nonactivatingPanel, .resizable],
             backing: .buffered,
             defer: false
         )
         panel.level = .popUpMenu
         panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
         panel.isFloatingPanel = true
-        panel.isMovable = false
+        panel.minSize = NSSize(width: PickerMetrics.minWidth, height: PickerMetrics.minHeight)
+        panel.isMovable = true
         panel.hidesOnDeactivate = false
         panel.isReleasedWhenClosed = false
         panel.isOpaque = false
@@ -50,7 +51,9 @@ extension AppDelegate {
             self?.paste(clip, plain: plain)
         }))
         host.sizingOptions = []
+        host.autoresizingMask = [.width, .height]
         panel.contentView = host
+        panel.delegate = self
         self.panel = panel
         return panel
     }

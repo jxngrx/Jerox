@@ -69,6 +69,7 @@ struct SettingsView: View {
     @State private var apiKey = ""
     @State private var modelName = ""
     @State private var keyReady = false
+    private let updater = JeroxUpdater.shared
 
     var body: some View {
         HStack(spacing: 0) {
@@ -91,6 +92,15 @@ struct SettingsView: View {
                     .buttonStyle(.plain)
                 }
                 Spacer()
+                if let version = updater.availableVersion {
+                    Button("Update to \(version)") { updater.checkForUpdates(nil) }
+                        .buttonStyle(.plain)
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundStyle(JeroxInk.accent)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal, 8)
+                        .padding(.bottom, 8)
+                }
                 Text(appVersion)
                     .font(.caption.monospacedDigit())
                     .foregroundStyle(.secondary)
@@ -119,7 +129,8 @@ struct SettingsView: View {
                 .frame(maxWidth: .infinity)
             }
         }
-        .frame(width: 760, height: 540)
+        .frame(minWidth: 640, minHeight: 420)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(JeroxInk.canvas)
         .tint(JeroxInk.accent)
         .onAppear {
@@ -289,6 +300,23 @@ struct SettingsView: View {
                 }
             }
         case .advanced:
+            group("Updates", hint: "Sparkle checks GitHub Releases, verifies the EdDSA signature, then installs and relaunches.") {
+                if let version = updater.availableVersion {
+                    row("Update available") {
+                        Button("Update Now") { updater.checkForUpdates(nil) }
+                            .controlSize(.small)
+                    }
+                    line { Text("Version \(version) is on GitHub.").foregroundStyle(.secondary) }
+                } else {
+                    row("Jerox") {
+                        Button("Check for Updates…") { updater.checkForUpdates(nil) }
+                            .controlSize(.small)
+                    }
+                }
+                if !updater.note.isEmpty {
+                    line { Text(updater.note).foregroundStyle(JeroxInk.danger) }
+                }
+            }
             group("App") {
                 row("Open at login") { switchToggle($loginItem) }
                 row("Show the dictation bar") { switchToggle($showOverlay) }

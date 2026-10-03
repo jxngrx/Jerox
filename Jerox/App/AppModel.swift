@@ -7,7 +7,15 @@ import SwiftUI
 enum PickerMetrics {
     static let width: CGFloat = 360
     static let height: CGFloat = 380
+    static let minWidth: CGFloat = 280
+    static let minHeight: CGFloat = 260
     static var size: NSSize { NSSize(width: width, height: height) }
+    static var saved: NSSize {
+        let w = UserDefaults.standard.double(forKey: "picker.width")
+        let h = UserDefaults.standard.double(forKey: "picker.height")
+        guard w >= minWidth, h >= minHeight else { return size }
+        return NSSize(width: w, height: h)
+    }
 }
 
 final class KeyPanel: NSPanel {
