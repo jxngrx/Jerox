@@ -38,20 +38,18 @@ xcodebuild -quiet -project Jerox.xcodeproj -scheme Jerox -configuration Release 
   MARKETING_VERSION="$VERSION" CURRENT_PROJECT_VERSION="$BUILD" ${SIGN_ARGS[@]+"${SIGN_ARGS[@]}"} build
 
 if [[ -n "${SIGN_IDENTITY:-}" ]]; then
-  # The vendored Sparkle.xcframework ships ad-hoc signed; Xcode's embed step
-  # does not re-sign it with our identity. Re-sign inside out: nested XPC
-  # services and helper tools first, then the framework, then the app.
-  find "$APP" -type f \( -path "*.xpc/Contents/MacOS/*" -o -path "*/XPCServices/*/Contents/MacOS/*" \) -print0 \
-    | while IFS= read -r -d '' BIN; do
-        codesign --force --sign "$SIGN_IDENTITY" --options runtime --timestamp "$BIN"
-      done
-  find "$APP" -type d -name "*.xpc" -print0 | while IFS= read -r -d '' XPC; do
-    codesign --force --sign "$SIGN_IDENTITY" --options runtime --timestamp "$XPC"
-  done
-  find "$APP/Contents/Frameworks" -maxdepth 1 -type d -name "*.framework" -print0 \
-    | while IFS= read -r -d '' FW; do
-        codesign --force --sign "$SIGN_IDENTITY" --options runtime --timestamp "$FW"
-      done
+  # The vendored Sparkle.xcframework ships ad-hoc signed and Xcode's embed step does not
+  # re-sign it with our identity. Notarization rejects every nested binary that is not
+  # Developer ID signed with a secure timestamp, so sign all of them, deepest path first
+  # (bare Mach-O files such as Autoupdate, then .xpc/.app/.framework bundles).
+  while IFS= read -r NESTED; do
+    codesign --force --sign "$SIGN_IDENTITY" --options runtime --timestamp "$NESTED"
+  done < <(
+    {
+      find "$APP/Contents/Frameworks" -type f -exec sh -c 'file "$1" | grep -q "Mach-O" && echo "$1"' _ {} \;
+      find "$APP/Contents/Frameworks" -type d \( -name "*.xpc" -o -name "*.app" -o -name "*.framework" \)
+    } | awk -F/ '{print NF, $0}' | sort -rn | cut -d' ' -f2-
+  )
   # Re-signing the app drops its entitlements unless they are passed again; without
   # audio-input the hardened runtime blocks the microphone and no prompt ever appears.
   codesign --force --sign "$SIGN_IDENTITY" --options runtime --timestamp --entitlements Config/Jerox.entitlements "$APP"
