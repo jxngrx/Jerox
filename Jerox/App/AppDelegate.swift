@@ -212,11 +212,23 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
             settingsWindow = window
             return window
         }()
+        bringToFront(window)
+    }
+
+    /// A menu-bar app only becomes a regular app (with a Dock icon) once a window needs it. Activating in the
+    /// same turn as the policy change can leave the window behind other apps, so order it front explicitly
+    /// and activate again on the next turn.
+    func bringToFront(_ window: NSWindow) {
         NSApp.setActivationPolicy(.regular)
         applyAppIcon()
+        window.orderFrontRegardless()
         NSApp.activate()
         window.makeKeyAndOrderFront(nil)
-        DispatchQueue.main.async { self.applyAppIcon() }
+        DispatchQueue.main.async {
+            self.applyAppIcon()
+            NSApp.activate()
+            window.makeKeyAndOrderFront(nil)
+        }
     }
 
     func windowDidResize(_ notification: Notification) {

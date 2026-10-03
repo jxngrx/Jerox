@@ -48,9 +48,6 @@ extension AppDelegate {
             onboardingWindow = window
             return window
         }()
-        NSApp.setActivationPolicy(.regular)
-        applyAppIcon()
-        NSApp.activate()
-        window.makeKeyAndOrderFront(nil)
+        bringToFront(window)
     }
 }
