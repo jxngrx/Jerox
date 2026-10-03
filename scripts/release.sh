@@ -36,6 +36,25 @@ if [[ -n "${SIGN_IDENTITY:-}" ]]; then
 fi
 xcodebuild -quiet -project Jerox.xcodeproj -scheme Jerox -configuration Release -derivedDataPath "$DERIVED" \
   MARKETING_VERSION="$VERSION" CURRENT_PROJECT_VERSION="$BUILD" ${SIGN_ARGS[@]+"${SIGN_ARGS[@]}"} build
+
+if [[ -n "${SIGN_IDENTITY:-}" ]]; then
+  # The vendored Sparkle.xcframework ships ad-hoc signed; Xcode's embed step
+  # does not re-sign it with our identity. Re-sign inside out: nested XPC
+  # services and helper tools first, then the framework, then the app.
+  find "$APP" -type f \( -path "*.xpc/Contents/MacOS/*" -o -path "*/XPCServices/*/Contents/MacOS/*" \) -print0 \
+    | while IFS= read -r -d '' BIN; do
+        codesign --force --sign "$SIGN_IDENTITY" --options runtime --timestamp "$BIN"
+      done
+  find "$APP" -type d -name "*.xpc" -print0 | while IFS= read -r -d '' XPC; do
+    codesign --force --sign "$SIGN_IDENTITY" --options runtime --timestamp "$XPC"
+  done
+  find "$APP/Contents/Frameworks" -maxdepth 1 -type d -name "*.framework" -print0 \
+    | while IFS= read -r -d '' FW; do
+        codesign --force --sign "$SIGN_IDENTITY" --options runtime --timestamp "$FW"
+      done
+  codesign --force --deep --sign "$SIGN_IDENTITY" --options runtime --timestamp "$APP"
+fi
+
 codesign --verify --deep --strict "$APP"
 SHIPPED="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "$APP/Contents/Info.plist")"
 [[ "$SHIPPED" == "$VERSION" ]] || { echo "error: app reports $SHIPPED, expected $VERSION" >&2; exit 1; }
