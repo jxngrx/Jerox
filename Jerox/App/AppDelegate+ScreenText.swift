@@ -39,7 +39,7 @@ extension AppDelegate {
     func screenCaptureAllowed() -> Bool {
         if CGPreflightScreenCaptureAccess() { return true }
         requestScreen()
-        flashDictation("Allow Screen Recording for Jerox, then try again.")
+        flashDictation("Allow Screen Recording for Jerox, then restart Jerox (Settings → Permissions).")
         return false
     }
 

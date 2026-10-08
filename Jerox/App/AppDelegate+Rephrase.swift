@@ -19,6 +19,7 @@ extension AppDelegate {
         }
         guard !model.aiBusy else { return }
         guard AXIsProcessTrusted() else {
+            showToast("Turn on Accessibility for Jerox (Settings → Permissions) to rewrite text.")
             promptAccessibility()
             return
         }
